@@ -1,0 +1,216 @@
+{
+  "projectType": "saas",
+  "projectName": "HRS Equestrian School Management System",
+  "projectDescription": "A comprehensive management platform for equestrian schools to handle students, instructors, horses, classes, scheduling, and financial operations.",
+  "theme": "maple",
+  "primaryColor": "#8B4513",
+  "lightColor": "#D2691E",
+  "darkColor": "#654321",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Overview",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "features"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/system-overview",
+              "concepts/user-roles",
+              "concepts/data-structure"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "User Guides",
+        "groups": [
+          {
+            "group": "Student Management",
+            "pages": [
+              "guides/students/registration",
+              "guides/students/class-plans",
+              "guides/students/horse-assignments",
+              "guides/students/trial-classes"
+            ]
+          },
+          {
+            "group": "Instructor Management",
+            "pages": [
+              "guides/instructors/registration",
+              "guides/instructors/schedule-management",
+              "guides/instructors/color-coding"
+            ]
+          },
+          {
+            "group": "Horse Management",
+            "pages": [
+              "guides/horses/registration",
+              "guides/horses/school-vs-private",
+              "guides/horses/availability"
+            ]
+          },
+          {
+            "group": "Class Scheduling",
+            "pages": [
+              "guides/classes/creating-classes",
+              "guides/classes/class-types",
+              "guides/classes/class-states",
+              "guides/classes/trial-classes",
+              "guides/classes/validations"
+            ]
+          },
+          {
+            "group": "Calendar & Scheduling",
+            "pages": [
+              "guides/calendar/views",
+              "guides/calendar/day-view",
+              "guides/calendar/copy-classes",
+              "guides/calendar/bulk-operations",
+              "guides/calendar/export-excel"
+            ]
+          },
+          {
+            "group": "Reports & Analytics",
+            "pages": [
+              "guides/reports/overview",
+              "guides/reports/student-reports",
+              "guides/reports/class-reports",
+              "guides/reports/instructor-reports",
+              "guides/reports/horse-reports",
+              "guides/reports/export-data"
+            ]
+          },
+          {
+            "group": "Financial Management",
+            "pages": [
+              "guides/finances/income-tracking",
+              "guides/finances/expenses",
+              "guides/finances/board-fees"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Features",
+        "groups": [
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/authentication",
+              "features/search-and-filters",
+              "features/data-validation",
+              "features/notifications"
+            ]
+          },
+          {
+            "group": "Advanced Features",
+            "pages": [
+              "features/trial-class-system",
+              "features/automatic-scheduling",
+              "features/conflict-detection",
+              "features/attendance-tracking",
+              "features/whatsapp-integration"
+            ]
+          },
+          {
+            "group": "User Interface",
+            "pages": [
+              "features/ui/views",
+              "features/ui/color-coding",
+              "features/ui/responsive-design",
+              "features/ui/accessibility"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Reference",
+        "groups": [
+          {
+            "group": "Data Models",
+            "pages": [
+              "reference/models/student",
+              "reference/models/instructor",
+              "reference/models/horse",
+              "reference/models/class"
+            ]
+          },
+          {
+            "group": "Enumerations",
+            "pages": [
+              "reference/enums/class-states",
+              "reference/enums/specialties",
+              "reference/enums/board-types",
+              "reference/enums/horse-types"
+            ]
+          },
+          {
+            "group": "Business Rules",
+            "pages": [
+              "reference/rules/validation-rules",
+              "reference/rules/scheduling-rules",
+              "reference/rules/business-logic"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Administration",
+        "groups": [
+          {
+            "group": "Setup",
+            "pages": [
+              "admin/installation",
+              "admin/configuration",
+              "admin/environment-setup"
+            ]
+          },
+          {
+            "group": "Operations",
+            "pages": [
+              "admin/user-management",
+              "admin/data-backup",
+              "admin/troubleshooting"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Student enrollment and management with class plans",
+    "Instructor scheduling with color-coded calendar system",
+    "Horse management (school-owned and private)",
+    "Class scheduling with multiple views (day, week, month)",
+    "Trial class system for prospective students",
+    "Real-time validation and conflict detection",
+    "Comprehensive reporting and analytics",
+    "Financial tracking and board fee management",
+    "Excel export for schedules and reports",
+    "WhatsApp integration for communication",
+    "Attendance tracking with multiple states",
+    "Bulk operations (copy classes, cancel days)"
+  ],
+  "publicApiSurface": [
+    "Student registration (DNI, personal data, class plans, horse assignments)",
+    "Instructor registration (personal data, color assignment, specialties)",
+    "Horse registration (name, type: ESCUELA/PRIVADO, availability)",
+    "Class creation (date, time, duration, participants, specialty, state)",
+    "Trial class management (new person vs existing inactive student)",
+    "Calendar views (month, week, day with Excel-style grid)",
+    "Reports (students, instructors, horses, classes, financial)",
+    "Financial tracking (income, expenses, board fees)",
+    "Class states (PROGRAMADA, INICIADA, COMPLETADA, CANCELADA, ACA, ASA)",
+    "Specialties (EQUITACION, ADIESTRAMIENTO, EQUINOTERAPIA, MONTA)",
+    "Board types (SIN_CABALLO, RESERVA_ESCUELA, CABALLO_PROPIO)",
+    "Excel export (daily schedules with color coding and legends)"
+  ]
+}
