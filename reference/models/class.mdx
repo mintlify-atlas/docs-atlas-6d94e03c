@@ -1,0 +1,239 @@
+---
+title: Class (Clase)
+description: Class data model representing scheduled riding lessons
+---
+
+## Overview
+
+The `Clase` (Class) model represents scheduled riding lessons at the equestrian school. Classes connect students, instructors, and horses for a specific time slot and specialty.
+
+## Data Model
+
+<ParamField path="id" type="number" required>
+  Unique identifier for the class
+</ParamField>
+
+<ParamField path="especialidad" type="EspecialidadClase" required>
+  Type of riding class specialty
+  
+  Possible values:
+  - `"EQUITACION"` - Regular riding class
+  - `"ADIESTRAMIENTO"` - Horse training class
+  - `"EQUINOTERAPIA"` - Equine therapy class
+  - `"MONTA"` - Free riding (automatically assigns placeholder student ID 1)
+  
+  See [Specialties](/reference/enums/specialties) for more details.
+</ParamField>
+
+<ParamField path="dia" type="string" required>
+  Date of the class in ISO format (yyyy-MM-dd)
+  
+  Example: `"2024-03-15"`
+</ParamField>
+
+<ParamField path="hora" type="string" required>
+  Start time of the class in 24-hour format (HH:mm)
+  
+  Example: `"14:30"`
+  
+  **Constraint**: Classes cannot end after 18:30
+</ParamField>
+
+<ParamField path="duracion" type="number" required>
+  Duration of the class in minutes
+  
+  **Valid values**: `30` or `60`
+  
+  Default: `30`
+</ParamField>
+
+<ParamField path="estado" type="EstadoClase" required>
+  Current state of the class
+  
+  Possible values:
+  - `"PROGRAMADA"` - Scheduled, pending
+  - `"INICIADA"` - In progress
+  - `"COMPLETADA"` - Finished successfully
+  - `"CANCELADA"` - Cancelled
+  - `"ACA"` - Absence with notice (student notified they won't attend)
+  - `"ASA"` - Absence without notice (student didn't show up)
+  
+  Default: `"PROGRAMADA"`
+  
+  See [Class States](/reference/enums/class-states) for more details.
+</ParamField>
+
+<ParamField path="observaciones" type="string">
+  Optional notes or comments about the class
+</ParamField>
+
+<ParamField path="alumnoId" type="number | null" required>
+  ID of the student attending the class
+  
+  Set to `null` for trial classes with new people (uses `personaPruebaId` instead)
+  
+  **Note**: For specialty `"MONTA"`, this is automatically set to ID 1 (placeholder student)
+</ParamField>
+
+<ParamField path="personaPruebaId" type="number | null">
+  ID of the trial person (for trial classes with new individuals)
+  
+  Only used when `esPrueba: true` and the person is not a registered student
+</ParamField>
+
+<ParamField path="instructorId" type="number" required>
+  ID of the instructor teaching the class
+</ParamField>
+
+<ParamField path="caballoId" type="number" required>
+  ID of the horse used in the class
+</ParamField>
+
+<ParamField path="diaHoraCompleto" type="string">
+  Computed field combining date and time
+  
+  Example: `"2024-03-15T14:30:00"`
+</ParamField>
+
+<ParamField path="esPrueba" type="boolean">
+  Indicates if this is a trial class
+  
+  Default: `false`
+  
+  **Trial class rules**:
+  - Does not count toward the student's monthly quota
+  - Only available for inactive students or new people
+  - Cannot be repeated for the same specialty
+  - Identified with 🎓 emoji and orange border in calendar
+</ParamField>
+
+<ParamField path="personaPruebaNombre" type="string | null">
+  First name of trial person (when `esPrueba: true` and person is not a registered student)
+</ParamField>
+
+<ParamField path="personaPruebaApellido" type="string | null">
+  Last name of trial person (when `esPrueba: true` and person is not a registered student)
+</ParamField>
+
+<ParamField path="personaPruebaNombreCompleto" type="string | null">
+  Computed full name of trial person
+  
+  Example: `"María González"`
+</ParamField>
+
+## Extended Model: ClaseDetallada
+
+The `ClaseDetallada` interface extends `Clase` with populated references:
+
+<ResponseField name="alumno" type="Alumno">
+  Full student object (expanded from `alumnoId`)
+</ResponseField>
+
+<ResponseField name="personaPrueba" type="PersonaPrueba">
+  Full trial person object (expanded from `personaPruebaId`)
+</ResponseField>
+
+<ResponseField name="instructor" type="Instructor">
+  Full instructor object (expanded from `instructorId`)
+</ResponseField>
+
+<ResponseField name="caballo" type="Caballo">
+  Full horse object (expanded from `caballoId`)
+</ResponseField>
+
+## Example
+
+### Regular Class
+
+```json
+{
+  "id": 456,
+  "especialidad": "EQUITACION",
+  "dia": "2024-03-15",
+  "hora": "14:30",
+  "duracion": 60,
+  "estado": "PROGRAMADA",
+  "observaciones": "First class of the month",
+  "alumnoId": 123,
+  "personaPruebaId": null,
+  "instructorId": 5,
+  "caballoId": 12,
+  "diaHoraCompleto": "2024-03-15T14:30:00",
+  "esPrueba": false,
+  "personaPruebaNombre": null,
+  "personaPruebaApellido": null,
+  "personaPruebaNombreCompleto": null
+}
+```
+
+### Trial Class
+
+```json
+{
+  "id": 457,
+  "especialidad": "EQUITACION",
+  "dia": "2024-03-16",
+  "hora": "10:00",
+  "duracion": 30,
+  "estado": "PROGRAMADA",
+  "observaciones": "Trial class for new person",
+  "alumnoId": null,
+  "personaPruebaId": 78,
+  "instructorId": 5,
+  "caballoId": 12,
+  "diaHoraCompleto": "2024-03-16T10:00:00",
+  "esPrueba": true,
+  "personaPruebaNombre": "Laura",
+  "personaPruebaApellido": "Martínez",
+  "personaPruebaNombreCompleto": "Laura Martínez"
+}
+```
+
+## Class States and Transitions
+
+| State | Color | Description | Can Edit? |
+|-------|-------|-------------|----------|
+| PROGRAMADA | 🟠 Orange | Scheduled, pending | ✅ Yes |
+| INICIADA | 🔵 Blue | In progress | ❌ No |
+| COMPLETADA | 🟢 Green | Finished successfully | ❌ No |
+| CANCELADA | 🔴 Red | Cancelled | ❌ No |
+| ACA | 🟣 Purple | Absence with notice | ❌ No |
+| ASA | 🌸 Pink | Absence without notice | ❌ No |
+
+**Important**: Classes with states `INICIADA`, `COMPLETADA`, or `CANCELADA` cannot be edited as they represent historical records.
+
+## Related Models
+
+- [Student (Alumno)](/reference/models/student) - Students attending classes
+- [Instructor](/reference/models/instructor) - Instructors teaching classes
+- [Horse (Caballo)](/reference/models/horse) - Horses used in classes
+- [Class States](/reference/enums/class-states) - Enumeration of class states
+- [Specialties](/reference/enums/specialties) - Types of class specialties
+
+## Business Rules
+
+### Time Constraints
+- Classes cannot end after 18:30
+- Time slots are in 30-minute increments (09:00 - 18:30)
+- 60-minute classes occupy two consecutive 30-minute slots
+
+### Trial Classes
+- Only for inactive students or new people
+- Cannot be repeated for the same specialty
+- Do not count toward monthly quota
+- Student cannot have trial class if they already have classes in that specialty
+
+### Editing Restrictions
+- Cannot edit classes with state `INICIADA`, `COMPLETADA`, or `CANCELADA`
+- Delete and edit buttons are disabled for finalized classes
+
+### Schedule Conflicts
+- Horse cannot have overlapping classes
+- Instructor cannot have overlapping classes
+- System shows warning indicators (⚠️) for conflicts
+
+### Specialty Rules
+- `"MONTA"` specialty automatically assigns placeholder student (ID 1)
+- Each specialty can have different trial class eligibility
+
+See [Validation Rules](/reference/rules/validation-rules), [Scheduling Rules](/reference/rules/scheduling-rules), and [Business Logic](/reference/rules/business-logic) for complete details.

@@ -1,0 +1,309 @@
+---
+title: 'Configuration'
+description: 'Configure the Equestrian School Management System'
+icon: 'gear'
+---
+
+## Overview
+
+The system uses environment variables for configuration and includes multiple configuration files for different aspects of the application.
+
+## Configuration Files
+
+### Vite Configuration
+
+The main build configuration is in `vite.config.ts`:
+
+```typescript vite.config.ts
+import react from "@vitejs/plugin-react-swc";
+import { componentTagger } from "lovable-tagger";
+import path from "path";
+import { defineConfig } from "vite";
+
+export default defineConfig(({ mode }) => ({
+  server: {
+    host: "::",
+    port: 5173,
+  },
+  plugins: [react(), mode === "development" && componentTagger()].filter(
+    Boolean,
+  ),
+  sourcemap: false,
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
+  },
+}));
+```
+
+#### Key Configuration Options
+
+**Server Settings** (`vite.config.ts:8-11`)
+- `host: "::"` - Listen on all network interfaces (IPv6)
+- `port: 5173` - Default development server port
+
+**Plugins** (`vite.config.ts:12-14`)
+- `@vitejs/plugin-react-swc` - Fast React refresh using SWC
+- `lovable-tagger` - Component tagging (development only)
+
+**Build Optimization** (`vite.config.ts:20-25`)
+- `drop_console: true` - Remove console.log in production
+- `drop_debugger: true` - Remove debugger statements
+- `sourcemap: false` - Disable source maps for smaller builds
+
+**Path Aliases** (`vite.config.ts:17-19`)
+- `@/*` resolves to `./src/*`
+- Simplifies imports: `import { Button } from '@/components/ui/button'`
+
+### TypeScript Configuration
+
+The project uses multiple TypeScript configuration files:
+
+**tsconfig.json** - Root configuration
+```json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "noImplicitAny": false,
+    "noUnusedParameters": false,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "noUnusedLocals": false,
+    "strictNullChecks": false
+  }
+}
+```
+
+<Note>
+  The TypeScript configuration uses relaxed type checking to prioritize development speed. 
+  For production applications, consider enabling stricter type checking.
+</Note>
+
+### Tailwind Configuration
+
+The UI styling is configured through Tailwind CSS with:
+
+- **tailwindcss** - Utility-first CSS framework
+- **@tailwindcss/typography** - Beautiful typographic defaults
+- **tailwindcss-animate** - Animation utilities
+
+### PostCSS Configuration
+
+Autoprefixer is configured to add vendor prefixes automatically for better browser compatibility.
+
+## Application Configuration
+
+### API Base URL
+
+The API endpoint is configured via environment variable:
+
+```bash .env
+VITE_API_BASE_URL=https://your-api.com/api/v1
+```
+
+This is used throughout the application for authentication and data operations:
+
+```typescript src/services/authService.ts
+export const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/auth`;
+```
+
+### Authentication Configuration
+
+**Session Storage**
+- Authentication credentials stored in `sessionStorage`
+- Automatically cleared on browser close
+- Basic Auth with Base64 encoding
+
+**Idle Timeout** (`src/components/auth/IdleHandler.tsx:21`)
+```typescript
+const timeout = 15 * 60 * 1000; // 15 minutes
+```
+
+Users are automatically logged out after 15 minutes of inactivity.
+
+**Monitored Events** (`src/components/auth/IdleHandler.tsx:29`)
+- mousedown
+- keydown
+- scroll
+- click
+- touchstart
+
+### Router Configuration
+
+The application uses React Router v6 with protected routes:
+
+- Public routes: `/login`, `/register`
+- Protected routes: All application pages
+- Redirect to login when unauthenticated
+- Return to requested page after login
+
+## UI Component Configuration
+
+### Radix UI Components
+
+The system uses Radix UI primitives for accessible, unstyled components:
+
+- Accordion
+- Alert Dialog
+- Avatar
+- Checkbox
+- Dialog
+- Dropdown Menu
+- Form controls
+- Navigation Menu
+- Popover
+- Select
+- Tabs
+- Toast notifications
+- And more...
+
+### Theming
+
+Theme management via `next-themes`:
+
+- Light/Dark mode support
+- System preference detection
+- Persistent theme selection
+
+### Form Validation
+
+**React Hook Form** + **Zod**
+- Type-safe form validation
+- Schema-based validation
+- Real-time error feedback
+
+## Build Configuration
+
+### Development Mode
+
+```bash
+npm run dev
+```
+
+**Features:**
+- Hot Module Replacement (HMR)
+- Component tagging enabled
+- Source maps enabled
+- Fast refresh with SWC
+
+### Production Mode
+
+```bash
+npm run build
+```
+
+**Optimizations:**
+- Tree shaking
+- Code splitting
+- Minification
+- Console removal
+- Debugger removal
+
+### Development Build Mode
+
+```bash
+npm run build:dev
+```
+
+Production build with development features:
+- Source maps included
+- Console logs preserved
+- Debugging enabled
+
+## Linting Configuration
+
+### ESLint Setup
+
+The project uses ESLint with multiple plugins:
+
+- `@eslint/js` - Core ESLint rules
+- `typescript-eslint` - TypeScript-specific rules
+- `eslint-plugin-react-hooks` - React Hooks rules
+- `eslint-plugin-react-refresh` - Fast refresh compatibility
+- `eslint-plugin-simple-import-sort` - Import organization
+
+```bash
+npm run lint
+```
+
+## Advanced Configuration
+
+### Customizing the Dev Server
+
+Modify `vite.config.ts` to customize server behavior:
+
+```typescript
+server: {
+  host: '0.0.0.0', // Listen on all addresses
+  port: 3000,      // Custom port
+  strictPort: true, // Exit if port is in use
+  open: true,      // Auto-open browser
+  cors: true,      // Enable CORS
+}
+```
+
+### Environment-Specific Builds
+
+Create environment-specific configuration:
+
+1. `.env.development` - Development variables
+2. `.env.production` - Production variables
+3. `.env.local` - Local overrides (gitignored)
+
+### Adding Build Plugins
+
+Extend Vite with additional plugins:
+
+```typescript vite.config.ts
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react-swc';
+import { visualizer } from 'rollup-plugin-visualizer';
+
+export default defineConfig({
+  plugins: [
+    react(),
+    visualizer(), // Bundle size analysis
+  ],
+});
+```
+
+## Configuration Checklist
+
+<Steps>
+  <Step title="Set Environment Variables">
+    Configure `.env` with your API endpoint
+  </Step>
+  <Step title="Verify TypeScript Paths">
+    Ensure `@/*` alias works correctly
+  </Step>
+  <Step title="Configure Authentication">
+    Set up API base URL and authentication endpoints
+  </Step>
+  <Step title="Customize Theme">
+    Configure colors and theme preferences
+  </Step>
+  <Step title="Optimize Build">
+    Adjust Vite config for your deployment target
+  </Step>
+</Steps>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Environment Setup" icon="code" href="/admin/environment-setup">
+    Configure development and production environments
+  </Card>
+  <Card title="User Management" icon="users" href="/admin/user-management">
+    Set up user authentication and roles
+  </Card>
+</CardGroup>

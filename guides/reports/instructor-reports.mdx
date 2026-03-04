@@ -1,0 +1,450 @@
+---
+title: Instructor Reports
+description: Track instructor workload, efficiency, and performance metrics
+---
+
+The Instructor Reports section provides detailed analytics on instructor performance, helping you balance workload, identify top performers, and optimize teaching assignments.
+
+## Overview
+
+Access instructor analytics through the **Instructores** tab in the Reports section.
+
+## Workload Distribution
+
+The main visualization shows instructor workload comparison.
+
+### Stacked Bar Chart
+
+Displays classes per instructor with status breakdown:
+
+**Chart Elements**:
+- X-axis: Instructor names
+- Y-axis: Number of classes
+- Green bars: Completed classes
+- Red bars: Cancelled classes (stacked)
+
+**Example**:
+```
+Carlos Ruiz:
+  Completadas: 65
+  Canceladas: 8
+  Total: 73
+
+Ana Martinez:
+  Completadas: 58
+  Canceladas: 6
+  Total: 64
+
+Pedro Lopez:
+  Completadas: 52
+  Canceladas: 10
+  Total: 62
+```
+
+<Info>
+  The stacked format makes it easy to compare total workload while seeing completion vs cancellation.
+</Info>
+
+## Performance Table
+
+Detailed metrics for each instructor.
+
+### Table Columns
+
+<Tabs>
+  <Tab title="Instructor">
+    Full name (First Last)
+    
+    Example: Carlos Ruiz
+  </Tab>
+  <Tab title="Total">
+    Total assigned classes
+    
+    All statuses combined
+  </Tab>
+  <Tab title="Completadas">
+    Successfully completed classes
+    
+    Green color
+  </Tab>
+  <Tab title="Canceladas">
+    Cancelled classes
+    
+    Red color
+    
+    Includes facility and student cancellations
+  </Tab>
+  <Tab title="Eficiencia">
+    Efficiency percentage
+    
+    Completadas / Total × 100%
+    
+    Progress bar visualization
+  </Tab>
+</Tabs>
+
+### Sample Data
+
+| Instructor     | Total | Completadas | Canceladas | Eficiencia |
+|---------------|-------|-------------|------------|------------|
+| Carlos Ruiz   | 73    | 65          | 8          | 89.0% █████████░ |
+| Ana Martinez  | 64    | 58          | 6          | 90.6% █████████░ |
+| Pedro Lopez   | 62    | 52          | 10         | 83.9% ████████░░ |
+| Sofia Garcia  | 45    | 42          | 3          | 93.3% ██████████ |
+| Luis Torres   | 38    | 34          | 4          | 89.5% █████████░ |
+
+## Efficiency Calculation
+
+### Formula
+
+```
+Efficiency % = (Completed / Total) × 100
+
+Example (Carlos Ruiz):
+  Completed: 65
+  Total: 73
+  Efficiency: (65/73) × 100 = 89.0%
+```
+
+### What Efficiency Measures
+
+Efficiency represents the percentage of assigned classes that were **successfully completed**.
+
+**Factors that affect efficiency**:
+✅ Student attendance
+✅ Weather conditions
+✅ Facility availability
+✅ Schedule conflicts
+
+<Note>
+  Low efficiency isn't always the instructor's fault—external factors like weather and facility cancellations impact all instructors.
+</Note>
+
+## Benchmarks & Interpretation
+
+### Efficiency Ranges
+
+<Tabs>
+  <Tab title="Excellent (90-100%)">
+    **90-100%** efficiency
+    
+    Indicates:
+    - High student engagement
+    - Good weather period
+    - Few cancellations
+    - Optimal performance
+    
+    **Action**: Maintain current approach
+  </Tab>
+  
+  <Tab title="Good (80-89%)">
+    **80-89%** efficiency
+    
+    Indicates:
+    - Normal operations
+    - Some cancellations
+    - Acceptable performance
+    - Room for improvement
+    
+    **Action**: Monitor for trends
+  </Tab>
+  
+  <Tab title="Concerning (70-79%)">
+    **70-79%** efficiency
+    
+    May indicate:
+    - Higher cancellation rate
+    - Student retention issues
+    - Schedule problems
+    - Weather impact
+    
+    **Action**: Investigate causes
+  </Tab>
+  
+  <Tab title="Action Needed (Below 70%)">
+    **Below 70%** efficiency
+    
+    Possible causes:
+    - Multiple facility closures
+    - Student engagement crisis
+    - Schedule misalignment
+    - Systematic issues
+    
+    **Action**: Immediate review required
+  </Tab>
+</Tabs>
+
+## Workload Analysis
+
+### Total Classes Comparison
+
+Compare instructor workloads to:
+- **Balance assignments**: Ensure fair distribution
+- **Identify capacity**: See who can take more classes
+- **Spot overload**: Prevent instructor burnout
+- **Plan hiring**: Determine if more instructors needed
+
+### Workload Distribution Examples
+
+<AccordionGroup>
+  <Accordion title="Balanced (Ideal)">
+    ```
+    Carlos:  73 classes
+    Ana:     64 classes
+    Pedro:   62 classes
+    Sofia:   58 classes
+    Luis:    55 classes
+    ```
+    
+    Even distribution—no one is overloaded or underutilized.
+  </Accordion>
+  
+  <Accordion title="Imbalanced (Issue)">
+    ```
+    Carlos: 120 classes  ← Overloaded
+    Ana:     95 classes
+    Pedro:   30 classes  ← Underutilized
+    Sofia:   25 classes  ← Underutilized
+    ```
+    
+    Needs redistribution to prevent burnout and maximize capacity.
+  </Accordion>
+  
+  <Accordion title="Part-Time Mix">
+    ```
+    Carlos:  85 classes (Full-time)
+    Ana:     80 classes (Full-time)
+    Pedro:   35 classes (Part-time)
+    Sofia:   30 classes (Part-time)
+    ```
+    
+    Normal if employment types differ.
+  </Accordion>
+</AccordionGroup>
+
+## Cancellation Analysis
+
+### Understanding Cancellations
+
+Cancellations in the instructor report include:
+- **Facility cancellations**: Weather, holidays, maintenance
+- **Student cancellations**: ACA, ASA (counted as "cancelled" for instructor)
+
+<Warning>
+  High cancellations for **one instructor** vs others may indicate:
+  - Schedule timing issues (weather-prone times)
+  - Student engagement problems
+  - Communication gaps
+</Warning>
+
+### Comparative Analysis
+
+If one instructor has significantly higher cancellations:
+
+**Check**:
+1. **Schedule timing**: Do they teach during weather-prone hours?
+2. **Student mix**: Do their students have attendance issues?
+3. **Day of week**: Are they on days with more closures?
+4. **Specialty**: Does their specialty have higher no-shows?
+
+## Using Instructor Reports
+
+### Workload Balancing
+
+<Steps>
+  <Step title="Review Total Classes">
+    Check current distribution across all instructors
+  </Step>
+  <Step title="Identify Imbalances">
+    Spot overloaded or underutilized instructors
+  </Step>
+  <Step title="Consider Factors">
+    - Full-time vs part-time
+    - Availability preferences
+    - Specialty expertise
+  </Step>
+  <Step title="Redistribute">
+    Adjust future class assignments
+  </Step>
+  <Step title="Monitor">
+    Re-check next period to ensure balance
+  </Step>
+</Steps>
+
+### Performance Reviews
+
+Use instructor reports in performance evaluations:
+
+**Positive Indicators**:
+✅ High efficiency (90%+)
+✅ Consistent workload handling
+✅ Low student-initiated cancellations
+✅ Balanced completion rates
+
+**Discussion Points**:
+💬 Lower efficiency—identify causes
+💬 High cancellations—review patterns
+💬 Workload preferences—too much/too little?
+
+### Hiring Decisions
+
+Data helps determine staffing needs:
+
+**Indicators you need more instructors**:
+- All instructors at high capacity
+- Frequent overload situations
+- Unable to accommodate new students
+- Long waitlists for classes
+
+**Calculation Example**:
+```
+Current capacity: 5 instructors × 70 classes/month = 350
+Current demand: 340 classes/month
+Utilization: 97%
+
+Conclusion: Near capacity, consider hiring
+```
+
+## Exporting Instructor Data
+
+Export the performance table:
+
+<Steps>
+  <Step title="Click Export">
+    Click **"Exportar"** button above the table
+  </Step>
+  <Step title="Download File">
+    File downloads as `Reporte_Instructores_YYYY-MM-DD.xlsx`
+  </Step>
+  <Step title="Open in Excel">
+    Open in your preferred spreadsheet application
+  </Step>
+</Steps>
+
+### Excel File Contents
+
+Includes:
+- All table columns
+- Calculated efficiency percentages
+- Formatted headers
+- Professional layout
+- Color-coded metrics
+
+### Use Cases for Export
+
+<AccordionGroup>
+  <Accordion title="Monthly Staff Meetings">
+    Share performance data:
+    - Acknowledge top performers
+    - Discuss workload distribution
+    - Celebrate team achievements
+  </Accordion>
+  
+  <Accordion title="Individual Reviews">
+    One-on-one performance discussions:
+    - Show specific metrics
+    - Compare to team average
+    - Set improvement goals
+  </Accordion>
+  
+  <Accordion title="Payroll/Bonuses">
+    Performance-based compensation:
+    - Classes completed
+    - Efficiency bonuses
+    - Fair workload-based pay
+  </Accordion>
+  
+  <Accordion title="Trend Analysis">
+    Track over multiple periods:
+    - Export each month
+    - Build historical database
+    - Identify long-term trends
+  </Accordion>
+</AccordionGroup>
+
+## Specialty Breakdown
+
+While not shown in the main instructor report, cross-reference with:
+- **General Reports** → Specialty demand
+- **Class Reports** → Specialty distribution
+
+Combine to understand:
+- Which instructors teach which specialties
+- Demand vs instructor availability
+- Specialty-specific efficiency
+
+## Comparing Time Periods
+
+Run reports for different periods:
+
+### Monthly Comparison
+
+```
+Carlos Ruiz:
+  March:    73 classes, 89.0% efficiency
+  February: 68 classes, 91.2% efficiency
+  
+  Insight: Slight efficiency drop, workload increase
+```
+
+### Seasonal Patterns
+
+```
+Winter (Dec-Feb):
+  Average efficiency: 85%
+  
+Summer (Jun-Aug):
+  Average efficiency: 92%
+  
+  Insight: Weather impact on winter months
+```
+
+## Instructor Availability
+
+The report shows **only active instructors** with classes in the period.
+
+<Note>
+  Inactive instructors or those without classes won't appear in the report.
+</Note>
+
+## Related Metrics
+
+### Student Perspective
+
+Cross-reference with student reports:
+- Are students of certain instructors more engaged?
+- Do some instructors have better attendance?
+
+### Class Perspective
+
+Combine with class reports:
+- Overall completion rate vs instructor-specific
+- Facility cancellation impact
+
+## Tips & Best Practices
+
+<Check>
+  - **Review monthly**: Track trends, not just snapshots
+  - **Context matters**: Consider external factors (weather, holidays)
+  - **Fair comparison**: Account for part-time vs full-time
+  - **Celebrate success**: Recognize high performers
+  - **Support improvement**: Help those with lower metrics
+  - **Workload balance**: Prevent burnout through fair distribution
+</Check>
+
+## Related Reports
+
+<CardGroup cols={2}>
+  <Card title="Student Reports" icon="users" href="/guides/reports/student-reports">
+    Student attendance patterns
+  </Card>
+  <Card title="Class Reports" icon="book-open" href="/guides/reports/class-reports">
+    Overall class completion rates
+  </Card>
+  <Card title="General Reports" icon="chart-line" href="/guides/reports/overview">
+    School-wide statistics
+  </Card>
+  <Card title="Instructor Management" icon="chalkboard-user" href="/guides/instructors/registration">
+    Managing instructor profiles
+  </Card>
+</CardGroup>

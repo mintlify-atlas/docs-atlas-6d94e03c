@@ -1,0 +1,329 @@
+---
+title: Day View (Excel-Style)
+description: Master the Excel-style day view for efficient daily class scheduling
+---
+
+The Day View is the most powerful scheduling tool in the system, providing a spreadsheet-like interface for managing daily classes with maximum efficiency.
+
+## Overview
+
+The Day View displays classes in a grid format where:
+- **Rows** = Time slots (30-minute intervals)
+- **Columns** = Horses (school and private)
+- **Cells** = Individual classes or empty slots
+
+<img src="" alt="Day View Grid" />
+
+## Grid Structure
+
+### Time Slots (Rows)
+
+The left column shows 30-minute time intervals:
+
+```
+09:00 ─────────────────────────
+09:30 ─────────────────────────
+10:00 ─────────────────────────
+10:30 ─────────────────────────
+  ...  ─────────────────────────
+18:00 ─────────────────────────
+18:30 ─────────────────────────
+```
+
+<Note>
+  Operating hours: **09:00 to 18:30**. Classes cannot end after 18:30.
+</Note>
+
+### Horse Columns
+
+Each horse gets its own column with a color-coded header:
+
+<Tabs>
+  <Tab title="School Horses">
+    - **Blue background** header
+    - Label: "Escuela"
+    - Available for all students
+    - Sorted alphabetically
+  </Tab>
+  <Tab title="Private Horses">
+    - **Gold background** header
+    - Label: "Privado"
+    - Only used by their owner
+    - Sorted alphabetically
+  </Tab>
+</Tabs>
+
+### Column Order
+
+1. School horses (alphabetically)
+2. Private horses (alphabetically)
+
+## Class Duration Handling
+
+### 30-Minute Classes
+
+A 30-minute class occupies a **single cell**:
+
+```
+┌──────────┬──────────┐
+│  10:00   │  Maria   │  ← Single cell
+├──────────┼──────────┤
+│  10:30   │          │  ← Empty
+└──────────┴──────────┘
+```
+
+### 60-Minute Classes
+
+A 60-minute class **spans two consecutive cells**:
+
+```
+┌──────────┬──────────┐
+│  10:00   │  Carlos  │  ← Start time
+├──────────┼──────────┤
+│  10:30   │  (cont.) │  ← Continuation
+└──────────┴──────────┘
+```
+
+<Info>
+  Both cells are clickable and open the same class popover for editing.
+</Info>
+
+### Visual Indicators
+
+- **Border**: Visual connection between start and continuation cells
+- **Background**: Same instructor color across both cells
+- **Clickable**: Both cells open the class details
+
+## Creating Classes
+
+### Quick Create
+
+Click any **empty cell** to create a class:
+
+<Steps>
+  <Step title="Click Empty Cell">
+    Click on an available time slot for a specific horse
+  </Step>
+  <Step title="Pre-filled Form">
+    The form opens with:
+    - Date: Current calendar date
+    - Time: Selected time slot
+    - Horse: Selected horse
+    - Duration: 30 minutes (default)
+  </Step>
+  <Step title="Fill Details">
+    Complete remaining fields:
+    - Student
+    - Instructor
+    - Specialty
+    - Observations (optional)
+  </Step>
+  <Step title="Save">
+    Click "Guardar" to create the class
+  </Step>
+</Steps>
+
+### Time Slot Validation
+
+The system validates:
+
+✅ **Class end time**: Must not exceed 18:30
+
+<Warning>
+  **Invalid Example**: 60-minute class at 18:00 would end at 19:00 (rejected)
+  
+  **Valid Example**: 60-minute class at 17:30 ends at 18:30 (accepted)
+</Warning>
+
+## Viewing Class Details
+
+Click any **occupied cell** to open the class popover:
+
+### Popover Information
+
+<CodeGroup>
+```text Student Information
+Student: Maria García
+Horse: Tornado
+Instructor: Carlos Ruiz
+```
+
+```text Class Details
+Date: March 4, 2026
+Time: 10:00 - 10:30
+Duration: 30 minutes
+Specialty: Equitación
+```
+
+```text Status
+Current: PROGRAMADA
+Observations: Primera clase de marzo
+```
+</CodeGroup>
+
+### Quick Actions
+
+From the popover:
+- **Change Status**: Update class status (Programada → Completada, etc.)
+- **Edit**: Modify class details
+- **Delete**: Remove the class (if permitted)
+
+<Note>
+  Classes with status COMPLETADA, INICIADA, or CANCELADA cannot be edited or deleted.
+</Note>
+
+## Class Visual Elements
+
+### Color Coding
+
+Each class cell displays:
+
+1. **Background Color**: Instructor's assigned color (lightened for readability)
+2. **Left Border**: Status color
+   - 🟠 Orange: PROGRAMADA
+   - 🔵 Blue: INICIADA
+   - 🟢 Green: COMPLETADA
+   - 🔴 Red: CANCELADA
+   - 🟣 Purple: ACA
+   - 🌸 Pink: ASA
+
+### Trial Classes
+
+Trial classes have special indicators:
+- 🎓 **Emoji**: Graduation cap icon
+- **Orange border**: Distinct visual marker
+- **Badge**: "Prueba" label in the popover
+
+### Conflict Detection
+
+Scheduling conflicts are marked with:
+- ⚠️ **Warning icon**: Visible in conflicting cells
+- **Conflict types**:
+  - Same horse, same time
+  - Same instructor, same time
+
+<Warning>
+  The system allows conflict creation but warns you. Review conflicts carefully!
+</Warning>
+
+## Hover Information
+
+Hover over any class to see a tooltip with:
+- Student name
+- Horse name
+- Instructor name
+- Class status
+- Time
+
+## Specialty-Based Display
+
+### Regular Classes
+
+Show the **student name**:
+```
+┌──────────────┐
+│  Maria G.    │
+│  10:00       │
+└──────────────┘
+```
+
+### MONTA Specialty
+
+Shows the **instructor name** (since MONTA uses a placeholder student):
+```
+┌──────────────┐
+│  Carlos R.   │
+│  10:00       │
+│  MONTA       │
+└──────────────┘
+```
+
+## Navigation
+
+### Date Navigation
+
+Use the header controls:
+- **← Previous Day**: Go back one day
+- **Today**: Jump to current date
+- **Next Day →**: Advance one day
+
+### Keyboard Shortcuts
+
+<Note>
+  Keyboard shortcuts may be available depending on your browser configuration.
+</Note>
+
+## Filtering in Day View
+
+Apply filters to focus on specific classes:
+
+### By Student
+
+Show only classes for a selected student:
+- Other students' classes are hidden
+- Empty cells remain visible for scheduling
+
+### By Instructor
+
+Show only classes for a selected instructor:
+- Useful for checking instructor availability
+- Helps balance workload
+
+### Combined Filters
+
+Apply both student and instructor filters:
+- Very specific view
+- Useful for parent-teacher coordination
+
+## Daily Statistics
+
+The header shows:
+- **Current Date**: Full date in Spanish format
+- **Class Count**: Total classes scheduled for the day
+
+Example: `Miércoles 4 de marzo — 15 clases`
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use Day View for Daily Scheduling">
+    The Day View is optimized for creating multiple classes quickly. The pre-filled horse and time make scheduling very efficient.
+  </Accordion>
+  
+  <Accordion title="Check Conflicts Before Confirming">
+    Even though the system allows conflicts, always review warning indicators to avoid double-booking horses or instructors.
+  </Accordion>
+  
+  <Accordion title="Leverage Color Coding">
+    Use instructor colors to quickly balance workload. If one instructor's color dominates, consider redistributing.
+  </Accordion>
+  
+  <Accordion title="Plan 60-Minute Classes Carefully">
+    Remember that 60-minute classes occupy two time slots and must end by 18:30.
+  </Accordion>
+</AccordionGroup>
+
+## Export to Excel
+
+The Day View can be exported to Excel for printing or external sharing:
+
+<Card title="Export Excel" icon="file-excel" href="/guides/calendar/export-excel">
+  Learn how to export the daily schedule to Excel format
+</Card>
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Calendar Views" icon="calendar" href="/guides/calendar/views">
+    Compare all three calendar views
+  </Card>
+  <Card title="Bulk Operations" icon="layer-group" href="/guides/calendar/bulk-operations">
+    Cancel entire days or delete ranges
+  </Card>
+  <Card title="Copy Classes" icon="copy" href="/guides/calendar/copy-classes">
+    Copy weekly schedules
+  </Card>
+  <Card title="Creating Classes" icon="plus" href="/guides/classes/creating-classes">
+    Complete guide to class creation
+  </Card>
+</CardGroup>

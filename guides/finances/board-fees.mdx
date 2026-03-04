@@ -1,0 +1,211 @@
+---
+title: Board Fees Management
+description: Manage horse boarding fees and pension plans for students
+---
+
+## Overview
+
+The system supports multiple boarding (pension) options for students who either own horses or reserve school horses for exclusive use.
+
+## Pension Types
+
+### Student Registration Options
+
+From the README documentation:
+
+#### Option 1: No Assigned Horse
+
+```markdown
+- The student does NOT reserve a specific horse
+- A school horse is assigned for each class
+- No additional configuration required
+```
+
+#### Option 2: Reserve School Horse
+
+```markdown
+- The student reserves a specific school horse
+- Must configure:
+  - Board fee amount: Full / Half / Third
+  - Horse: Select from "ESCUELA" type horses
+```
+
+#### Option 3: Own Horse
+
+```markdown
+- The student has their own horse
+- Must configure:
+  - Board fee amount: Full / Half / Third  
+  - Horse: Select from "PRIVADO" type horses
+```
+
+From `~/workspace/source/README.md:43-62`
+
+## Board Fee Levels
+
+### Full Board (ENTERA)
+
+Complete care and maintenance package.
+
+### Half Board (MEDIA)
+
+Partial care and maintenance package.
+
+### Third Board (TERCIO)
+
+Minimal care package.
+
+From `~/workspace/source/README.md:586-590`
+
+## Horse Registration
+
+### Adding a New Horse
+
+Before assigning a horse to a student:
+
+```markdown
+### Horse Data:
+- **Name**: Horse's name
+- **Type**: 
+  - **School**: School property, available to all
+  - **Private**: Belongs to specific student
+- **Available**: Automatically set as available for classes
+
+### Automatic Association:
+Once registered, the horse is automatically associated with the student:
+- If **own horse**: linked as owner
+- If **school reserve**: linked as reservation
+```
+
+From `~/workspace/source/README.md:66-82`
+
+## Technical Implementation
+
+### Pension Type Enum
+
+```typescript
+enum TipoPension {
+  SIN_CABALLO = "SIN_CABALLO",      // No assigned horse
+  RESERVA_ESCUELA = "RESERVA_ESCUELA", // School horse reserved
+  CABALLO_PROPIO = "CABALLO_PROPIO"   // Own horse
+}
+```
+
+From `~/workspace/source/README.md:580-584`
+
+### Board Fee Calculation
+
+Board fees are configured per student based on:
+
+1. **Pension Type** - Whether they have a horse assigned
+2. **Fee Level** - Full, half, or third board
+3. **Horse Type** - School or private ownership
+
+## Horse Ownership Tracking
+
+### Identifying Horse Owners
+
+The system tracks which students own horses:
+
+```tsx
+const filterConfig = [
+  {
+    name: "propietario",
+    label: "Propietario",
+    type: "select" as const,
+    options: [
+      { label: "Sí", value: "true" },
+      { label: "No", value: "false" },
+    ],
+  },
+];
+```
+
+From `~/workspace/source/src/pages/Alumnos.tsx:243-252`
+
+### Horse Assignment Validation
+
+```markdown
+**Validations**:
+- Private horses can only be used by their owners
+- School horses can be assigned to any student
+- If student has assigned horse, it appears preselected in class creation
+```
+
+From `~/workspace/source/README.md:126-129`
+
+## Reporting
+
+### Horse Ownership Reports
+
+Track boarding revenue by identifying horse owners:
+
+```tsx
+if (
+  filters.propietario !== "all" &&
+  String(alumno.propietario) !== filters.propietario
+) {
+  return false;
+}
+```
+
+From `~/workspace/source/src/pages/Alumnos.tsx:202-207`
+
+### Horse Utilization
+
+Monitor which horses are being used to justify boarding fees:
+
+```tsx
+const usoCaballos = useMemo(() => {
+  const uso: Record<string, number> = {};
+  clasesFiltradas.forEach((c: Clase) => {
+    const cab = caballos.find((x: Caballo) => x.id === c.caballoId);
+    if (cab) uso[cab.nombre] = (uso[cab.nombre] || 0) + 1;
+  });
+  return Object.entries(uso).map(([nombre, cantidad]) => {
+    const cab = caballos.find((c: Caballo) => c.nombre === nombre);
+    return {
+      nombre,
+      cantidad,
+      tipo: cab?.tipo || "ESCUELA",
+    };
+  });
+}, [clasesFiltradas, caballos]);
+```
+
+## Best Practices
+
+1. **Clear Documentation** - Ensure students understand boarding options before enrollment
+2. **Regular Audits** - Verify horse assignments match boarding fee records
+3. **Utilization Reports** - Monitor horse usage to justify boarding costs
+4. **Availability Tracking** - Keep horse availability status updated
+5. **Ownership Records** - Maintain accurate records of horse ownership
+6. **Fee Structure** - Regularly review and adjust boarding fee levels
+
+## Common Scenarios
+
+### New Student with Own Horse
+
+1. Register the horse in the system (type: PRIVADO)
+2. Create student account
+3. Select "Caballo Propio" pension type
+4. Choose board fee level (Entera/Media/Tercio)
+5. Assign the private horse
+6. System automatically links ownership
+
+### Student Reserving School Horse
+
+1. Verify school horse is available
+2. Create or update student account
+3. Select "Reserva Escuela" pension type
+4. Choose board fee level
+5. Select school horse (type: ESCUELA)
+6. System marks horse as reserved
+
+### Converting to No-Horse Plan
+
+1. Update student account
+2. Change pension type to "Sin Caballo"
+3. Remove horse assignment
+4. Adjust monthly fee accordingly
+5. Horse becomes available for general assignment

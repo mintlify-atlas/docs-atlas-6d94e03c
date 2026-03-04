@@ -1,0 +1,270 @@
+---
+title: Expense Management
+description: Track and manage operational expenses including instructor costs and horse care
+---
+
+## Overview
+
+Expense management in the equestrian school system focuses on tracking instructor workload, horse utilization, and operational costs.
+
+## Expense Categories
+
+### Instructor Costs
+
+Track instructor workload and efficiency:
+
+```tsx
+const cargaInstructores = useMemo(() => {
+  const carga: Record<
+    string,
+    { total: number; completadas: number; canceladas: number }
+  > = {};
+  clasesFiltradas.forEach((c: Clase) => {
+    const inst = instructores.find(
+      (i: Instructor) => i.id === c.instructorId,
+    );
+    if (!inst) return;
+    const nombre = `${inst.nombre} ${inst.apellido}`;
+    if (!carga[nombre])
+      carga[nombre] = { total: 0, completadas: 0, canceladas: 0 };
+    carga[nombre].total++;
+    if (c.estado === "COMPLETADA") carga[nombre].completadas++;
+    if (c.estado === "CANCELADA") carga[nombre].canceladas++;
+  });
+  return Object.entries(carga).map(([nombre, d]) => ({
+    nombre,
+    ...d,
+    eficiencia:
+      d.total > 0
+        ? parseFloat(((d.completadas / d.total) * 100).toFixed(1))
+        : 0,
+  }));
+}, [clasesFiltradas, instructores]);
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:288-313`
+
+### Horse Maintenance Costs
+
+Monitor horse utilization to allocate maintenance costs:
+
+```tsx
+const usoCaballos = useMemo(() => {
+  const uso: Record<string, number> = {};
+  clasesFiltradas.forEach((c: Clase) => {
+    const cab = caballos.find((x: Caballo) => x.id === c.caballoId);
+    if (cab) uso[cab.nombre] = (uso[cab.nombre] || 0) + 1;
+  });
+  return Object.entries(uso)
+    .map(([nombre, cantidad]) => {
+      const cab = caballos.find((c: Caballo) => c.nombre === nombre);
+      return {
+        nombre,
+        cantidad,
+        tipo: cab?.tipo || "ESCUELA",
+        porcentaje:
+          clasesFiltradas.length > 0
+            ? parseFloat(
+                ((cantidad / clasesFiltradas.length) * 100).toFixed(1),
+              )
+            : 0,
+      };
+    })
+    .sort((a, b) => b.cantidad - a.cantidad);
+}, [clasesFiltradas, caballos]);
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:316-338`
+
+## Expense Reports
+
+### Instructor Workload Report
+
+View detailed instructor statistics:
+
+```tsx
+<ResponsiveContainer width="100%" height={220}>
+  <BarChart
+    data={cargaInstructores}
+    margin={{ top: 5, right: 20, left: -10, bottom: 5 }}
+  >
+    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+    <XAxis dataKey="nombre" tick={{ fontSize: 11 }} />
+    <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
+    <Tooltip content={<CustomTooltip />} />
+    <Legend />
+    <Bar
+      dataKey="completadas"
+      name="Completadas"
+      fill={CHART_COLORS.completada}
+      radius={[4, 4, 0, 0]}
+      stackId="a"
+    />
+    <Bar
+      dataKey="canceladas"
+      name="Canceladas"
+      fill={CHART_COLORS.cancelada}
+      radius={[4, 4, 0, 0]}
+      stackId="a"
+    />
+  </BarChart>
+</ResponsiveContainer>
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:1053-1081`
+
+### Instructor Efficiency Table
+
+Detailed breakdown of instructor performance:
+
+```tsx
+<table className="w-full border-collapse">
+  <thead>
+    <tr className="border-b bg-muted/50">
+      <th className="text-left p-3 font-semibold text-sm">Instructor</th>
+      <th className="text-center p-3 font-semibold text-sm">Total</th>
+      <th className="text-center p-3 font-semibold text-sm text-success">
+        Completadas
+      </th>
+      <th className="text-center p-3 font-semibold text-sm text-destructive">
+        Canceladas
+      </th>
+      <th className="text-center p-3 font-semibold text-sm">Eficiencia</th>
+    </tr>
+  </thead>
+  <tbody>
+    {cargaInstructores.map((inst) => (
+      <tr
+        key={inst.nombre}
+        className="border-b hover:bg-muted/30 transition-colors"
+      >
+        <td className="p-3 text-sm font-medium">{inst.nombre}</td>
+        <td className="p-3 text-sm text-center">{inst.total}</td>
+        <td className="p-3 text-sm text-center text-success font-medium">
+          {inst.completadas}
+        </td>
+        <td className="p-3 text-sm text-center text-destructive">
+          {inst.canceladas}
+        </td>
+        <td className="p-3">
+          <div className="flex items-center gap-2 justify-center">
+            <div className="h-2 w-20 overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-success transition-all"
+                style={{ width: `${inst.eficiencia}%` }}
+              />
+            </div>
+            <span className="text-sm text-muted-foreground tabular-nums">
+              {inst.eficiencia}%
+            </span>
+          </div>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:1083-1137`
+
+### Horse Utilization
+
+Identify underutilized horses:
+
+```tsx
+const caballosSinUso = useMemo(() => {
+  const nombresConUso = new Set(usoCaballos.map((u) => u.nombre));
+  return caballos.filter((c: Caballo) => !nombresConUso.has(c.nombre));
+}, [caballos, usoCaballos]);
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:341-344`
+
+## Canceled Class Analysis
+
+Track revenue loss from cancellations:
+
+```tsx
+const clasesCanceladas = clasesFiltradas.filter(
+  (c: Clase) => c.estado === "CANCELADA",
+).length;
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:129-131`
+
+## Absence Tracking
+
+Monitor student absence patterns:
+
+### ACA (Absence with Notice)
+
+```tsx
+if (c.estado === "ACA") mapa[nombre].aca++;
+```
+
+### ASA (Absence without Notice)
+
+```tsx
+if (c.estado === "ASA") mapa[nombre].asa++;
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:263-264`
+
+## Expense Visualization
+
+### Horse Availability
+
+```tsx
+<PieChart>
+  <Pie
+    data={[
+      {
+        name: "Disponibles",
+        value: estadisticasGenerales.caballosDisponibles,
+      },
+      {
+        name: "No disponibles",
+        value:
+          estadisticasGenerales.totalCaballos -
+          estadisticasGenerales.caballosDisponibles,
+      },
+    ]}
+    dataKey="value"
+    cx="50%"
+    cy="50%"
+    outerRadius={75}
+  >
+    <Cell fill={CHART_COLORS.completada} />
+    <Cell fill={CHART_COLORS.cancelada} />
+  </Pie>
+  <Tooltip content={<CustomTooltip />} />
+  <Legend />
+</PieChart>
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:1162-1185`
+
+## Export Capabilities
+
+Export expense reports for accounting:
+
+```tsx
+<Button
+  variant="outline"
+  size="sm"
+  onClick={() => exportarExcel(cargaInstructores, "Instructores")}
+>
+  <Download className="mr-2 h-4 w-4" />
+  Exportar
+</Button>
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:1039-1048`
+
+## Cost Optimization Tips
+
+1. **Monitor Instructor Efficiency** - Identify instructors with high cancellation rates
+2. **Balance Horse Usage** - Ensure all horses are utilized to justify maintenance costs
+3. **Track Absences** - Follow up on ASA (no-notice absences) to improve revenue
+4. **Optimize Scheduling** - Use horse utilization data to make informed decisions
+5. **Regular Reports** - Export monthly expense reports for detailed analysis

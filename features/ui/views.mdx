@@ -1,0 +1,315 @@
+---
+title: View Modes
+description: Multiple view modes for different use cases and preferences
+---
+
+## Overview
+
+The system provides multiple view modes across different sections, allowing users to choose the most effective visualization for their needs.
+
+## Calendar Views
+
+### Month View
+
+Overview of entire month:
+
+```markdown
+#### **Month View**
+- Shows all weeks of the month
+- Up to 3 classes per day (+ indicator for more)
+- Click on day to see detail or create class
+```
+
+From `~/workspace/source/README.md:247-251`
+
+### Week View
+
+Detailed weekly schedule:
+
+```markdown
+#### **Week View**
+- Shows 7 complete days
+- Up to 10 classes per day
+- Weekly navigation
+```
+
+From `~/workspace/source/README.md:253-256`
+
+### Day View (Excel Style)
+
+Most detailed grid layout:
+
+```markdown
+#### **Day View** (Excel Type)
+- Detailed spreadsheet-style view
+- Columns: Fixed time + column per horse
+- Rows: 30-minute time slots (09:00 - 18:30)
+- Click empty cell to quickly create class
+```
+
+From `~/workspace/source/README.md:257-261`
+
+### View Implementation
+
+```tsx
+{viewMode === "day" ? (
+  <Card className="overflow-hidden">
+    <CardHeader className="border-b bg-secondary/30 py-3">
+      <CardTitle className="text-base font-medium">
+        {format(currentDate, "EEEE d 'de' MMMM", { locale: es })} —
+        <span className="ml-2 text-muted-foreground">
+          {
+            filteredClases.filter(
+              (c) => c.dia === format(currentDate, "yyyy-MM-dd"),
+            ).length
+          }{" "}
+          clases
+        </span>
+      </CardTitle>
+    </CardHeader>
+    <CardContent className="p-0">
+      <DayView
+        selectedDate={currentDate}
+        clases={filteredClases}
+        caballos={caballos}
+        // ... props
+      />
+    </CardContent>
+  </Card>
+) : (
+  <Card className="overflow-hidden">
+    <CardContent className="p-0">
+      {viewMode === "month" ? (
+        <MonthView
+          currentDate={currentDate}
+          calendarDays={calendarDays}
+          clasesByDate={clasesByDate}
+          // ... props
+        />
+      ) : (
+        <WeekView
+          calendarDays={calendarDays}
+          clasesByDate={clasesByDate}
+          // ... props
+        />
+      )}
+    </CardContent>
+  </Card>
+)}
+```
+
+From `~/workspace/source/src/pages/Calendario.tsx:155-234`
+
+## List Views
+
+### Table View
+
+Traditional tabular display:
+
+```markdown
+### 2. View System (Table / Cards)
+
+All main sections allow switching between:
+- **Table View**: Traditional row and column format
+- **Cards View**: Visual cards with key information
+```
+
+From `~/workspace/source/README.md:419-424`
+
+### Cards View
+
+Visual card-based layout:
+
+```tsx
+<GenericCard
+  item={row}
+  // ... other props
+  onSendWhatsApp={function (item: unknown): void {
+    // WhatsApp functionality
+  }}
+/>
+```
+
+From `~/workspace/source/src/pages/Alumnos.tsx:709`
+
+## View Controls
+
+### Calendar View Switcher
+
+```tsx
+<CalendarControls
+  currentDate={currentDate}
+  viewMode={viewMode}
+  onNavigate={navigate}
+  onToday={goToToday}
+  onViewModeChange={setViewMode}
+/>
+```
+
+From `~/workspace/source/src/pages/Calendario.tsx:116-122`
+
+### Navigation Controls
+
+Standardized navigation across views:
+
+- Previous/Next buttons
+- Today button
+- View mode selector (Month/Week/Day)
+- Date range display
+
+## View-Specific Features
+
+### Day View Only Features
+
+```markdown
+showExport={viewMode === "day"}
+onExportExcel={handleExportExcel}
+showCancelDay={viewMode === "day"}
+```
+
+From `~/workspace/source/src/pages/Calendario.tsx:145-147`
+
+Features exclusive to day view:
+- Excel export
+- Cancel entire day
+- Detailed grid layout
+- Quick cell-click creation
+
+### Month View Features
+
+```markdown
+- Click on day to see detail or create class
+- Shows up to 3 classes per day
+- "+ more" indicator when exceeds 3
+```
+
+### Week View Features
+
+```markdown
+- Shows up to 10 classes per day
+- Full week navigation
+- Balanced overview and detail
+```
+
+## Data Table Views
+
+Paginated table view for entities:
+
+```tsx
+<DataTable
+  columns={columns}
+  data={paginatedData}
+  emptyMessage={
+    isSearchActive
+      ? "No se encontraron resultados para tu búsqueda"
+      : "No hay alumnos registrados"
+  }
+/>
+```
+
+From student list implementation.
+
+## Card Grid Views
+
+Grid layout for card-based display:
+
+```tsx
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  {paginatedData.map((row) => (
+    <GenericCard
+      key={row.id}
+      item={row}
+      // ... props
+    />
+  ))}
+</div>
+```
+
+## Responsive Behavior
+
+### Mobile Adaptations
+
+Views adapt to screen size:
+
+- Month view: Compressed on mobile
+- Week view: Horizontal scroll on mobile
+- Day view: Optimized grid spacing
+- Cards: Stack vertically on mobile
+- Tables: Horizontal scroll on mobile
+
+## View Persistence
+
+View preferences can be maintained across sessions:
+
+```tsx
+const [viewMode, setViewMode] = useState<"month" | "week" | "day">("day");
+```
+
+## Best Practices
+
+1. **Right View for Task**
+   - Month view: Planning ahead, overview
+   - Week view: Current week management
+   - Day view: Detailed scheduling, conflict resolution
+
+2. **Table vs Cards**
+   - Table: Detailed data comparison, sorting
+   - Cards: Visual browsing, quick actions
+
+3. **Performance**
+   - Limit displayed items in month/week views
+   - Paginate long lists
+   - Lazy load heavy components
+
+4. **Consistency**
+   - Maintain similar controls across views
+   - Use same color coding system
+   - Consistent action buttons
+
+5. **User Choice**
+   - Allow users to switch views easily
+   - Remember user preferences
+   - Provide clear view indicators
+
+## View-Specific Actions
+
+### Month View Actions
+- Click day to navigate to day view
+- Create class from day click
+- View class details in popover
+
+### Week View Actions
+- Scroll through weeks
+- Click classes for details
+- Quick status changes
+
+### Day View Actions
+- Click empty cells to create
+- Export to Excel
+- Cancel entire day
+- Detailed conflict visualization
+
+### Table View Actions
+- Sort by columns
+- Filter and search
+- Bulk actions (future)
+- Row selection
+
+### Card View Actions
+- Quick actions menu
+- Direct contact (WhatsApp/Email)
+- Edit/delete from card
+- Visual status indicators
+
+## View Transitions
+
+Smooth transitions between views:
+
+```tsx
+const handleDayClick = (date: Date) => {
+  navigate(date);
+  setViewMode("day");
+};
+```
+
+Automatically switch to appropriate view based on user action.

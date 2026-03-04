@@ -1,0 +1,253 @@
+---
+title: Automatic Scheduling
+description: Intelligent class scheduling with pre-filled data and quick creation
+---
+
+## Overview
+
+The system provides intelligent scheduling features that streamline class creation by automatically pre-filling information based on context and user selections.
+
+## Quick Class Creation
+
+### Calendar Cell Click
+
+Create classes quickly from the day view:
+
+```markdown
+### Option B: From Calendar (Day View)
+
+The procedure is similar with these differences:
+- **Day, Time, and Horse**: Already pre-selected when clicking a cell
+- Facilitates quick scheduling by visualizing availability
+```
+
+From `~/workspace/source/README.md:142-147`
+
+### Pre-filled Data from Context
+
+```tsx
+<ClaseForm
+  clase={claseToEdit ?? undefined}
+  alumnos={alumnos}
+  instructores={instructores}
+  caballos={caballos}
+  clases={filteredClases}
+  personasPrueba={personasPrueba}
+  currentDate={currentDate}
+  prefilledHora={prefilledHora}
+  prefilledCaballoId={prefilledCaballoId}
+  onSubmit={(data) => {
+    if (claseToEdit) {
+      updateMutation.mutate({ id: claseToEdit.id, data });
+    } else {
+      createMutation.mutate(data);
+    }
+  }}
+  isPending={createMutation.isPending || updateMutation.isPending}
+  onCancel={handleCloseDialog}
+/>
+```
+
+From `~/workspace/source/src/pages/Calendario.tsx:264-283`
+
+## Automatic Assignments
+
+### Default Horse Assignment
+
+When a student has an assigned horse, it's automatically selected:
+
+```markdown
+#### Participants:
+- **Student**: Select an active student
+  - If specialty is **MONTA**: automatically assigns placeholder student (ID 1)
+  - System automatically shows student's default horse if they have one
+- **Instructor**: Select an active instructor
+- **Horse**: Select available horse
+  - If student has own horse or reservation, it appears preselected
+  - Private horses can only be used by their owners
+```
+
+From `~/workspace/source/README.md:122-130`
+
+### Specialty-Based Assignments
+
+Automatic student assignment for specific specialties:
+
+```markdown
+- **Student**: Select an active student
+  - If specialty is **MONTA**: automatically assigns placeholder student (ID 1)
+```
+
+From `~/workspace/source/README.md:123-124`
+
+## Default Values
+
+### Class Defaults
+
+```markdown
+### 🔄 Default Values:
+
+- **Class duration**: 30 minutes
+- **New class status**: PROGRAMADA
+- **New student status**: Active
+- **New instructor status**: Active
+- **New horse status**: Available
+- **Phone prefix**: +549 (automatic for Argentina)
+```
+
+From `~/workspace/source/README.md:546-553`
+
+### Date and Time Defaults
+
+```markdown
+#### Time Information:
+- **Day**: Select from calendar (default: today)
+- **Start Time**: Select the time
+  - ⚠️ **Validation**: Class cannot end after **18:30**
+- **Duration**: 
+  - 30 minutes (default)
+  - 60 minutes
+```
+
+From `~/workspace/source/README.md:114-121`
+
+### Auto-Configuration
+
+```markdown
+### Automatic Configuration:
+- **Enrollment Date**: Current date automatically recorded
+- **Status**: Automatically assigned as active student
+```
+
+From `~/workspace/source/README.md:31-33`
+
+## Automatic State Management
+
+### Initial Class State
+
+```markdown
+#### Class Configuration:
+- **Specialty**: Select from:
+  - Equitation
+  - Training
+  - Equine Therapy
+  - Monta (automatically assigns placeholder student)
+- **Status**: Automatically assigned as **PROGRAMADA**
+- **Observations**: Optional field for additional notes
+```
+
+From `~/workspace/source/README.md:132-139`
+
+## Schedule Optimization
+
+### Time Slot System
+
+```markdown
+#### **Day View** (Excel Type)
+- Detailed spreadsheet-style view
+- Columns: Fixed time + column per horse
+- Rows: 30-minute time slots (09:00 - 18:30)
+- Click empty cell to quickly create class
+```
+
+From `~/workspace/source/README.md:257-261`
+
+### Class Duration Handling
+
+```markdown
+### Class Features:
+
+#### **30-minute classes**:
+- Occupy a single time slot
+- Example: Class at 10:00 occupies only 10:00 cell
+
+#### **60-minute classes**:
+- Occupy TWO consecutive time slots
+- Example: Class at 10:00 occupies 10:00 and 10:30 cells
+- Continuation cell is clickable (opens same popover)
+- Shows visual border to indicate continuity
+```
+
+From `~/workspace/source/README.md:263-274`
+
+## Week Copy Feature
+
+### Bulk Scheduling
+
+Copy entire week's schedule to another week:
+
+```markdown
+#### **1. Copy Classes**
+- Copy complete week schedule to another week
+- Select:
+  - Source day (any day from source week)
+  - Destination day (any day from destination week)
+  - Number of weeks to copy
+- System copies all classes from complete week
+```
+
+From `~/workspace/source/README.md:295-302`
+
+## Smart Validation
+
+### Automatic Conflict Detection
+
+System prevents scheduling conflicts:
+
+```markdown
+### 3. Schedule Conflict Validation
+
+**Verifies**:
+- Horse doesn't have another class at the same time
+- Instructor doesn't have another class at the same time
+- Shows visual indicators (⚠️) in cells with conflicts
+```
+
+From `~/workspace/source/README.md:214-219`
+
+### Time Limit Enforcement
+
+```markdown
+### 1. Schedule Limit Validation
+
+**Rule**: Classes cannot end after **18:30**
+
+**Example**:
+- ❌ 60-minute class at 18:00 (would end at 19:00)
+- ✅ 60-minute class at 17:30 (would end at 18:30)
+- ✅ 30-minute class at 18:00 (would end at 18:30)
+```
+
+From `~/workspace/source/README.md:193-201`
+
+## Best Practices
+
+1. **Use Day View** - Leverage day view for quick visual scheduling
+2. **Click Cells** - Click empty cells to create classes with pre-filled time/horse
+3. **Verify Defaults** - Always verify auto-assigned horses match student needs
+4. **Check Conflicts** - Review conflict indicators before confirming
+5. **Batch Scheduling** - Use week copy for recurring schedules
+6. **Standard Duration** - Use 30-minute default for most classes
+7. **Time Limits** - Be aware of 18:30 end time restriction
+8. **Visual Feedback** - Watch for automatic assignments and pre-filled fields
+
+## Workflow Example
+
+### Typical Quick Scheduling Flow
+
+1. Navigate to Calendar → Day View
+2. Select desired date
+3. Click on empty cell (time + horse)
+4. System pre-fills:
+   - Date
+   - Time
+   - Horse
+   - Duration (30 min default)
+5. Select student
+6. Student's assigned horse auto-selected (if applicable)
+7. Select instructor
+8. Status defaults to PROGRAMADA
+9. Verify and save
+10. Class immediately appears in calendar
+
+This workflow reduces class creation from many clicks to just a few selections.

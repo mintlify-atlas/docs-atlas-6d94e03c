@@ -1,0 +1,319 @@
+---
+title: WhatsApp Integration
+description: Direct WhatsApp communication with students and instructors
+---
+
+## Overview
+
+The system includes WhatsApp integration for quick communication with students and instructors, featuring automatic number formatting and pre-filled message templates.
+
+## Student Communication
+
+### WhatsApp Link Generation
+
+Automatic WhatsApp link creation with formatted phone numbers:
+
+```tsx
+`https://wa.me/${row.codigoArea}${row.telefono}?text=Hola ${row.nombre}, te contactamos desde la Escuela para avisarte que... `
+```
+
+From `~/workspace/source/src/pages/Alumnos.tsx:444`
+
+### Generic Card Integration
+
+WhatsApp action in student cards:
+
+```tsx
+onSendWhatsApp={function (item: unknown): void {
+  // WhatsApp functionality
+}}
+```
+
+From `~/workspace/source/src/pages/Alumnos.tsx:709`
+
+### Card Component Support
+
+Generic card component with WhatsApp action:
+
+```tsx
+interface GenericCardProps<T> {
+  // ... other props
+  onSendWhatsApp: (item: T) => void;
+}
+
+const GenericCard = <T,>({
+  // ... other props
+  onSendWhatsApp,
+}: GenericCardProps<T>) => {
+  return (
+    // ... card content
+    <DropdownMenuItem
+      onClick={() => {
+        onSendWhatsApp(item);
+      }}
+    >
+      Enviar WhatsApp
+    </DropdownMenuItem>
+  );
+};
+```
+
+From `~/workspace/source/src/components/cards/GenericCard.tsx:27,39,71-75`
+
+## Instructor Communication
+
+### Instructor Detail Page
+
+WhatsApp contact from instructor profile:
+
+```tsx
+const handleContactWhatsApp = () => {
+  window.open(
+    `https://wa.me/${instructor.telefono}?text=Hola ${instructor.nombre}, te contactamos desde la Escuela para avisarte que... `,
+    "_blank",
+  );
+};
+```
+
+From `~/workspace/source/src/pages/InstructorDetalle.tsx:233-238`
+
+### Contact Button
+
+```tsx
+<Button variant="outline" onClick={handleContactWhatsApp}>
+  Enviar WhatsApp
+</Button>
+```
+
+From `~/workspace/source/src/pages/InstructorDetalle.tsx:267`
+
+## Student Detail Page
+
+### Quick Contact Option
+
+```tsx
+const handleContactWhatsApp = () => {
+  window.open(
+    `https://wa.me/${alumno.telefono}?text=Hola ${alumno.nombre}, te contactamos desde la Escuela para avisarte que... `,
+    "_blank",
+  );
+};
+```
+
+From `~/workspace/source/src/pages/AlumnoDetalle.tsx:212-217`
+
+### Action Button
+
+```tsx
+<Button variant="outline" onClick={handleContactWhatsApp}>
+  Enviar WhatsApp
+</Button>
+```
+
+From `~/workspace/source/src/pages/AlumnoDetalle.tsx:245`
+
+## Phone Number Format
+
+### Automatic Prefix
+
+From the README documentation:
+
+```markdown
+- **Phone**: Without the 0 or 15 (e.g., 221234567)
+  - ⚠️ **IMPORTANT**: System automatically adds `+549` prefix for Argentine numbers
+```
+
+From `~/workspace/source/README.md:26-28`
+
+### Standard Format
+
+```markdown
+- **Phones**: +549XXXXXXXXX (with automatic Argentine prefix)
+```
+
+From `~/workspace/source/README.md:570`
+
+## Message Templates
+
+### Pre-filled Messages
+
+Default message template structure:
+
+```
+Hola {nombre}, te contactamos desde la Escuela para avisarte que... 
+```
+
+This template:
+- Includes student/instructor name
+- Identifies sender as the school
+- Leaves space for custom message
+- Can be edited before sending
+
+## Help System Documentation
+
+### User Guidance
+
+From the help system:
+
+```tsx
+'Selecciona "Enviar WhatsApp" o "Enviar correo" según prefieras.',
+```
+
+From `~/workspace/source/src/components/HelpSystem.tsx:200`
+
+### Usage Instructions
+
+```tsx
+"Para WhatsApp, se abre un mensaje pre-cargado que puedes personalizar antes de enviar."
+```
+
+From `~/workspace/source/src/components/HelpSystem.tsx:205`
+
+## Onboarding Tour
+
+### Feature Introduction
+
+```tsx
+'Contacto directo (WhatsApp/Email)',
+```
+
+From `~/workspace/source/src/components/OnboardingTour.tsx:63`
+
+The onboarding system introduces users to the WhatsApp communication feature.
+
+## Use Cases
+
+### Class Reminders
+
+Send reminders about upcoming classes:
+
+```
+Hola Maria, te contactamos desde la Escuela para avisarte que 
+tienes clase programada mañana a las 10:00 AM con el instructor Juan.
+```
+
+### Cancellation Notifications
+
+Notify students about class cancellations:
+
+```
+Hola Pedro, te contactamos desde la Escuela para avisarte que 
+la clase de hoy ha sido cancelada debido a condiciones climáticas.
+```
+
+### Schedule Changes
+
+Inform about schedule modifications:
+
+```
+Hola Laura, te contactamos desde la Escuela para avisarte que 
+tu clase del viernes se ha movido de 14:00 a 15:00.
+```
+
+### Payment Reminders
+
+Send payment notifications:
+
+```
+Hola Carlos, te contactamos desde la Escuela para avisarte que 
+el pago mensual vence en 3 días.
+```
+
+### Instructor Coordination
+
+Communicate with instructors:
+
+```
+Hola Ana, te contactamos desde la Escuela para avisarte que 
+se han agregado 2 clases nuevas a tu agenda de la próxima semana.
+```
+
+## WhatsApp Web Integration
+
+### Link Format
+
+The system uses the WhatsApp API link format:
+
+```
+https://wa.me/{phone}?text={message}
+```
+
+Where:
+- `{phone}` = Country code + area code + number (e.g., +5492211234567)
+- `{message}` = URL-encoded message text
+
+### Behavior
+
+1. User clicks "Enviar WhatsApp" button
+2. New browser tab/window opens
+3. WhatsApp Web or mobile app launches
+4. Pre-filled message appears in chat
+5. User can edit message before sending
+6. User clicks send in WhatsApp
+
+## Email Alternative
+
+The system also supports email communication:
+
+```markdown
+- Contactar (for students and instructors)
+  - WhatsApp (with pre-loaded message)
+  - Email
+```
+
+From `~/workspace/source/README.md:439-442`
+
+## Access Points
+
+### Multiple Entry Points
+
+WhatsApp communication available from:
+
+1. **Student List** - Dropdown menu on each student row
+2. **Student Cards** - Action menu in card view
+3. **Student Detail Page** - Contact button
+4. **Instructor Detail Page** - Contact button
+5. **Quick Actions Menu** - Context menu (⋮)
+
+## Best Practices
+
+1. **Personalize Messages** - Edit the pre-filled template before sending
+2. **Professional Tone** - Maintain school's professional image
+3. **Timely Communication** - Send messages during appropriate hours
+4. **Clear Information** - Include all necessary details (date, time, location)
+5. **Respect Privacy** - Only use WhatsApp for school-related communication
+6. **Confirm Receipt** - For important messages, request confirmation
+7. **Batch Communication** - For group announcements, consider WhatsApp groups
+8. **Record Keeping** - Keep records of important communications
+
+## Technical Implementation
+
+### Phone Number Storage
+
+Phone numbers stored with:
+- Country code (automatically added: +549)
+- Area code
+- Local number
+
+### Link Opening
+
+```tsx
+window.open(
+  `https://wa.me/${telefono}?text=${mensaje}`,
+  "_blank"
+);
+```
+
+Opens in new tab/window to preserve user's current work.
+
+## Future Enhancements
+
+Potential improvements:
+
+1. **Message Templates Library** - Pre-defined messages for common scenarios
+2. **Bulk Messaging** - Send to multiple recipients
+3. **Message History** - Track sent messages
+4. **Automated Reminders** - Scheduled automatic messages
+5. **WhatsApp Business API** - Full integration with WhatsApp Business
+6. **Read Receipts** - Track message delivery and reading
+7. **Rich Media** - Send images, documents, location

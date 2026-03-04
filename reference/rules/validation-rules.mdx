@@ -1,0 +1,396 @@
+---
+title: Validation Rules
+description: System-wide validation rules and constraints
+---
+
+## Overview
+
+The system implements comprehensive validation rules to ensure data integrity and enforce business logic. These validations occur both on the client-side (real-time) and server-side (API).
+
+## DNI Validation
+
+### Duplicate DNI Detection
+
+**Applies to**: Students (Alumnos) and Instructors
+
+**Rule**: DNI must be unique across all students and across all instructors (separate namespaces).
+
+**Implementation**:
+- Real-time validation using `useValidarDniDuplicado` hook
+- Triggers automatically when 9+ digits are entered
+- Shows error message if duplicate is found
+- Prevents form submission until resolved
+
+**Validation Logic** (`useValidarDniDuplicado.ts`):
+```typescript
+// Validates DNI uniqueness
+if (!dni || dni.length < 9) {
+  return { duplicado: false, mensaje: "" };
+}
+
+const api = entidad === "alumnos" ? alumnosApi : instructoresApi;
+const resultados = await api.buscar({ dni });
+
+// Check if any result matches (excluding current entity during edit)
+const duplicado = resultados.some((r) => r.id !== idActual);
+
+return {
+  duplicado,
+  mensaje: duplicado
+    ? `Ya existe ${entidad === "alumnos" ? "un alumno" : "un instructor"} con DNI ${dni}`
+    : ""
+};
+```
+
+**Error Messages**:
+- Student: "Ya existe un alumno con DNI {dni}"
+- Instructor: "Ya existe un instructor con DNI {dni}"
+
+**Requirements**:
+- Minimum 9 digits to trigger validation
+- Only numbers, no dots or dashes
+- Validation excludes current record when editing
+
+---
+
+## Time Validation
+
+### End Time Constraint
+
+**Rule**: Classes cannot end after 18:30
+
+**Formula**: `startTime + duration <= 18:30`
+
+**Examples**:
+
+✅ **Valid**:
+- 30 min class at 18:00 → ends at 18:30 ✅
+- 60 min class at 17:30 → ends at 18:30 ✅
+- 30 min class at 17:00 → ends at 17:30 ✅
+
+❌ **Invalid**:
+- 60 min class at 18:00 → ends at 19:00 ❌
+- 30 min class at 18:15 → ends at 18:45 ❌
+- 60 min class at 18:30 → ends at 19:30 ❌
+
+**Error Message**:
+```
+"La clase no puede terminar después de las 18:30. 
+Con duración de {duracion} minutos a las {hora} terminaría a las {endTime}."
+```
+
+**Implementation**:
+```typescript
+const [hours, minutes] = hora.split(':').map(Number);
+const startMinutes = hours * 60 + minutes;
+const endMinutes = startMinutes + duracion;
+const maxEndMinutes = 18 * 60 + 30; // 18:30
+
+if (endMinutes > maxEndMinutes) {
+  throw new Error("La clase no puede terminar después de las 18:30...");
+}
+```
+
+**Business Hours**:
+- Start: 09:00
+- End: 18:30 (last class must finish by this time)
+- Time slots: 30-minute increments
+
+---
+
+## Phone Number Validation
+
+### Automatic Prefix Addition
+
+**Rule**: Phone numbers are automatically prefixed with `+549` for Argentine numbers
+
+**Format Requirements**:
+- **Input**: Enter without leading 0 or 15
+- **Area Code**: Separate field (e.g., "221")
+- **Number**: Local number (e.g., "1234567")
+- **Output**: `+549{codigoArea}{telefono}`
+
+**Examples**:
+
+| Area Code | Phone | Stored As |
+|-----------|-------|----------|
+| 221 | 1234567 | +5492211234567 |
+| 11 | 98765432 | +5491198765432 |
+| 351 | 5551234 | +5493515551234 |
+
+**Validation**:
+- Area code: Required, numeric
+- Phone: Required, numeric
+- Combined length: Validated by backend
+
+**Error Messages**:
+- Missing area code: "El código de área es obligatorio"
+- Missing phone: "El teléfono es obligatorio"
+- Invalid format: "Formato de teléfono inválido"
+
+---
+
+## Class Validation
+
+### Trial Class Rules
+
+**Rule 1**: Student cannot have trial class if they already have classes (programmed/completed) in that specialty
+
+**Rule 2**: Student cannot repeat trial class for the same specialty
+
+**Rule 3**: Trial classes do not count toward monthly quota
+
+**Rule 4**: Only inactive students or new people can take trial classes
+
+**Validation Logic**:
+```typescript
+// Check if student has existing classes in specialty
+const existingClasses = await clasesApi.buscar({
+  alumnoId: studentId,
+  especialidad: specialty
+});
+
+const hasClasses = existingClasses.some(c => 
+  ["PROGRAMADA", "COMPLETADA", "INICIADA"].includes(c.estado)
+);
+
+if (hasClasses) {
+  throw new Error(
+    "El alumno no puede tener clase de prueba si ya tiene clases de esta especialidad"
+  );
+}
+
+// Check if already had trial class
+const hadTrialClass = existingClasses.some(c => c.esPrueba === true);
+
+if (hadTrialClass) {
+  throw new Error(
+    "El alumno ya tuvo una clase de prueba de esta especialidad"
+  );
+}
+
+// Check if student is active
+if (student.activo === true) {
+  throw new Error(
+    "Solo los alumnos inactivos pueden tomar clases de prueba"
+  );
+}
+```
+
+**Trial Class Types**:
+
+1. **New Person** (not in system):
+   - Provide first name and last name
+   - Creates `PersonaPrueba` record
+   - `alumnoId` is `null`
+   - `personaPruebaId` is set
+
+2. **Existing Inactive Student**:
+   - Select from student list
+   - Must be inactive (`activo: false`)
+   - Must not have classes in that specialty
+   - Must not have had trial class in that specialty
+
+**Visual Indicators**:
+- 🎓 Emoji in calendar
+- Orange border on class cell
+- "Prueba" badge in details
+- Alert when editing trial class
+
+---
+
+## Edit Restrictions
+
+### Non-Editable States
+
+**Rule**: Classes cannot be edited once they move beyond PROGRAMADA state
+
+**Non-editable States**:
+- `INICIADA` - Class in progress
+- `COMPLETADA` - Class finished
+- `CANCELADA` - Class cancelled
+- `ACA` - Absence with notice
+- `ASA` - Absence without notice
+
+**Editable State**:
+- `PROGRAMADA` - Scheduled, pending ✅
+
+**UI Behavior**:
+```typescript
+const canEdit = clase.estado === "PROGRAMADA";
+
+// Disable edit/delete buttons
+<Button disabled={!canEdit}>
+  {canEdit ? "Editar" : "No se puede editar una clase finalizada"}
+</Button>
+```
+
+**Reason**: Finalized classes are historical records used for:
+- Attendance tracking
+- Payment calculations
+- Statistical reports
+- Student progress tracking
+
+**Error Message**:
+```
+"No se puede editar una clase finalizada. 
+Las clases con estado INICIADA, COMPLETADA o CANCELADA son registros históricos."
+```
+
+---
+
+## Board/Horse Validation
+
+### TipoPension and CuotaPension Rules
+
+**Rule 1**: `SIN_CABALLO` must have `cuotaPension: null`
+
+```typescript
+if (tipoPension === "SIN_CABALLO" && cuotaPension !== null) {
+  throw new Error(
+    "Los alumnos sin caballo asignado no deben tener cuota de pensión"
+  );
+}
+```
+
+**Rule 2**: `RESERVA_ESCUELA` and `CABALLO_PROPIO` must have `cuotaPension` set
+
+```typescript
+if ((tipoPension === "RESERVA_ESCUELA" || tipoPension === "CABALLO_PROPIO") 
+    && !cuotaPension) {
+  throw new Error(
+    "Debe seleccionar una cuota de pensión"
+  );
+}
+```
+
+**Rule 3**: `RESERVA_ESCUELA` must use school horse (`ESCUELA`)
+
+```typescript
+if (tipoPension === "RESERVA_ESCUELA") {
+  const caballo = await caballosApi.obtener(caballoPropio);
+  if (caballo.tipo !== "ESCUELA") {
+    throw new Error(
+      "Solo puede reservar caballos de tipo ESCUELA"
+    );
+  }
+}
+```
+
+**Rule 4**: `CABALLO_PROPIO` must use private horse (`PRIVADO`)
+
+```typescript
+if (tipoPension === "CABALLO_PROPIO") {
+  const caballo = await caballosApi.obtener(caballoPropio);
+  if (caballo.tipo !== "PRIVADO") {
+    throw new Error(
+      "Solo puede usar caballos de tipo PRIVADO como caballo propio"
+    );
+  }
+}
+```
+
+**Rule 5**: Private horses can only be used by their owner
+
+```typescript
+if (caballo.tipo === "PRIVADO") {
+  const student = await alumnosApi.obtener(alumnoId);
+  if (student.caballoPropio !== caballo.id) {
+    throw new Error(
+      "Este caballo privado solo puede ser usado por su propietario"
+    );
+  }
+}
+```
+
+---
+
+## Remaining Classes Validation
+
+### Quota Monitoring
+
+**Implementation**: `useClasesRestantes` hook
+
+**Calculation**:
+```typescript
+// Count completed, programmed, and started classes in current month
+const clasesTomadas = clasesDelMes.filter((c) =>
+  ["COMPLETADA", "PROGRAMADA", "INICIADA"].includes(c.estado)
+).length;
+
+const clasesContratadas = alumno.cantidadClases;
+const clasesRestantes = clasesContratadas - clasesTomadas;
+```
+
+**States**:
+- `estaAgotado`: `clasesRestantes <= 0`
+- `cercaDelLimite`: `clasesRestantes <= 2 && clasesRestantes > 0`
+- `porcentajeUsado`: `(clasesTomadas / clasesContratadas) * 100`
+
+**UI Indicators**:
+```typescript
+if (estaAgotado) {
+  // Show warning: "El alumno ha agotado sus clases del mes"
+  // Allow creation with confirmation
+}
+
+if (cercaDelLimite) {
+  // Show info: "El alumno tiene solo {clasesRestantes} clases restantes"
+}
+```
+
+**Behavior**:
+- System allows creating classes even when quota is exhausted
+- Shows warnings but doesn't block
+- Requires user confirmation when over quota
+- Trial classes don't count toward quota
+
+---
+
+## Field-Level Validations
+
+### Required Fields
+
+**Student (Alumno)**:
+- ✅ DNI (unique, 9+ digits)
+- ✅ Nombre
+- ✅ Apellido
+- ✅ Fecha de Nacimiento
+- ✅ Código de Área
+- ✅ Teléfono
+- ✅ Cantidad de Clases (4, 8, 12, or 16)
+- ✅ Tipo de Pensión
+- ⚠️ Email (optional but recommended)
+
+**Instructor**:
+- ✅ DNI (unique, 9+ digits)
+- ✅ Nombre
+- ✅ Apellido
+- ✅ Fecha de Nacimiento
+- ✅ Código de Área
+- ✅ Teléfono
+- ✅ Color
+- ⚠️ Email (optional but recommended)
+
+**Horse (Caballo)**:
+- ✅ Nombre
+- ✅ Tipo (ESCUELA or PRIVADO)
+
+**Class (Clase)**:
+- ✅ Especialidad
+- ✅ Día
+- ✅ Hora
+- ✅ Duración (30 or 60)
+- ✅ Instructor ID
+- ✅ Caballo ID
+- ⚠️ Alumno ID (or persona prueba for trial classes)
+- ⚠️ Observaciones (optional)
+
+---
+
+## Related
+
+- [Scheduling Rules](/reference/rules/scheduling-rules)
+- [Business Logic](/reference/rules/business-logic)
+- [Class States](/reference/enums/class-states)
+- [Board Types](/reference/enums/board-types)

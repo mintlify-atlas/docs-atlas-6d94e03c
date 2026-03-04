@@ -1,0 +1,413 @@
+---
+title: Trial Classes
+description: Creating and managing trial classes for prospective students
+---
+
+## Overview
+
+Trial classes (clases de prueba) allow prospective students to experience the equestrian school before enrolling formally. The system supports two types of trial classes:
+
+1. **New Person**: Someone who has never been a student
+2. **Existing Inactive Student**: A registered but inactive student trying a new specialty
+
+## What is a Trial Class?
+
+From the README:
+> Una clase de prueba permite que una persona **sin cuenta de alumno activo** pueda tomar una clase para evaluar la escuela antes de inscribirse formalmente.
+
+See: `~/workspace/source/README.md:153-154`
+
+<Info>
+  Trial classes are identified with the 🎓 emoji in the calendar and have special visual indicators.
+</Info>
+
+## Trial Class Types
+
+### Type 1: New Person
+
+<Card title="Persona Nueva" icon="user-plus">
+  For someone who has never been enrolled at the school
+</Card>
+
+#### Process
+
+1. Mark the "Es clase de prueba" checkbox
+2. Select "Persona nueva" option
+3. Enter first name and last name
+4. Complete other class details (instructor, horse, time)
+5. Submit
+
+#### System Behavior
+
+```tsx ClaseForm.tsx
+if (esPruebaChecked && tipoPrueba === "persona_nueva") {
+  // Clase de prueba - persona nueva
+  if (!nombrePrueba.trim() || !apellidoPrueba.trim()) {
+    toast.error("Ingresá nombre y apellido de la persona de prueba");
+    return;
+  }
+
+  try {
+    const personaPrueba = await personasPruebaApi.crear({
+      nombre: nombrePrueba.trim(),
+      apellido: apellidoPrueba.trim(),
+    });
+    personaPruebaId = personaPrueba.id;
+    alumnoIdFinal = null;
+  } catch {
+    toast.error("Error al registrar la persona de prueba");
+    return;
+  }
+}
+```
+
+See: `~/workspace/source/src/components/forms/ClaseForm.tsx:168-186`
+
+<Note>
+  The person is registered as "Persona de Prueba" in the system, not as a full student account.
+</Note>
+
+### Type 2: Existing Inactive Student
+
+<Card title="Alumno Existente Inactivo" icon="user-clock">
+  For a registered student who wants to try a new specialty
+</Card>
+
+#### Requirements
+
+<Warning>
+  **Prerequisites:**
+  - Student must be **INACTIVE**
+  - Student must **NOT** have any classes (programadas or completadas) in that specialty
+</Warning>
+
+#### Process
+
+1. Mark the "Es clase de prueba" checkbox
+2. Select "Alumno existente" option
+3. Choose the inactive student from the dropdown
+4. System validates eligibility automatically
+5. Complete other class details
+6. Submit
+
+## Trial Class Form
+
+The trial class section appears in the form only during creation:
+
+```tsx ClaseForm.tsx
+{/* Clase de prueba (solo en creación y si NO es MONTA) */}
+{!clase && especialidad !== "MONTA" && (
+  <div className="space-y-3 rounded-md border p-3">
+    <div className="flex items-center gap-2">
+      <Checkbox
+        id="esPrueba"
+        checked={esPruebaChecked}
+        onCheckedChange={(checked) =>
+          setEsPruebaChecked(checked as boolean)
+        }
+      />
+      <Label htmlFor="esPrueba" className="font-normal cursor-pointer">
+        Es clase de prueba
+      </Label>
+    </div>
+
+    {esPruebaChecked && (
+      <RadioGroup
+        value={tipoPrueba}
+        onValueChange={(value) =>
+          setTipoPrueba(value as "alumno_existente" | "persona_nueva")
+        }
+      >
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem
+            value="alumno_existente"
+            id="alumno_existente"
+          />
+          <Label htmlFor="alumno_existente" className="font-normal">
+            Alumno existente
+          </Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="persona_nueva" id="persona_nueva" />
+          <Label htmlFor="persona_nueva" className="font-normal">
+            Persona nueva (registrar temporalmente)
+          </Label>
+        </div>
+      </RadioGroup>
+    )}
+
+    {esPruebaChecked && tipoPrueba === "persona_nueva" && (
+      <div className="grid grid-cols-2 gap-2">
+        <Input
+          placeholder="Nombre"
+          value={nombrePrueba}
+          onChange={(e) => setNombrePrueba(e.target.value)}
+        />
+        <Input
+          placeholder="Apellido"
+          value={apellidoPrueba}
+          onChange={(e) => setApellidoPrueba(e.target.value)}
+        />
+      </div>
+    )}
+  </div>
+)}
+```
+
+See: `~/workspace/source/src/components/forms/ClaseForm.tsx:314-370`
+
+## Validation Rules
+
+The system enforces strict validation rules for trial classes:
+
+### Rule 1: No Existing Classes
+
+<Warning>
+  A student **cannot** have a trial class if they already have classes (scheduled or completed) in that specialty.
+</Warning>
+
+From the README:
+> ✅ **Regla 1**: Un alumno NO puede tener clase de prueba si ya tiene clases (programadas o completadas) de esa especialidad
+
+See: `~/workspace/source/README.md:175`
+
+### Rule 2: No Duplicate Trials
+
+<Warning>
+  A student **cannot** repeat a trial class for the same specialty.
+</Warning>
+
+From the README:
+> ✅ **Regla 2**: Un alumno NO puede repetir clase de prueba de la misma especialidad
+
+See: `~/workspace/source/README.md:177`
+
+### Rule 3: Doesn't Count Toward Quota
+
+<Info>
+  Trial classes **do not** count toward the student's monthly class quota.
+</Info>
+
+From the README:
+> ✅ **Regla 3**: Las clases de prueba NO cuentan para la cuota mensual del alumno
+
+See: `~/workspace/source/README.md:179`
+
+### Validation Implementation
+
+```tsx ClaseForm.tsx
+if (
+  !clase &&
+  esPruebaChecked &&
+  tipoPrueba === "alumno_existente" &&
+  alumno
+) {
+  const { esValido, mensaje } = validarClasePrueba(
+    clases,
+    alumno,
+    especialidad as Clase["especialidad"],
+    clase?.id,
+  );
+  if (!esValido) {
+    toast.error(mensaje);
+    return;
+  }
+}
+```
+
+See: `~/workspace/source/src/components/forms/ClaseForm.tsx:200-216`
+
+## Visual Indicators
+
+Trial classes have special visual identification throughout the system:
+
+<CardGroup cols={2}>
+  <Card title="Calendar" icon="calendar">
+    🎓 Emoji displayed in calendar cells
+  </Card>
+  <Card title="Border" icon="border-all">
+    Orange border highlighting the trial class
+  </Card>
+  <Card title="Badge" icon="tag">
+    "Prueba" badge in class details
+  </Card>
+  <Card title="Alert" icon="triangle-exclamation">
+    Informative alert when editing
+  </Card>
+</CardGroup>
+
+From the README:
+> Las clases de prueba se identifican con:
+> - 🎓 Emoji en el calendario
+> - Borde naranja en la celda
+> - Badge "Prueba" en los detalles
+> - Alerta informativa al editar
+
+See: `~/workspace/source/README.md:182-186`
+
+## Trial Class Workflow
+
+### For New Person
+
+<Steps>
+  <Step title="Contact">
+    Prospective student contacts the school expressing interest
+  </Step>
+  
+  <Step title="Schedule">
+    Administrator creates a trial class, marking it as "persona nueva"
+  </Step>
+  
+  <Step title="Input Details">
+    Enter first and last name of the prospective student
+  </Step>
+  
+  <Step title="Complete Class">
+    After the trial class, if interested, proceed with full enrollment
+  </Step>
+  
+  <Step title="Convert">
+    Create full student account with all required information
+  </Step>
+</Steps>
+
+### For Existing Inactive Student
+
+<Steps>
+  <Step title="Request">
+    Inactive student requests to try a new specialty (e.g., EQUINOTERAPIA)
+  </Step>
+  
+  <Step title="Verify">
+    Administrator verifies student has no classes in that specialty
+  </Step>
+  
+  <Step title="Schedule">
+    Create trial class selecting the inactive student
+  </Step>
+  
+  <Step title="Validate">
+    System automatically validates eligibility
+  </Step>
+  
+  <Step title="Re-activate">
+    If student likes it, reactivate their account with new specialty
+  </Step>
+</Steps>
+
+## Restrictions
+
+<AccordionGroup>
+  <Accordion title="MONTA Classes">
+    Trial classes are **not available** for MONTA specialty since MONTA is for instructors only.
+    
+    ```tsx
+    {!clase && especialidad !== "MONTA" && (
+      // Trial class form
+    )}
+    ```
+  </Accordion>
+  
+  <Accordion title="Editing Restriction">
+    Trial class checkbox only appears during **creation**, not when editing existing classes.
+    
+    ```tsx
+    {!clase && especialidad !== "MONTA" && (
+      // Only shows when clase is undefined (creation mode)
+    )}
+    ```
+  </Accordion>
+  
+  <Accordion title="Active Students">
+    Active students cannot use the trial class feature - they should use regular class scheduling.
+  </Accordion>
+</AccordionGroup>
+
+## Data Structure
+
+```tsx Interface
+export interface ClaseFormData {
+  // ... other fields
+  alumnoId: number | null;          // Null for trial classes with new person
+  personaPruebaId: number | null;   // Set for new person trials
+  esPrueba: boolean;                // Flag indicating trial class
+}
+```
+
+See: `~/workspace/source/src/components/forms/ClaseForm.tsx:34-47`
+
+## Common Use Cases
+
+### Scenario 1: New Student Trial
+
+**Situation**: Maria contacts the school wanting to try an EQUITACION class.
+
+**Solution**:
+1. Create new class for EQUITACION
+2. Check "Es clase de prueba"
+3. Select "Persona nueva"
+4. Enter: Nombre: "Maria", Apellido: "Garcia"
+5. Assign instructor and horse
+6. Schedule appropriate time
+7. Save
+
+**Result**: Maria appears as "Maria Garcia" with 🎓 emoji in calendar.
+
+### Scenario 2: Inactive Student Trying New Specialty
+
+**Situation**: Juan was an EQUITACION student but is now inactive. He wants to try EQUINOTERAPIA.
+
+**Solution**:
+1. Verify Juan has no EQUINOTERAPIA classes
+2. Create new class for EQUINOTERAPIA
+3. Check "Es clase de prueba"
+4. Select "Alumno existente"
+5. Choose Juan from dropdown
+6. System validates automatically
+7. Complete and save
+
+**Result**: If Juan likes it, reactivate his account.
+
+### Scenario 3: Invalid Trial Attempt
+
+**Situation**: Administrator tries to create trial EQUITACION class for Sofia who has 5 completed EQUITACION classes.
+
+**Solution**:
+1. System detects Sofia has existing EQUITACION classes
+2. Validation fails
+3. Error message displayed: Student already has classes in this specialty
+4. Administrator creates regular class instead
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Collect Information" icon="clipboard">
+    Get full contact details during trial to facilitate follow-up enrollment
+  </Card>
+  
+  <Card title="Follow Up" icon="phone">
+    Contact trial students within 24-48 hours to encourage enrollment
+  </Card>
+  
+  <Card title="Track Conversions" icon="chart-line">
+    Monitor how many trial classes convert to enrolled students
+  </Card>
+  
+  <Card title="Assign Best Horses" icon="horse-head">
+    Use calm, well-trained school horses for positive first impressions
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Creating Classes" icon="calendar-plus" href="/guides/classes/creating-classes">
+    Learn the basics of class creation
+  </Card>
+  <Card title="Validations" icon="shield-check" href="/guides/classes/validations">
+    Understand all validation rules
+  </Card>
+  <Card title="Class Types" icon="shapes" href="/guides/classes/class-types">
+    Explore different class specialties
+  </Card>
+</CardGroup>

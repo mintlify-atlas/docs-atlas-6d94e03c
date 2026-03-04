@@ -1,0 +1,186 @@
+---
+title: Income Tracking
+description: Track and analyze income from classes and student enrollment
+---
+
+## Overview
+
+The financial management system provides comprehensive income tracking capabilities through detailed reports and visualizations. Income is generated primarily from student enrollments and completed classes.
+
+## Income Sources
+
+### Student Enrollment Plans
+
+Students can enroll in different monthly plans:
+
+- **4 classes per month** - Entry-level plan
+- **8 classes per month** - Standard plan
+- **12 classes per month** - Frequent rider plan
+- **16 classes per month** - Intensive plan
+
+Each plan represents a recurring monthly income source.
+
+### Class Completion Revenue
+
+Revenue is tracked based on class completion status:
+
+```tsx
+const clasesCompletadas = clasesFiltradas.filter(
+  (c: Clase) => c.estado === "COMPLETADA",
+).length;
+```
+
+## Financial Reports
+
+### Distribution by Plan
+
+View how students are distributed across different enrollment plans:
+
+```tsx
+const alumnosPorClases = useMemo(() => {
+  const grupos: Record<number, number> = { 4: 0, 8: 0, 12: 0, 16: 0 };
+  alumnos.forEach((a: Alumno) => {
+    if (grupos[a.cantidadClases] !== undefined) grupos[a.cantidadClases]++;
+  });
+  return [4, 8, 12, 16].map((n) => ({
+    plan: `${n} clases`,
+    cantidad: grupos[n],
+    porcentaje:
+      alumnos.length > 0
+        ? parseFloat(((grupos[n] / alumnos.length) * 100).toFixed(1))
+        : 0,
+  }));
+}, [alumnos]);
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:152-165`
+
+### Active vs Inactive Students
+
+Monitor revenue potential by tracking active student enrollment:
+
+```tsx
+const estadisticasGenerales = useMemo(() => {
+  const alumnosActivos = alumnos.filter((a: Alumno) => a.activo).length;
+  return {
+    alumnosActivos,
+    alumnosInactivos: alumnos.filter((a: Alumno) => !a.activo).length,
+    // ... other stats
+  };
+}, [alumnos]);
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:123-149`
+
+### Class Completion Rate
+
+Track revenue realization through completion rates:
+
+```tsx
+const tasaCompletado =
+  totalClases > 0
+    ? ((clasesCompletadas / totalClases) * 100).toFixed(1)
+    : "0";
+```
+
+## Period-Based Analysis
+
+### Date Range Filtering
+
+Analyze income for specific periods:
+
+```tsx
+const [dateRange, setDateRange] = useState({
+  inicio: format(startOfMonth(new Date()), "yyyy-MM-dd"),
+  fin: format(endOfMonth(new Date()), "yyyy-MM-dd"),
+});
+
+const clasesFiltradas = useMemo(
+  () =>
+    clases.filter(
+      (clase: Clase) =>
+        clase.dia >= dateRange.inicio && clase.dia <= dateRange.fin,
+    ),
+  [clases, dateRange],
+);
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:86-120`
+
+## Income Visualization
+
+### Bar Charts
+
+Visualize student distribution across plans:
+
+```tsx
+<BarChart
+  data={alumnosPorClases}
+  margin={{ top: 5, right: 10, left: -20, bottom: 5 }}
+>
+  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+  <XAxis dataKey="plan" tick={{ fontSize: 12 }} />
+  <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
+  <Tooltip content={<CustomTooltip />} />
+  <Bar
+    dataKey="cantidad"
+    name="Alumnos"
+    fill="hsl(var(--primary))"
+    radius={[4, 4, 0, 0]}
+  />
+</BarChart>
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:545-562`
+
+### Summary Cards
+
+Display key income metrics:
+
+```tsx
+<Card>
+  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <CardTitle className="text-sm font-medium">
+      Alumnos Activos
+    </CardTitle>
+    <User className="h-4 w-4 text-muted-foreground" />
+  </CardHeader>
+  <CardContent>
+    <div className="text-2xl font-bold">
+      {estadisticasGenerales.alumnosActivos}
+    </div>
+    <p className="text-xs text-muted-foreground">
+      {estadisticasGenerales.alumnosInactivos} inactivos
+    </p>
+  </CardContent>
+</Card>
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:454-469`
+
+## Export Reports
+
+### Excel Export
+
+Export income data for accounting:
+
+```tsx
+<Button
+  variant="outline"
+  size="sm"
+  onClick={() => exportarExcel(asistenciaPorAlumno, "Asistencia")}
+>
+  <Download className="mr-2 h-4 w-4" />
+  Exportar
+</Button>
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:799-808`
+
+## Best Practices
+
+1. **Regular Monitoring** - Review income reports monthly to identify trends
+2. **Period Comparison** - Compare different date ranges to analyze growth
+3. **Completion Tracking** - Monitor class completion rates to ensure revenue realization
+4. **Plan Distribution** - Balance student enrollment across different plans
+5. **Active Status** - Keep student records updated to reflect accurate revenue potential

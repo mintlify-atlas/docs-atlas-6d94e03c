@@ -1,0 +1,290 @@
+---
+title: Creating Classes
+description: Learn how to create and schedule equestrian classes in the system
+---
+
+## Overview
+
+Classes can be created from two locations in the system:
+1. **Classes Section** - Full manual configuration
+2. **Calendar (Day View)** - Quick creation with pre-filled data
+
+## Method 1: Creating from Classes Section
+
+Navigate to the Classes section and click "Nueva Clase" (New Class).
+
+### Required Information
+
+<ParamField path="especialidad" type="enum" required>
+  Type of class:
+  - `EQUITACION`: Regular riding lesson
+  - `ADIESTRAMIENTO`: Horse training
+  - `EQUINOTERAPIA`: Equine-assisted therapy
+  - `MONTA`: Free riding (automatically assigns placeholder student)
+</ParamField>
+
+<ParamField path="alumnoId" type="number" required>
+  Student ID (except for MONTA classes)
+</ParamField>
+
+<ParamField path="instructorId" type="number" required>
+  Instructor ID
+</ParamField>
+
+<ParamField path="caballoId" type="number" required>
+  Horse ID
+</ParamField>
+
+<ParamField path="dia" type="string" required>
+  Class date in format: YYYY-MM-DD
+</ParamField>
+
+<ParamField path="hora" type="string" required>
+  Start time in format: HH:mm (24-hour)
+</ParamField>
+
+<ParamField path="duracion" type="number" default="30">
+  Duration in minutes: 30 or 60
+</ParamField>
+
+<ParamField path="observaciones" type="string">
+  Optional notes about the class
+</ParamField>
+
+## Method 2: Creating from Calendar
+
+In Calendar Day View, click on an empty cell to create a class quickly.
+
+### Pre-filled Data
+
+When creating from the calendar:
+- **Day**: Automatically set from selected date
+- **Hour**: Automatically set from clicked time slot
+- **Horse**: Automatically set from clicked column
+
+```tsx ClaseForm.tsx
+useEffect(() => {
+  if (!clase) {
+    // Modo creación
+    if (currentDate) {
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+      const day = String(currentDate.getDate()).padStart(2, "0");
+      setDia(`${year}-${month}-${day}`);
+    }
+
+    // Prefilled desde el calendario (doble click en celda)
+    if (prefilledHora) {
+      setHora(prefilledHora);
+    }
+    if (prefilledCaballoId) {
+      setCaballoId(String(prefilledCaballoId));
+    }
+  }
+}, [clase, currentDate, prefilledCaballoId, prefilledHora]);
+```
+
+See: `~/workspace/source/src/components/forms/ClaseForm.tsx:121-137`
+
+<Info>
+  Creating from the calendar significantly speeds up the scheduling process by pre-filling time and horse information.
+</Info>
+
+## Specialty-Specific Behavior
+
+### MONTA Classes
+
+MONTA (free riding) classes have special handling:
+
+```tsx ClaseForm.tsx
+// Auto-seleccionar alumno según especialidad
+if (especialidad === "MONTA") {
+  alumnoIdFinal = null; // Clase de MONTA no tiene alumno
+}
+```
+
+See: `~/workspace/source/src/components/forms/ClaseForm.tsx:166-168`
+
+<Warning>
+  MONTA classes automatically assign a placeholder student (ID 1) and do not require manual student selection.
+</Warning>
+
+From the README:
+> Si la especialidad es **MONTA**: se asigna automáticamente el alumno comodín (ID 1)
+
+See: `~/workspace/source/README.md:124`
+
+### Student Selection by Specialty
+
+```tsx ClaseForm.tsx
+const alumnosValidos = alumnos.filter((a: Alumno) => {
+  // Si es MONTA, no mostrar alumnos (retorna array vacío)
+  if (especialidad === "MONTA") return false;
+  // Para otras especialidades, mostrar todos
+  return true;
+});
+```
+
+See: `~/workspace/source/src/components/forms/ClaseForm.tsx:98-103`
+
+## Automatic Horse Assignment
+
+When a student is selected, the system automatically pre-selects their default horse:
+
+```tsx ClaseForm.tsx
+useEffect(() => {
+  if (!clase && alumnoId) {
+    const alumno = alumnosValidos.find((a) => a.id === Number(alumnoId));
+    if (alumno?.caballoPropio) {
+      const id =
+        typeof alumno.caballoPropio === "number"
+          ? alumno.caballoPropio
+          : alumno.caballoPropio.id;
+      setCaballoId(String(id));
+    }
+  }
+}, [alumnoId, clase, alumnosValidos]);
+```
+
+See: `~/workspace/source/src/components/forms/ClaseForm.tsx:140-152`
+
+<CardGroup cols={2}>
+  <Card title="Private Horse" icon="horse">
+    Automatically selected if student has a private horse
+  </Card>
+  <Card title="Reserved School Horse" icon="bookmark">
+    Automatically selected if student has reserved a school horse
+  </Card>
+</CardGroup>
+
+## Class State
+
+All new classes are automatically created with the `PROGRAMADA` (scheduled) state:
+
+```tsx ClaseForm.tsx
+const [estado, setEstado] = useState<Clase["estado"]>("PROGRAMADA");
+```
+
+See: `~/workspace/source/src/components/forms/ClaseForm.tsx:86`
+
+<Info>
+  The initial state cannot be changed during creation. It can be updated after the class is created.
+</Info>
+
+## Duration Options
+
+Classes can be scheduled for two durations:
+
+<CodeGroup>
+```tsx 30-Minute Class
+<SelectItem value="30">30 min</SelectItem>
+```
+
+```tsx 60-Minute Class
+<SelectItem value="60">60 min</SelectItem>
+```
+</CodeGroup>
+
+See: `~/workspace/source/src/components/forms/ClaseForm.tsx:407-408`
+
+### Visual Representation
+
+From the README:
+> **Clases de 30 minutos**:
+> - Ocupan una sola franja horaria
+> - Ejemplo: Clase a las 10:00 ocupa solo la celda 10:00
+>
+> **Clases de 60 minutos**:
+> - Ocupan DOS franjas horarias consecutivas
+> - Ejemplo: Clase a las 10:00 ocupa celdas 10:00 y 10:30
+
+See: `~/workspace/source/README.md:265-272`
+
+## Form Example
+
+Complete form structure:
+
+```tsx ClaseForm.tsx
+<form onSubmit={handleSubmit} className="space-y-4">
+  {/* Especialidad */}
+  <Select value={especialidad} onValueChange={handleEspecialidadChange}>
+    {ESPECIALIDADES_OPTIONS.map((esp) => (
+      <SelectItem key={esp.value} value={esp.value}>
+        {esp.label}
+      </SelectItem>
+    ))}
+  </Select>
+
+  {/* Alumno (si NO es MONTA) */}
+  {especialidad !== "MONTA" && (
+    <Select value={alumnoId} onValueChange={setAlumnoId}>
+      {alumnos.map((a: Alumno) => (
+        <SelectItem key={a.id} value={String(a.id)}>
+          {a.nombre} {a.apellido}
+        </SelectItem>
+      ))}
+    </Select>
+  )}
+
+  {/* Día, Hora y Duración */}
+  <Input type="date" value={dia} onChange={(e) => setDia(e.target.value)} />
+  <Input type="time" value={hora} onChange={(e) => setHora(e.target.value)} />
+  <Select value={String(duracion)} onValueChange={(v) => setDuracion(Number(v))}>
+    <SelectItem value="30">30 min</SelectItem>
+    <SelectItem value="60">60 min</SelectItem>
+  </Select>
+
+  {/* Instructor y Caballo */}
+  <Select value={instructorId} onValueChange={setInstructorId}>
+    {instructores.map((i: Instructor) => ...)}
+  </Select>
+  <Select value={caballoId} onValueChange={setCaballoId}>
+    {caballos.map((c: Caballo) => ...)}
+  </Select>
+
+  <Button type="submit">Crear Clase</Button>
+</form>
+```
+
+See: `~/workspace/source/src/components/forms/ClaseForm.tsx:268-474`
+
+## Validation on Submit
+
+Before creating a class, the system validates:
+
+<Steps>
+  <Step title="Student Selection">
+    Ensures a student is selected (except for MONTA)
+  </Step>
+  
+  <Step title="Horse Selection">
+    Ensures a horse is selected or auto-assigned
+  </Step>
+  
+  <Step title="Time Limit">
+    Validates that the class doesn't end after 18:30
+  </Step>
+  
+  <Step title="Trial Class Rules">
+    If marked as trial class, validates eligibility
+  </Step>
+</Steps>
+
+See the [Validations](/guides/classes/validations) guide for detailed validation rules.
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Class Types" icon="shapes" href="/guides/classes/class-types">
+    Learn about different class specialties
+  </Card>
+  <Card title="Class States" icon="traffic-light" href="/guides/classes/class-states">
+    Understand class state transitions
+  </Card>
+  <Card title="Trial Classes" icon="graduation-cap" href="/guides/classes/trial-classes">
+    Create trial classes for prospective students
+  </Card>
+  <Card title="Validations" icon="shield-check" href="/guides/classes/validations">
+    Review validation rules and constraints
+  </Card>
+</CardGroup>

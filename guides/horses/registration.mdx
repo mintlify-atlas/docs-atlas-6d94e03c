@@ -1,0 +1,146 @@
+---
+title: Horse Registration
+description: Learn how to register and manage horses in the equestrian school system
+---
+
+## Overview
+
+The horse management system allows you to register and manage two types of horses:
+- **School Horses (ESCUELA)**: Owned by the school, available for all students
+- **Private Horses (PRIVADO)**: Owned by individual students
+
+## Registering a New Horse
+
+Horses are registered through the Horses section (Caballos). This is a prerequisite when:
+- A student has their own horse
+- A student wants to reserve a specific school horse
+- Adding a new horse to the school's inventory
+
+### Required Information
+
+When registering a horse, you need to provide the following:
+
+<ParamField path="nombre" type="string" required>
+  The horse's name
+</ParamField>
+
+<ParamField path="tipo" type="enum" required>
+  Type of horse:
+  - `ESCUELA`: School-owned horse, available for all students
+  - `PRIVADO`: Privately-owned horse, belongs to a specific student
+</ParamField>
+
+<ParamField path="disponible" type="boolean" default="true">
+  Availability status. Automatically set to available when created.
+</ParamField>
+
+## Code Example
+
+The horse registration form is implemented in `CaballoForm.tsx`:
+
+```tsx CaballoForm.tsx
+export interface CaballoFormData {
+  nombre: string;
+  tipo: "ESCUELA" | "PRIVADO";
+  disponible: boolean;
+}
+
+// Type selection
+<Select value={tipo} onValueChange={(v) => setTipo(v as typeof tipo)}>
+  <SelectTrigger>
+    <SelectValue />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="ESCUELA">Escuela</SelectItem>
+    <SelectItem value="PRIVADO">Privado</SelectItem>
+  </SelectContent>
+</Select>
+```
+
+See: `~/workspace/source/src/components/forms/CaballoForm.tsx:17-21`
+
+## Automatic Association
+
+Once a horse is registered, it can be automatically associated with a student:
+
+<CardGroup cols={2}>
+  <Card title="Private Horse" icon="horse">
+    Linked to the student as the owner
+  </Card>
+  <Card title="School Reservation" icon="bookmark">
+    Linked to the student as a reserved horse
+  </Card>
+</CardGroup>
+
+## Managing Horse Availability
+
+### Availability Toggle
+
+When editing an existing horse, you can toggle its availability:
+
+```tsx CaballoForm.tsx
+{caballo && (
+  <div className="flex items-center gap-3">
+    <Switch
+      id="disponible"
+      checked={disponible}
+      onCheckedChange={setDisponible}
+    />
+    <Label htmlFor="disponible">Está disponible</Label>
+  </div>
+)}
+```
+
+See: `~/workspace/source/src/components/forms/CaballoForm.tsx:90-99`
+
+<Warning>
+  Only available horses can be assigned to classes. Make sure to set unavailable horses that are injured, resting, or otherwise out of service.
+</Warning>
+
+## Horse Display
+
+Horses are displayed in both table and card views in the system:
+
+### Table View
+
+Columns displayed:
+- **Name**: Horse's name
+- **Type**: Badge indicating ESCUELA (School) or PRIVADO (Private)
+- **Availability**: Badge showing available/unavailable status
+- **Actions**: Edit and delete options
+
+### Card View
+
+Each horse card shows:
+- Horse name as title
+- Type (School/Private)
+- Availability status with color-coded badge
+
+See: `~/workspace/source/src/pages/Caballos.tsx:233-285`
+
+## Validation Rules
+
+<AccordionGroup>
+  <Accordion title="Name Validation">
+    The horse name is required and must not be empty.
+  </Accordion>
+  
+  <Accordion title="Type Selection">
+    Must select either ESCUELA or PRIVADO. Defaults to ESCUELA.
+  </Accordion>
+  
+  <Accordion title="Availability Default">
+    New horses are automatically marked as available (true).
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="School vs Private Horses" icon="scale-balanced" href="/guides/horses/school-vs-private">
+    Learn about the differences between school and private horses
+  </Card>
+  <Card title="Horse Availability" icon="calendar-check" href="/guides/horses/availability">
+    Understand how horse availability affects class scheduling
+  </Card>
+</CardGroup>

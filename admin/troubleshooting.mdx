@@ -1,0 +1,690 @@
+---
+title: 'Troubleshooting'
+description: 'Common issues and solutions for the Equestrian School Management System'
+icon: 'wrench'
+---
+
+## Overview
+
+This guide covers common issues you may encounter and their solutions. For issues not covered here, check the application logs or contact support.
+
+## Installation Issues
+
+### Port Already in Use
+
+**Problem:** Development server fails to start with "Port 5173 already in use" error.
+
+**Solution:**
+
+<Steps>
+  <Step title="Identify Process">
+    Find what's using the port:
+    ```bash
+    # Linux/Mac
+    lsof -i :5173
+    
+    # Windows
+    netstat -ano | findstr :5173
+    ```
+  </Step>
+  <Step title="Kill Process">
+    Stop the conflicting process or change the port in `vite.config.ts:10`:
+    ```typescript
+    server: {
+      host: "::",
+      port: 3000, // Use different port
+    }
+    ```
+  </Step>
+</Steps>
+
+### Module Not Found Errors
+
+**Problem:** Getting "Cannot find module" errors after installation.
+
+**Solutions:**
+
+<Tabs>
+  <Tab title="Clean Install">
+    Remove and reinstall dependencies:
+    
+    <CodeGroup>
+    ```bash npm
+    rm -rf node_modules package-lock.json
+    npm install
+    ```
+    
+    ```bash yarn
+    rm -rf node_modules yarn.lock
+    yarn install
+    ```
+    
+    ```bash pnpm
+    rm -rf node_modules pnpm-lock.yaml
+    pnpm install
+    ```
+    </CodeGroup>
+  </Tab>
+  
+  <Tab title="Clear Cache">
+    Clear package manager and Vite cache:
+    
+    ```bash
+    # Clear npm cache
+    npm cache clean --force
+    
+    # Clear Vite cache
+    rm -rf .vite
+    
+    # Reinstall
+    npm install
+    ```
+  </Tab>
+  
+  <Tab title="Check Node Version">
+    Ensure you're using Node.js 18 or higher:
+    
+    ```bash
+    node --version
+    # Should show v18.x.x or higher
+    ```
+    
+    If not, update Node.js:
+    - Use [nvm](https://github.com/nvm-sh/nvm) (recommended)
+    - Download from [nodejs.org](https://nodejs.org/)
+  </Tab>
+</Tabs>
+
+### TypeScript Errors
+
+**Problem:** TypeScript compilation errors during build.
+
+**Solutions:**
+
+<AccordionGroup>
+  <Accordion title="Check TypeScript Version">
+    Ensure TypeScript 5.8.3 or higher:
+    ```bash
+    npx tsc --version
+    ```
+    
+    If version is wrong:
+    ```bash
+    npm install -D typescript@5.8.3
+    ```
+  </Accordion>
+  
+  <Accordion title="Verify tsconfig.json">
+    Check that `tsconfig.json` includes correct paths:
+    ```json
+    {
+      "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+          "@/*": ["./src/*"]
+        }
+      }
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="IDE/Editor Issues">
+    Restart your IDE/editor:
+    - VS Code: Reload window (Ctrl+Shift+P → "Reload Window")
+    - Restart TypeScript server
+    - Clear editor cache
+  </Accordion>
+  
+  <Accordion title="Check for Type Errors">
+    Run TypeScript compiler check:
+    ```bash
+    npx tsc --noEmit
+    ```
+    This shows all type errors without building.
+  </Accordion>
+</AccordionGroup>
+
+## Authentication Issues
+
+### Unable to Login
+
+**Problem:** Login fails with "Invalid credentials" error.
+
+**Checklist:**
+
+<Check>Username and password are correct (case-sensitive)</Check>
+<Check>Backend API is running and accessible</Check>
+<Check>VITE_API_BASE_URL is configured correctly in `.env`</Check>
+<Check>Network connection is stable</Check>
+<Check>No CORS errors in browser console</Check>
+
+**Debug Steps:**
+
+<Steps>
+  <Step title="Check API Connection">
+    Open browser DevTools (F12) → Network tab
+    
+    Look for the login request:
+    - Status should be 200 (success)
+    - If 401: Wrong credentials
+    - If 404: Wrong API URL
+    - If 500: Backend error
+  </Step>
+  
+  <Step title="Verify Environment Variable">
+    Check that API URL is loaded:
+    ```javascript
+    console.log(import.meta.env.VITE_API_BASE_URL);
+    ```
+    
+    Should output your API URL, not `undefined`.
+  </Step>
+  
+  <Step title="Test API Directly">
+    Use curl to test authentication:
+    ```bash
+    curl -X POST https://your-api.com/api/v1/auth/login \
+      -H "Authorization: Basic $(echo -n 'username:password' | base64)" \
+      -H "Content-Type: application/json"
+    ```
+  </Step>
+</Steps>
+
+### Registration Failed
+
+**Problem:** Cannot register new user.
+
+**Common Causes:**
+
+<AccordionGroup>
+  <Accordion title="Email Not Whitelisted">
+    **Error:** "Este correo no está autorizado para registrarse"
+    
+    **Solution:**
+    - Contact system administrator to add email to whitelist
+    - Check backend whitelist configuration
+    - Verify email is spelled correctly
+  </Accordion>
+  
+  <Accordion title="Weak Password">
+    **Error:** "La contraseña debe tener al menos 8 caracteres"
+    
+    **Solution:**
+    - Use password with minimum 8 characters
+    - Include uppercase, lowercase, numbers, and symbols for stronger password
+    - Check password strength indicator
+  </Accordion>
+  
+  <Accordion title="Password Mismatch">
+    **Error:** "Las contraseñas no coinciden"
+    
+    **Solution:**
+    - Ensure "Password" and "Confirm Password" fields match exactly
+    - Check for extra spaces or hidden characters
+  </Accordion>
+  
+  <Accordion title="Username Already Exists">
+    **Error:** Username is already taken
+    
+    **Solution:**
+    - Choose a different username
+    - Contact admin if you believe this is an error
+  </Accordion>
+</AccordionGroup>
+
+### Session Expired
+
+**Problem:** Automatically logged out unexpectedly.
+
+**Causes:**
+
+- **Idle timeout:** 15 minutes of inactivity (`src/components/auth/IdleHandler.tsx:21`)
+- **Browser closed:** Session storage is cleared
+- **Manual logout:** User clicked logout
+
+**Solution:**
+- Simply log in again
+- Stay active to prevent timeout
+- Consider implementing "remember me" feature
+
+## API Connection Issues
+
+### CORS Errors
+
+**Problem:** Browser shows CORS policy errors in console.
+
+```
+Access to fetch at 'https://api.example.com' from origin 'http://localhost:5173' 
+has been blocked by CORS policy
+```
+
+**Solution:**
+
+Configure CORS on your backend:
+
+<Tabs>
+  <Tab title="Express.js">
+    ```javascript
+    const cors = require('cors');
+    
+    app.use(cors({
+      origin: 'http://localhost:5173',
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE'],
+      allowedHeaders: ['Authorization', 'Content-Type']
+    }));
+    ```
+  </Tab>
+  
+  <Tab title="Spring Boot">
+    ```java
+    @Configuration
+    public class CorsConfig {
+        @Bean
+        public WebMvcConfigurer corsConfigurer() {
+            return new WebMvcConfigurer() {
+                @Override
+                public void addCorsMappings(CorsRegistry registry) {
+                    registry.addMapping("/api/**")
+                        .allowedOrigins("http://localhost:5173")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE")
+                        .allowedHeaders("*")
+                        .allowCredentials(true);
+                }
+            };
+        }
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Nginx">
+    ```nginx
+    location /api/ {
+        add_header 'Access-Control-Allow-Origin' 'http://localhost:5173';
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE';
+        add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type';
+        add_header 'Access-Control-Allow-Credentials' 'true';
+        
+        proxy_pass http://backend:8080;
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Network Request Failed
+
+**Problem:** All API requests fail with network error.
+
+**Debug Checklist:**
+
+<Steps>
+  <Step title="Check Backend Status">
+    Verify backend server is running:
+    ```bash
+    curl https://your-api.com/api/v1/health
+    ```
+  </Step>
+  
+  <Step title="Verify API URL">
+    Check `.env` file:
+    ```bash
+    cat .env
+    # Should show: VITE_API_BASE_URL=https://your-api.com/api/v1
+    ```
+  </Step>
+  
+  <Step title="Test Connectivity">
+    Ping the server:
+    ```bash
+    ping your-api.com
+    ```
+  </Step>
+  
+  <Step title="Check Firewall">
+    Ensure firewall allows connections:
+    - Backend port is open
+    - No VPN blocking requests
+    - Corporate firewall configured
+  </Step>
+</Steps>
+
+## Build Issues
+
+### Build Fails
+
+**Problem:** Production build fails with errors.
+
+**Solutions:**
+
+<AccordionGroup>
+  <Accordion title="Out of Memory">
+    **Error:** JavaScript heap out of memory
+    
+    **Solution:**
+    Increase Node.js memory:
+    ```bash
+    # Linux/Mac
+    NODE_OPTIONS="--max-old-space-size=4096" npm run build
+    
+    # Windows
+    set NODE_OPTIONS=--max-old-space-size=4096 && npm run build
+    ```
+  </Accordion>
+  
+  <Accordion title="ESLint Errors">
+    **Error:** Build fails due to linting errors
+    
+    **Solution:**
+    1. Fix linting errors:
+       ```bash
+       npm run lint
+       ```
+    2. Or temporarily disable linting in build:
+       ```json package.json
+       "build": "vite build --mode production --no-lint"
+       ```
+  </Accordion>
+  
+  <Accordion title="Import Errors">
+    **Error:** Cannot resolve module imports
+    
+    **Solution:**
+    1. Check import paths use `@/` alias correctly
+    2. Verify files exist at import locations
+    3. Check file extensions (.tsx, .ts, .jsx, .js)
+    4. Ensure proper casing (case-sensitive)
+  </Accordion>
+</AccordionGroup>
+
+### Build Size Too Large
+
+**Problem:** Bundle size exceeds recommended limits.
+
+**Solutions:**
+
+<Steps>
+  <Step title="Analyze Bundle">
+    Use bundle analyzer:
+    ```bash
+    npm install -D rollup-plugin-visualizer
+    npm run build
+    ```
+    
+    Add to `vite.config.ts`:
+    ```typescript
+    import { visualizer } from 'rollup-plugin-visualizer';
+    
+    plugins: [
+      react(),
+      visualizer({ open: true })
+    ]
+    ```
+  </Step>
+  
+  <Step title="Code Splitting">
+    Use dynamic imports for large components:
+    ```typescript
+    const HeavyComponent = lazy(() => import('./HeavyComponent'));
+    ```
+  </Step>
+  
+  <Step title="Optimize Dependencies">
+    - Remove unused dependencies
+    - Use lighter alternatives
+    - Tree-shake properly
+  </Step>
+</Steps>
+
+## Runtime Issues
+
+### White Screen / App Won't Load
+
+**Problem:** Application shows blank screen.
+
+**Debug Steps:**
+
+<Steps>
+  <Step title="Check Browser Console">
+    Open DevTools (F12) → Console tab
+    
+    Look for:
+    - JavaScript errors
+    - Failed network requests
+    - Missing files (404 errors)
+  </Step>
+  
+  <Step title="Verify Build">
+    Check that `dist/` folder contains:
+    - index.html
+    - assets/ folder with JS and CSS files
+    
+    If missing, rebuild:
+    ```bash
+    npm run build
+    ```
+  </Step>
+  
+  <Step title="Check Base Path">
+    If deploying to subdirectory, configure base in `vite.config.ts`:
+    ```typescript
+    export default defineConfig({
+      base: '/subdirectory/',
+      // ...
+    })
+    ```
+  </Step>
+</Steps>
+
+### Performance Issues
+
+**Problem:** Application is slow or unresponsive.
+
+**Optimization Checklist:**
+
+<Check>Enable production build (not development)</Check>
+<Check>Minimize re-renders with React.memo</Check>
+<Check>Use virtualization for long lists</Check>
+<Check>Optimize images (compress, lazy load)</Check>
+<Check>Enable code splitting</Check>
+<Check>Cache API responses with TanStack Query</Check>
+
+**Profiling:**
+
+<CodeGroup>
+```javascript Chrome DevTools
+// Record performance profile
+// DevTools → Performance → Record
+// Perform slow action
+// Stop recording and analyze
+```
+
+```javascript React DevTools
+// Enable Profiler in React DevTools
+// Start profiling
+// Perform actions
+// Stop and analyze render times
+```
+</CodeGroup>
+
+## Data Issues
+
+### Data Not Updating
+
+**Problem:** Changes don't appear after saving.
+
+**Checklist:**
+
+<Steps>
+  <Step title="Check Network Request">
+    - Open DevTools → Network
+    - Verify request was sent
+    - Check response status (should be 200)
+    - Confirm response data
+  </Step>
+  
+  <Step title="Verify State Management">
+    - Check TanStack Query is invalidating cache
+    - Confirm mutations are configured correctly
+    - Look for stale data indicators
+  </Step>
+  
+  <Step title="Force Refresh">
+    - Try hard refresh (Ctrl+Shift+R)
+    - Clear browser cache
+    - Check backend database directly
+  </Step>
+</Steps>
+
+### Export Not Working
+
+**Problem:** Excel export fails or downloads empty file.
+
+**Solutions:**
+
+<AccordionGroup>
+  <Accordion title="Check File-Saver">
+    Verify file-saver is installed:
+    ```bash
+    npm list file-saver
+    ```
+    
+    If missing:
+    ```bash
+    npm install file-saver @types/file-saver
+    ```
+  </Accordion>
+  
+  <Accordion title="Browser Compatibility">
+    - Ensure browser supports Blob API
+    - Check pop-up blocker isn't preventing download
+    - Try different browser
+  </Accordion>
+  
+  <Accordion title="Data Availability">
+    - Verify there's data to export
+    - Check date range filter
+    - Confirm API returned data
+  </Accordion>
+</AccordionGroup>
+
+## Environment Issues
+
+### Environment Variables Not Loading
+
+**Problem:** `import.meta.env.VITE_API_BASE_URL` returns `undefined`.
+
+**Solutions:**
+
+<Steps>
+  <Step title="Check File Name">
+    File must be named exactly `.env` (with leading dot)
+  </Step>
+  
+  <Step title="Verify Variable Prefix">
+    All variables must start with `VITE_`:
+    ```bash
+    # ✅ Correct
+    VITE_API_BASE_URL=https://api.com
+    
+    # ❌ Wrong - won't be exposed to client
+    API_BASE_URL=https://api.com
+    ```
+  </Step>
+  
+  <Step title="Restart Dev Server">
+    Environment changes require server restart:
+    ```bash
+    # Stop server (Ctrl+C)
+    npm run dev
+    ```
+  </Step>
+  
+  <Step title="Check File Location">
+    `.env` must be in project root (same level as `package.json`)
+  </Step>
+</Steps>
+
+## Getting Help
+
+### Debugging Tools
+
+**Browser DevTools:**
+- **Console:** View errors and logs
+- **Network:** Monitor API requests
+- **Application:** Check storage (sessionStorage)
+- **Sources:** Debug JavaScript
+- **Performance:** Profile slow operations
+
+**React DevTools:**
+- Component inspection
+- Props and state viewing
+- Performance profiling
+- Hook debugging
+
+### Log Files
+
+Check logs for errors:
+
+**Development:**
+- Browser console
+- Terminal running `npm run dev`
+
+**Production:**
+- Server logs
+- Error monitoring service (Sentry, etc.)
+- Browser console (if accessible)
+
+### Common Error Messages
+
+<AccordionGroup>
+  <Accordion title="Failed to fetch">
+    **Cause:** Network request failed
+    
+    **Check:**
+    - Backend is running
+    - API URL is correct
+    - CORS is configured
+    - Network connectivity
+  </Accordion>
+  
+  <Accordion title="Cannot read property of undefined">
+    **Cause:** Accessing property on undefined/null object
+    
+    **Check:**
+    - Optional chaining: `user?.name`
+    - Null checks before access
+    - API response structure
+    - Loading states
+  </Accordion>
+  
+  <Accordion title="Unexpected token">
+    **Cause:** Syntax error in JavaScript/JSON
+    
+    **Check:**
+    - Missing/extra commas
+    - Unclosed brackets/braces
+    - Invalid JSON in API response
+    - File encoding (should be UTF-8)
+  </Accordion>
+</AccordionGroup>
+
+## Support Resources
+
+<CardGroup cols={2}>
+  <Card title="Installation Guide" icon="download" href="/admin/installation">
+    Review installation steps
+  </Card>
+  <Card title="Configuration" icon="gear" href="/admin/configuration">
+    Check configuration settings
+  </Card>
+  <Card title="Environment Setup" icon="code" href="/admin/environment-setup">
+    Verify environment variables
+  </Card>
+  <Card title="User Management" icon="users" href="/admin/user-management">
+    Authentication troubleshooting
+  </Card>
+</CardGroup>
+
+<Note>
+  If your issue isn't covered here, check the browser console for specific error messages and review the relevant documentation sections.
+</Note>

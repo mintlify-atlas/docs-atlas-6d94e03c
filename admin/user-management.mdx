@@ -1,0 +1,502 @@
+---
+title: 'User Management'
+description: 'Manage users, authentication, and access control'
+icon: 'users'
+---
+
+## Overview
+
+The Equestrian School Management System uses a role-based authentication system with email whitelisting for user registration.
+
+## Authentication System
+
+### Authentication Method
+
+The system uses **Basic Authentication** with the following flow:
+
+1. User enters username and password
+2. Credentials are Base64 encoded
+3. Sent with `Authorization: Basic <encoded>` header
+4. Backend validates credentials
+5. Session stored in `sessionStorage`
+
+**Implementation:** (`src/services/authService.ts:54-60`)
+```typescript
+export const encodeCredentials = (
+  username: string,
+  password: string,
+): string => {
+  return btoa(`${username}:${password}`);
+};
+```
+
+### Session Management
+
+**Storage Method:** `sessionStorage` (browser-based)
+
+**Stored Data:**
+- Authentication credentials (Base64 encoded)
+- User profile (without password)
+
+**Session Duration:**
+- Active until browser close
+- 15-minute idle timeout
+- Manual logout available
+
+**Auto-logout:** (`src/components/auth/IdleHandler.tsx:21`)
+```typescript
+const timeout = 15 * 60 * 1000; // 15 minutes of inactivity
+```
+
+## User Registration
+
+### Registration Flow
+
+Users can register through the registration page (`/register`).
+
+<Steps>
+  <Step title="Navigate to Registration">
+    Access the registration page at `/register`
+  </Step>
+  <Step title="Enter User Details">
+    Provide username, email, and password
+  </Step>
+  <Step title="Email Validation">
+    System checks email against whitelist
+  </Step>
+  <Step title="Password Validation">
+    Password strength is validated in real-time
+  </Step>
+  <Step title="Account Creation">
+    User account is created with ADMIN role
+  </Step>
+</Steps>
+
+### Registration Form Fields
+
+<ParamField path="username" type="string" required>
+  Username for login
+  
+  **Validation:** Cannot be empty
+</ParamField>
+
+<ParamField path="email" type="string" required>
+  Email address (must be whitelisted)
+  
+  **Validation:** 
+  - Valid email format
+  - Must be in whitelist
+  - Cannot be empty
+</ParamField>
+
+<ParamField path="password" type="string" required>
+  User password
+  
+  **Requirements:**
+  - Minimum 8 characters
+  - Strength indicator shows:
+    - Weak (< 40%): Basic password
+    - Regular (40-80%): Moderate password
+    - Strong (> 80%): Complex password
+</ParamField>
+
+<ParamField path="confirmPassword" type="string" required>
+  Password confirmation
+  
+  **Validation:** Must match password field
+</ParamField>
+
+### Password Strength Calculation
+
+(`src/pages/Register.tsx:37-45`)
+```typescript
+const calculatePasswordStrength = (password: string): number => {
+  let strength = 0;
+  if (password.length >= 8) strength += 20;
+  if (password.length >= 12) strength += 20;
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength += 20;
+  if (/\d/.test(password)) strength += 20;
+  if (/[^a-zA-Z0-9]/.test(password)) strength += 20;
+  return strength;
+};
+```
+
+**Criteria:**
+- 8+ characters: +20%
+- 12+ characters: +20%
+- Mixed case letters: +20%
+- Contains numbers: +20%
+- Special characters: +20%
+
+### Email Whitelist
+
+Only approved emails can register (`src/pages/Register.tsx:47-57`):
+
+```typescript
+const checkEmailWhitelist = async (email: string): Promise<boolean> => {
+  const response = await fetch(`${API_BASE_URL}/check-email/${email}`);
+  return response.ok;
+};
+```
+
+**API Endpoint:** `GET /auth/check-email/:email`
+
+<Warning>
+  Registration will fail if the email is not in the whitelist. Contact the system administrator to add emails to the whitelist.
+</Warning>
+
+## User Login
+
+### Login Flow
+
+<Steps>
+  <Step title="Navigate to Login">
+    Access the login page at `/login`
+  </Step>
+  <Step title="Enter Credentials">
+    Provide username and password
+  </Step>
+  <Step title="Authentication">
+    Credentials are validated against the backend
+  </Step>
+  <Step title="Session Created">
+    On success, session is stored and user is redirected
+  </Step>
+</Steps>
+
+### Login Form Fields
+
+<ParamField path="username" type="string" required>
+  User's username
+</ParamField>
+
+<ParamField path="password" type="string" required>
+  User's password
+  
+  **Features:**
+  - Toggle visibility with eye icon
+  - Masked by default
+  - Auto-complete support
+</ParamField>
+
+### Login Implementation
+
+(`src/pages/Login.tsx:34-68`)
+```typescript
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (!username.trim() || !password.trim()) {
+    toast({
+      title: "Error",
+      description: "Por favor completa todos los campos",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  try {
+    await login({ username: username.trim(), password });
+    toast({
+      title: "¡Bienvenido!",
+      description: `Sesión iniciada como ${username}`,
+    });
+    navigate(from, { replace: true });
+  } catch (error) {
+    // Handle error
+  }
+};
+```
+
+### Protected Routes
+
+All application routes (except `/login` and `/register`) are protected.
+
+**Implementation:** (`src/components/auth/ProtectedRoute.tsx:10-27`)
+```typescript
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+  const { isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return <>{children}</>;
+};
+```
+
+**Features:**
+- Automatic redirect to login when unauthenticated
+- Return to requested page after login
+- Loading state during authentication check
+
+## User Logout
+
+### Logout Methods
+
+**Manual Logout:**
+- Click logout button in the application
+- Calls backend logout endpoint
+- Clears session storage
+
+**Automatic Logout:**
+- 15 minutes of inactivity
+- Browser close (sessionStorage cleared)
+- Session expiration
+
+### Logout Implementation
+
+(`src/services/authService.ts:169-182`)
+```typescript
+export const logout = async (): Promise<void> => {
+  const credentials = getStoredCredentials();
+
+  try {
+    await fetch(`${API_BASE_URL}/logout`, {
+      method: "POST",
+      headers: {
+        ...(credentials && { Authorization: `Basic ${credentials}` }),
+      },
+    });
+  } finally {
+    clearCredentials();
+  }
+};
+```
+
+## Idle Timeout Handler
+
+The system automatically logs out inactive users.
+
+**Monitored Events:** (`src/components/auth/IdleHandler.tsx:29`)
+- `mousedown` - Mouse clicks
+- `keydown` - Keyboard input
+- `scroll` - Page scrolling
+- `click` - Element clicks
+- `touchstart` - Touch interactions
+
+**Timer Reset:**
+Any activity resets the 15-minute countdown.
+
+**Notification:**
+On timeout, user sees: "Sesión cerrada por inactividad"
+
+## User Roles
+
+### Available Roles
+
+Currently, the system supports:
+
+<Card title="ADMIN" icon="shield-halved">
+  Full system access with all permissions
+  
+  **Capabilities:**
+  - Manage students
+  - Manage instructors
+  - Manage horses
+  - Schedule classes
+  - View reports
+  - Export data
+</Card>
+
+<Note>
+  All registered users are assigned the ADMIN role (`src/pages/Register.tsx:119`).
+  Future versions may include additional roles like Instructor, Viewer, etc.
+</Note>
+
+## User Profile Management
+
+### User Data Structure
+
+(`src/services/authService.ts:5-18`)
+```typescript
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  password: string;
+  rol?: string;
+  activo: boolean;
+  fechaCreacion: string;
+  avatarUrl?: string;
+}
+```
+
+### Update User Profile
+
+**API Endpoint:** `PUT /auth/update`
+
+**Implementation:** (`src/services/authService.ts:145-166`)
+```typescript
+export const update = async (data: UpdateData): Promise<User> => {
+  const credentials = getStoredCredentials();
+
+  const response = await fetch(`${API_BASE_URL}/update`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...(credentials && { Authorization: `Basic ${credentials}` }),
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    await parseApiError(response);
+  }
+
+  const updatedUser = await response.json();
+  // Update session storage with new data
+  sessionStorage.setItem("user", JSON.stringify(updatedUser));
+
+  return updatedUser;
+};
+```
+
+## Security Best Practices
+
+<AccordionGroup>
+  <Accordion title="Password Security">
+    **Requirements:**
+    - Minimum 8 characters
+    - Encourage strong passwords with strength meter
+    - Passwords never logged or displayed
+    
+    **Best Practices:**
+    - Use password managers
+    - Enable auto-fill for convenience
+    - Regular password rotation
+  </Accordion>
+
+  <Accordion title="Session Security">
+    **Protection Measures:**
+    - SessionStorage (cleared on browser close)
+    - 15-minute idle timeout
+    - No sensitive data in localStorage
+    - HTTPS required in production
+    
+    **Monitoring:**
+    - Activity tracking via event listeners
+    - Automatic cleanup on logout
+  </Accordion>
+
+  <Accordion title="Email Whitelist">
+    **Purpose:**
+    - Restrict registration to authorized users
+    - Prevent unauthorized access
+    - Control user base
+    
+    **Management:**
+    - Backend-controlled whitelist
+    - Real-time validation during registration
+    - Contact admin to add emails
+  </Accordion>
+</AccordionGroup>
+
+## API Endpoints Reference
+
+### Authentication Endpoints
+
+**Login**
+```http
+POST /auth/login
+Authorization: Basic <base64(username:password)>
+```
+
+**Register**
+```http
+POST /auth/register
+Content-Type: application/json
+
+{
+  "username": "string",
+  "email": "string",
+  "password": "string",
+  "rol": "ADMIN",
+  "activo": true,
+  "fechaCreacion": "2026-03-04T00:00:00.000Z"
+}
+```
+
+**Logout**
+```http
+POST /auth/logout
+Authorization: Basic <credentials>
+```
+
+**Update Profile**
+```http
+PUT /auth/update
+Authorization: Basic <credentials>
+Content-Type: application/json
+
+{
+  "id": 1,
+  "username": "string",
+  "email": "string",
+  "rol": "ADMIN",
+  "activo": true,
+  "fechaCreacion": "2026-03-04T00:00:00.000Z"
+}
+```
+
+**Check Email Whitelist**
+```http
+GET /auth/check-email/:email
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Unable to register">
+    **Possible causes:**
+    1. Email not in whitelist
+    2. Password too weak (< 8 characters)
+    3. Username already taken
+    4. Passwords don't match
+    
+    **Solution:**
+    - Verify email is whitelisted
+    - Use stronger password
+    - Choose different username
+    - Check password confirmation
+  </Accordion>
+
+  <Accordion title="Login failed">
+    **Possible causes:**
+    1. Incorrect username or password
+    2. Account deactivated
+    3. Backend API unavailable
+    
+    **Solution:**
+    - Verify credentials
+    - Contact administrator
+    - Check API connectivity
+  </Accordion>
+
+  <Accordion title="Session expired">
+    **Causes:**
+    - 15 minutes of inactivity
+    - Browser closed
+    - Manual logout
+    
+    **Solution:**
+    - Simply log in again
+    - Stay active to prevent timeout
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Data Backup" icon="database" href="/admin/data-backup">
+    Configure backup and recovery procedures
+  </Card>
+  <Card title="Troubleshooting" icon="wrench" href="/admin/troubleshooting">
+    Common issues and solutions
+  </Card>
+</CardGroup>

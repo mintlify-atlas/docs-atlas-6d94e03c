@@ -1,0 +1,415 @@
+---
+title: 'Horse Assignments'
+description: 'Configure student horse assignments and pension options'
+---
+
+## Overview
+
+The HRS system supports three different horse assignment models to accommodate various student needs. Each model has different implications for scheduling, billing, and horse management.
+
+## Horse Assignment Types
+
+<CardGroup cols={3}>
+  <Card title="No Assigned Horse" icon="horse">
+    **SIN_CABALLO**
+    
+    Student does not reserve a specific horse. A school horse is assigned per class.
+  </Card>
+  
+  <Card title="School Horse Reservation" icon="bookmark">
+    **RESERVA_ESCUELA**
+    
+    Student reserves a specific school horse for their exclusive use.
+  </Card>
+  
+  <Card title="Private Horse" icon="home">
+    **CABALLO_PROPIO**
+    
+    Student owns their horse and boards it at the school.
+  </Card>
+</CardGroup>
+
+## Option 1: No Assigned Horse
+
+The default and simplest option.
+
+### Configuration
+
+```tsx
+// From AlumnoForm.tsx:286-312
+<Select
+  value={tipoPension}
+  onValueChange={(v) => {
+    const nuevo = v as TipoPension;
+    setTipoPension(nuevo);
+    if (nuevo === "SIN_CABALLO") {
+      setCuotaPension("ENTERA");
+      setCaballoId("");
+    }
+  }}
+>
+  <SelectContent>
+    <SelectItem value="SIN_CABALLO">
+      Sin caballo asignado
+    </SelectItem>
+    // ...
+  </SelectContent>
+</Select>
+```
+
+### Characteristics
+
+- No specific horse is reserved
+- No pension quota required
+- Maximum scheduling flexibility
+- Horse assigned when creating each class
+- Any available school horse can be used
+
+### When to Use
+
+<Check>
+  **Ideal for:**
+  - Beginner students
+  - Students who ride infrequently (4 classes/month)
+  - Students who benefit from riding different horses
+  - Maximum operational flexibility for the school
+</Check>
+
+### Setup Steps
+
+<Steps>
+  <Step title="Select Option">
+    In the student form, set "Horse" field to **"No assigned horse"**.
+  </Step>
+  
+  <Step title="Save">
+    No additional configuration needed. Save the student record.
+  </Step>
+  
+  <Step title="Class Assignment">
+    When creating classes, manually select an available school horse for each session.
+  </Step>
+</Steps>
+
+## Option 2: School Horse Reservation
+
+Student reserves a specific school horse for their exclusive or preferred use.
+
+### Configuration Requirements
+
+<AccordionGroup>
+  <Accordion title="Pension Quota Selection">
+    Choose the boarding arrangement:
+    
+    - **ENTERA** (Full): Complete board and care
+    - **MEDIA** (Half): Shared boarding costs
+    - **TERCIO** (Third): Partial boarding arrangement
+    
+    ```tsx
+    // From AlumnoForm.tsx:329-346
+    <Select
+      value={cuotaPension}
+      onValueChange={(value) =>
+        setCuotaPension(value as CuotaPension)
+      }
+    >
+      <SelectContent>
+        <SelectItem value="ENTERA">Entera</SelectItem>
+        <SelectItem value="MEDIA">Media</SelectItem>
+        <SelectItem value="TERCIO">Tercio</SelectItem>
+      </SelectContent>
+    </Select>
+    ```
+  </Accordion>
+  
+  <Accordion title="Horse Selection">
+    Select from available school horses:
+    
+    ```tsx
+    // From AlumnoForm.tsx:103-108
+    const caballosFiltrados = caballos.filter((c) =>
+      tipoPension === "CABALLO_PROPIO"
+        ? c.tipo === "PRIVADO"
+        : c.tipo === "ESCUELA",
+    );
+    ```
+    
+    Only horses with `tipo: "ESCUELA"` appear in the list.
+  </Accordion>
+</AccordionGroup>
+
+### Characteristics
+
+- Student reserves a specific school horse
+- Requires pension quota configuration
+- Horse is pre-selected when scheduling classes
+- Provides consistency for student and horse
+- Other students can still use the horse if available
+
+### Setup Steps
+
+<Steps>
+  <Step title="Select Reservation Type">
+    In the student form, set "Horse" field to **"Reserve school horse"**.
+  </Step>
+  
+  <Step title="Choose Pension Quota">
+    Select the pension arrangement: Full, Half, or Third.
+  </Step>
+  
+  <Step title="Select School Horse">
+    Choose from the dropdown of available school horses (type: ESCUELA).
+  </Step>
+  
+  <Step title="Save Configuration">
+    Save the student record. The horse will be automatically pre-selected for classes.
+  </Step>
+</Steps>
+
+### Visual Indicators
+
+In the student list, reservations are shown with badges:
+
+```tsx
+// From Alumnos.tsx:337-343
+{caballoNombre && row.tipoPension === "RESERVA_ESCUELA" && (
+  <StatusBadge status="escuela">
+    <CalendarCheck className="inline mr-1 w-4 h-4" />
+    {caballoNombre}
+  </StatusBadge>
+)}
+```
+
+## Option 3: Private Horse
+
+Student owns their horse and boards it at the school.
+
+### Prerequisites
+
+<Warning>
+  The horse must be registered in the system first:
+  
+  1. Navigate to **Horses** section
+  2. Create new horse record
+  3. Set type as **PRIVADO** (Private)
+  4. Save the horse
+  5. Return to student registration
+</Warning>
+
+### Configuration Requirements
+
+1. **Pension Quota**: Select Full, Half, or Third boarding arrangement
+2. **Horse Selection**: Choose from private horses (tipo: "PRIVADO")
+
+```tsx
+// From AlumnoForm.tsx:328-365
+{tipoPension === "CABALLO_PROPIO" && (
+  <div className="grid grid-cols-2 gap-4">
+    <div className="space-y-2">
+      <Label htmlFor="cuotaPension">Cuota de pensión</Label>
+      <Select
+        value={cuotaPension}
+        onValueChange={(value) =>
+          setCuotaPension(value as CuotaPension)
+        }
+      >
+        <SelectContent>
+          <SelectItem value="ENTERA">Entera</SelectItem>
+          <SelectItem value="MEDIA">Media</SelectItem>
+          <SelectItem value="TERCIO">Tercio</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+
+    <div className="space-y-2">
+      <Label htmlFor="caballo">Nombre Caballo</Label>
+      <Select value={caballoId} onValueChange={setCaballoId}>
+        <SelectTrigger id="caballo">
+          <SelectValue placeholder="Seleccionar caballo" />
+        </SelectTrigger>
+        <SelectContent>
+          {caballosFiltrados.map((c) => (
+            <SelectItem key={c.id} value={String(c.id)}>
+              {c.nombre}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  </div>
+)}
+```
+
+### Characteristics
+
+- Student marked as horse owner (`propietario: true`)
+- Requires pension quota (affects billing)
+- Horse is exclusively for this student
+- Automatically pre-selected in class scheduling
+- Horse cannot be assigned to other students
+
+### Setup Steps
+
+<Steps>
+  <Step title="Register Horse First">
+    If not already registered:
+    - Go to **Horses** section
+    - Click **New Horse**
+    - Enter horse name
+    - Set type as **PRIVADO**
+    - Mark as available
+    - Save the horse record
+  </Step>
+  
+  <Step title="Configure Student">
+    In the student form:
+    - Set "Horse" field to **"Private horse"**
+    - Select pension quota (Full, Half, or Third)
+    - Choose the horse from the dropdown
+  </Step>
+  
+  <Step title="Save and Verify">
+    - Save the student record
+    - Verify the horse appears in the student's profile
+    - The `propietario` flag is automatically set to `true`
+  </Step>
+</Steps>
+
+### Visual Indicators
+
+Private horse ownership is displayed with special badges:
+
+```tsx
+// From Alumnos.tsx:332-350
+{caballoNombre && row.tipoPension === "CABALLO_PROPIO" && (
+  <StatusBadge status="propio">
+    <ChessKnight className="inline mr-1 w-4 h-4" />
+    {caballoNombre}
+  </StatusBadge>
+)}
+{row.caballoPropio && row.tipoPension === "CABALLO_PROPIO" && (
+  <StatusBadge status="propio">
+    <House className="inline mr-1 w-4 h-4" />
+    {row.cuotaPension}
+  </StatusBadge>
+)}
+```
+
+## Data Validation
+
+### Automatic Owner Flag
+
+The system automatically sets the `propietario` flag:
+
+```tsx
+// From AlumnoForm.tsx:132
+const propietario = tipoPension === "CABALLO_PROPIO";
+```
+
+### Pension Quota Logic
+
+```tsx
+// From AlumnoForm.tsx:145
+cuotaPension: tipoPension === "SIN_CABALLO" ? null : cuotaPension,
+```
+
+If no assigned horse, pension quota is set to `null`.
+
+### Horse ID Assignment
+
+```tsx
+// From AlumnoForm.tsx:148-149
+caballoPropio:
+  tipoPension === "SIN_CABALLO" || !caballoId ? null : Number(caballoId),
+```
+
+## Changing Horse Assignments
+
+Students can change their horse assignment at any time:
+
+<Steps>
+  <Step title="Edit Student Record">
+    Open the student record and click Edit.
+  </Step>
+  
+  <Step title="Modify Assignment">
+    Change the "Horse" dropdown to a different option.
+  </Step>
+  
+  <Step title="Update Configuration">
+    If switching to a horse option, select pension quota and horse.
+    If switching to no horse, the fields clear automatically.
+  </Step>
+  
+  <Step title="Save Changes">
+    The change takes effect immediately for future class scheduling.
+  </Step>
+</Steps>
+
+<Note>
+  Changing horse assignments does not affect past or scheduled classes, only future class creation.
+</Note>
+
+## Pension Quotas Explained
+
+<CardGroup cols={3}>
+  <Card title="Full (ENTERA)" icon="circle">
+    Complete boarding and care package. Horse receives full services.
+  </Card>
+  
+  <Card title="Half (MEDIA)" icon="circle-half">
+    Partial boarding arrangement. Shared care or services.
+  </Card>
+  
+  <Card title="Third (TERCIO)" icon="circle-notch">
+    Minimal boarding package. Limited services or shared costs.
+  </Card>
+</CardGroup>
+
+## Type Definitions
+
+```typescript
+// From enums.ts
+export type TipoPension = "SIN_CABALLO" | "RESERVA_ESCUELA" | "CABALLO_PROPIO";
+export type CuotaPension = "ENTERA" | "MEDIA" | "TERCIO";
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Choosing the Right Option">
+    **No Assigned Horse**:
+    - New or beginner students
+    - Infrequent riders
+    - Students benefiting from variety
+    
+    **School Horse Reservation**:
+    - Regular students (8+ classes/month)
+    - Students needing consistency
+    - Preparing for competitions
+    
+    **Private Horse**:
+    - Students who own horses
+    - Advanced riders with their own equipment
+    - Long-term boarding arrangements
+  </Accordion>
+  
+  <Accordion title="Managing Private Horses">
+    - Register horse before student registration
+    - Verify horse type is set to PRIVADO
+    - Ensure only one owner per private horse
+    - Update pension quota as needed for billing
+  </Accordion>
+  
+  <Accordion title="Scheduling Considerations">
+    - Students with assigned horses have priority booking
+    - Private horses cannot be used by other students
+    - School horses with reservations may still be used by others when available
+  </Accordion>
+</AccordionGroup>
+
+## Related Pages
+
+- [Student Registration](/guides/students/registration) - Complete registration process
+- [Horse Management](/guides/horses/registration) - Managing school and private horses
+- [Class Scheduling](/guides/classes/creating-classes) - How horse assignments affect scheduling

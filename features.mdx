@@ -1,0 +1,760 @@
+---
+title: Key Features
+description: Comprehensive overview of all features in the HRS Equestrian School Management System
+---
+
+# Key Features Overview
+
+HRS provides a complete suite of features for managing every aspect of an equestrian school. This page details all major capabilities with code examples from the actual implementation.
+
+## Student Management (Alumnos)
+
+### Complete Registration System
+
+From `src/lib/api.ts:12`, the student entity includes:
+
+```typescript
+export interface Alumno {
+  id: number;
+  dni: string;
+  nombre: string;
+  apellido: string;
+  fechaNacimiento: string;
+  codigoArea: string;
+  telefono: string;
+  email: string;
+  fechaInscripcion: string;
+  cantidadClases: number;
+  propietario: boolean;
+  activo: boolean;
+  caballoPropio?: number | Caballo;
+  tipoPension: TipoPension;
+  cuotaPension?: CuotaPension | null;
+}
+```
+
+<CardGroup cols={2}>
+  <Card title="Personal Information">
+    - DNI with real-time duplicate validation
+    - Full name and contact details
+    - Birth date for age calculation
+    - Automatic +549 phone prefix for Argentina
+    - Optional email for communications
+  </Card>
+  
+  <Card title="Enrollment Tracking">
+    - Automatic registration date
+    - Active/inactive status management
+    - Lesson plan selection (4/8/12/16 classes monthly)
+    - Enrollment history
+  </Card>
+  
+  <Card title="Horse Assignments">
+    - Three boarding types: No horse, Reserved school horse, Private horse
+    - Flexible boarding quotas: Full, Half, Third
+    - Automatic horse-student linking
+    - Owner vs reservation distinction
+  </Card>
+  
+  <Card title="Class Monitoring">
+    - Remaining classes tracker
+    - Attendance percentage calculations
+    - Class history and statistics
+    - Trial class support
+  </Card>
+</CardGroup>
+
+### Real-Time DNI Validation
+
+The system prevents duplicate registrations:
+
+- Validates DNI as you type (9+ digits)
+- Shows immediate error if DNI exists
+- Prevents form submission for duplicates
+- Works for both students and instructors
+
+### Flexible Lesson Plans
+
+Four monthly plans available:
+- **4 classes/month**: Casual riders
+- **8 classes/month**: Regular students (twice weekly)
+- **12 classes/month**: Committed riders
+- **16 classes/month**: Intensive training
+
+### Three Boarding Options
+
+From `src/types/enums.ts:1`:
+
+```typescript
+export type TipoPension = "SIN_CABALLO" | "RESERVA_ESCUELA" | "CABALLO_PROPIO";
+export type CuotaPension = "ENTERA" | "MEDIA" | "TERCIO";
+```
+
+**SIN_CABALLO (No Assigned Horse)**
+- School assigns available horse per class
+- Maximum flexibility
+- No boarding costs
+- Ideal for beginners
+
+**RESERVA_ESCUELA (Reserved School Horse)**
+- Student reserves specific school horse
+- Consistent horse-rider pairing
+- Boarding quota configuration
+- Priority access to reserved horse
+
+**CABALLO_PROPIO (Private Horse)**
+- Student brings own horse
+- Full boarding services
+- Quota-based pricing
+- Private horse management
+
+## Horse Management (Caballos)
+
+### Horse Entity Structure
+
+From `src/lib/api.ts:50`:
+
+```typescript
+export interface Caballo {
+  id: number;
+  nombre: string;
+  tipo: TipoCaballo; // "ESCUELA" | "PRIVADO"
+  disponible: boolean;
+  propietarios?: Alumno[];
+}
+```
+
+<CardGroup cols={2}>
+  <Card title="School Horses (ESCUELA)">
+    - Available to all students
+    - Can be reserved by students
+    - Shared resource scheduling
+    - Utilization tracking
+  </Card>
+  
+  <Card title="Private Horses (PRIVADO)">
+    - Owned by specific students
+    - Only usable by owner
+    - Boarding management
+    - Individual care tracking
+  </Card>
+</CardGroup>
+
+### Horse Features
+
+- **Availability Status**: Track which horses can be scheduled
+- **Owner Associations**: Link horses to student owners
+- **Type Differentiation**: Visual distinction in calendar and reports
+- **Usage Statistics**: Monitor how often each horse is used
+- **Conflict Prevention**: Cannot schedule same horse for overlapping classes
+
+## Instructor Management (Instructores)
+
+### Instructor Profile
+
+From `src/lib/api.ts:37`:
+
+```typescript
+export interface Instructor {
+  id: number;
+  dni: string;
+  nombre: string;
+  apellido: string;
+  fechaNacimiento: string;
+  codigoArea: string;
+  telefono: string;
+  email: string;
+  activo: boolean;
+  color: string;
+}
+```
+
+### Color-Coded Scheduling
+
+Each instructor gets a unique color:
+- 7 predefined color options
+- Visual identification in calendar
+- Quick schedule overview
+- Distinguishes classes at a glance
+
+### Instructor Analytics
+
+- **Workload Tracking**: Classes per instructor
+- **Specialty Distribution**: Which specialties they teach
+- **Efficiency Metrics**: Completion vs cancellation rates
+- **Performance Reports**: Detailed instructor statistics
+
+## Class Management (Clases)
+
+### Class Entity
+
+From `src/lib/api.ts:58`:
+
+```typescript
+export interface Clase {
+  id: number;
+  especialidad: EspecialidadClase;
+  dia: string;
+  hora: string;
+  duracion: number;
+  estado: EstadoClase;
+  observaciones?: string;
+  alumnoId: number | null;
+  personaPruebaId?: number | null;
+  instructorId: number;
+  caballoId: number;
+  diaHoraCompleto?: string;
+  esPrueba?: boolean;
+}
+```
+
+### Four Specialties
+
+From `src/types/enums.ts:3`:
+
+```typescript
+export type EspecialidadClase =
+  | "ADIESTRAMIENTO"  // Dressage
+  | "EQUINOTERAPIA"   // Equine Therapy
+  | "EQUITACION"      // Equitation
+  | "MONTA";          // Riding
+```
+
+<CardGroup cols={2}>
+  <Card title="EQUITACION" icon="horse">
+    Standard riding lessons for students of all levels
+  </Card>
+  
+  <Card title="ADIESTRAMIENTO" icon="award">
+    Horse training and dressage classes
+  </Card>
+  
+  <Card title="EQUINOTERAPIA" icon="heart">
+    Therapeutic riding for special needs
+  </Card>
+  
+  <Card title="MONTA" icon="users">
+    Open riding sessions (auto-assigns placeholder student)
+  </Card>
+</CardGroup>
+
+### Six Class States
+
+From `src/types/enums.ts:8`:
+
+```typescript
+export type EstadoClase =
+  | "PROGRAMADA"   // 🟠 Scheduled
+  | "INICIADA"     // 🔵 Started
+  | "COMPLETADA"   // 🟢 Completed
+  | "CANCELADA"    // 🔴 Cancelled
+  | "ACA"          // 🟣 Absence with Advance Notice
+  | "ASA";         // 🌸 Absence without Advance Notice
+```
+
+**State Workflow:**
+1. **PROGRAMADA**: Initial state when class is created
+2. **INICIADA**: Class has begun
+3. **COMPLETADA**: Successfully finished
+4. **CANCELADA**: Cancelled by school or student
+5. **ACA**: Student notified in advance they won't attend
+6. **ASA**: Student didn't show up without notice
+
+<Note>
+  Classes in COMPLETADA, INICIADA, or CANCELADA states cannot be edited (historical record).
+</Note>
+
+### Class Duration Options
+
+- **30 minutes**: Standard short lesson
+  - Occupies one 30-minute time slot
+  - Default duration
+  
+- **60 minutes**: Extended lesson
+  - Occupies two consecutive 30-minute slots
+  - Visual continuity indicator in calendar
+  - Both cells are clickable
+
+### Operating Hours & Validation
+
+- **Schedule**: 09:00 to 18:30
+- **Time Slots**: 30-minute intervals
+- **Critical Validation**: No class can end after 18:30
+
+**Examples:**
+- ❌ 60-min class at 18:00 → ends 19:00 (rejected)
+- ✅ 60-min class at 17:30 → ends 18:30 (allowed)
+- ✅ 30-min class at 18:00 → ends 18:30 (allowed)
+
+From the README:
+> "La clase no puede terminar después de las 18:30. Con duración de 60 minutos a las 18:00 terminaría a las 19:00."
+
+## Trial Classes System
+
+### Two Types of Trial Classes
+
+**Type 1: New Person (Persona Nueva)**
+
+From `src/lib/api.ts:30`:
+
+```typescript
+export interface PersonaPrueba {
+  id: number;
+  nombre: string;
+  apellido: string;
+  fechaRegistro: string;
+}
+```
+
+- For prospective students not yet registered
+- Just requires first and last name
+- No full student account needed
+- Creates "trial person" record
+- Identified with 🎓 emoji in calendar
+
+**Type 2: Existing Inactive Student**
+- For registered students trying new specialty
+- Student must be **INACTIVE**
+- Student must have **no classes** in that specialty
+- Cannot repeat trial for same specialty
+
+### Trial Class Rules
+
+✅ **Automatic Validations:**
+1. Student cannot have trial if already has classes in that specialty
+2. Cannot repeat trial class for same specialty
+3. Trial classes DON'T count toward monthly quota
+
+**Visual Indicators:**
+- 🎓 Emoji in calendar cells
+- Orange border highlighting
+- "Prueba" badge in details
+- Informational alerts when editing
+
+## Advanced Calendar System
+
+### Three Powerful Views
+
+<Tabs>
+  <Tab title="Month View">
+    **Overview Display**
+    - All weeks of the month
+    - Up to 3 classes per day shown
+    - "+X more" indicator for additional classes
+    - Click day to see details or create class
+    
+    Perfect for: Monthly planning and overview
+  </Tab>
+  
+  <Tab title="Week View">
+    **Full Week Display**
+    - 7 complete days
+    - Up to 10 classes per day
+    - Weekly navigation controls
+    - Good balance of detail and overview
+    
+    Perfect for: Weekly scheduling and adjustments
+  </Tab>
+  
+  <Tab title="Day View (Excel-Style)">
+    **Detailed Grid Layout**
+    - Columns: Fixed time column + one column per horse
+    - Rows: 30-minute time slots from 09:00 to 18:30
+    - Click empty cell to create class instantly
+    - All fields pre-populated (day, time, horse)
+    
+    Perfect for: Detailed daily scheduling and at-a-glance availability
+  </Tab>
+</Tabs>
+
+### Color Coding System
+
+**Background Color**: Instructor's assigned color (lightened for readability)
+
+**Left Border Color** (State indicator):
+- 🟠 **Orange**: PROGRAMADA (Scheduled)
+- 🔵 **Blue**: INICIADA (Started)
+- 🟢 **Green**: COMPLETADA (Completed)
+- 🔴 **Red**: CANCELADA (Cancelled)
+- 🟣 **Purple**: ACA (Absence with Notice)
+- 🌸 **Pink**: ASA (Absence without Notice)
+
+### Calendar Features
+
+<CardGroup cols={2}>
+  <Card title="Hover Information">
+    Mouse over any class to see:
+    - Student name
+    - Horse name
+    - Class state
+    - Instructor name
+  </Card>
+  
+  <Card title="Click Actions">
+    - Click class: Open detailed popover
+    - Click empty cell: Create new class
+    - Quick state changes from popover
+    - Direct access to participant profiles
+  </Card>
+  
+  <Card title="Conflict Detection">
+    - ⚠️ Warning for horse conflicts
+    - ⚠️ Warning for instructor conflicts
+    - Visual indicators in cells
+    - Prevention of double-booking
+  </Card>
+  
+  <Card title="Filtering">
+    - Filter by student
+    - Filter by instructor
+    - Combinable filters
+    - Real-time updates
+  </Card>
+</CardGroup>
+
+## Calendar Tools & Operations
+
+### 1. Copy Classes (Bulk Scheduling)
+
+**Copy entire week's schedule to another week:**
+
+From `src/lib/api.ts:488`:
+
+```typescript
+copiarClases: async (
+  payload?: unknown,
+): Promise<unknown & { __successMessage?: string }> => {
+  const response = await apiFetch(`/calendario/copiar-clases`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: payload ? JSON.stringify(payload) : undefined,
+  });
+  return handleResponse<unknown>(response);
+}
+```
+
+- Select source day (any day in source week)
+- Select destination day (any day in destination week)
+- Specify number of weeks to copy
+- System copies all classes from entire week
+
+### 2. Delete Classes in Range
+
+- Select start and end dates
+- Delete all classes within date range
+- Confirmation required before deletion
+- Bulk cleanup capability
+
+### 3. Cancel Entire Day
+
+Available in Day View:
+
+**Cancellation Reasons:**
+- Rain
+- Holiday
+- Maintenance
+- Special Event
+- Emergency
+- Other (with custom notes)
+
+**Smart Behavior:**
+- Only cancels PROGRAMADA classes
+- Respects already completed classes
+- Preserves already cancelled classes
+- Batch state update
+
+### 4. Export to Excel
+
+From `package.json:51`:
+
+```json
+"exceljs": "^4.4.0",
+"file-saver": "^2.0.5"
+```
+
+**Professional Excel Export Features:**
+- Title with full date
+- Color-coded headers:
+  - 🔵 Blue for school horses (ESCUELA)
+  - 🟡 Gold for private horses (PRIVADO)
+- Cell backgrounds with instructor colors
+- Orange borders for trial classes
+- Cell comments with complete class details
+- Legend for instructors and horse types
+- Optimized for A4 printing
+- Auto-column width adjustment
+
+## Reporting & Analytics
+
+### Available Reports
+
+From `src/pages/Index.tsx:59`:
+
+```typescript
+{
+  title: "Reportes",
+  description: "Estadísticas y análisis de la escuela",
+  icon: BarChart,
+  href: "/reportes",
+}
+```
+
+<Accordion>
+  <AccordionItem title="General Report">
+    **School Overview Metrics:**
+    - Student distribution by lesson plan (4/8/12/16 classes)
+    - Class state distribution (bar charts)
+    - Distribution by day of week
+    - Distribution by time period (Morning/Afternoon/Evening)
+    - Visual charts with Recharts
+  </AccordionItem>
+  
+  <AccordionItem title="Student Report">
+    **Complete Student Listing:**
+    - Active/Inactive status
+    - Contracted lesson plan
+    - Private horse ownership flag
+    - Enrollment date
+    - Exportable to Excel with formatting
+  </AccordionItem>
+  
+  <AccordionItem title="Class Report">
+    **Class Analytics:**
+    - Total scheduled classes
+    - Completed classes (with percentage)
+    - Cancelled classes
+    - State distribution breakdown
+    - Day of week distribution
+    - Attendance by student (with percentages)
+    - Excel export capability
+  </AccordionItem>
+  
+  <AccordionItem title="Instructor Report">
+    **Performance Analysis:**
+    - Workload per instructor
+    - Completed vs cancelled classes
+    - Efficiency percentage (completion rate)
+    - Specialty distribution
+    - Excel export
+  </AccordionItem>
+  
+  <AccordionItem title="Horse Report">
+    **Utilization Statistics:**
+    - Usage per horse
+    - Distribution by type (School/Private)
+    - Usage percentage in period
+    - Available vs unavailable horses
+    - Excel export
+  </AccordionItem>
+</Accordion>
+
+### Period Filtering
+
+All reports support:
+- Start date selection
+- End date selection
+- Default: Current month
+- Custom date ranges
+
+### Excel Export Format
+
+**Professional formatting includes:**
+- Titles and subtitles
+- Color-coded headers
+- Alternating row colors for readability
+- Optimized column widths
+- Calculated totals and percentages
+- Filename: `Reporte_[Type]_[Date].xlsx`
+
+## Financial Management (Finanzas)
+
+From `src/pages/Index.tsx:66`:
+
+```typescript
+{
+  title: "Finanzas",
+  description: "Gestión de ingresos y egresos de la escuela",
+  icon: CircleDollarSign,
+  href: "/finanzas",
+}
+```
+
+- Income tracking
+- Expense monitoring
+- Financial reports
+- Period-based analysis
+
+## Search & Filtering
+
+### Intelligent Global Search
+
+**Available in all sections:**
+- Alumnos (Students)
+- Instructores (Instructors)
+- Caballos (Horses)
+- Clases (Classes)
+
+**Features:**
+- Real-time search as you type
+- Multi-field simultaneous filtering
+- Instant results
+- Maintains traditional filters
+
+From `src/lib/api.ts:85`:
+
+```typescript
+export interface AlumnoSearchFilters {
+  dni?: string;
+  nombre?: string;
+  apellido?: string;
+  activo?: boolean;
+  propietario?: boolean;
+  fechaInscripcion?: string;
+  fechaNacimiento?: string;
+}
+```
+
+## View Options
+
+### Table vs Cards Views
+
+All main sections support two display modes:
+
+**Table View:**
+- Traditional row/column format
+- Compact information display
+- Sortable columns
+- Quick scanning
+
+**Cards View:**
+- Visual card-based layout
+- Highlighted key information
+- Better for touch interfaces
+- More engaging presentation
+
+## Pagination System
+
+**Smart Controls:**
+- Previous/Next navigation (← →)
+- Page size selector: 10, 20, 50, 100 items
+- Current page / total pages indicator
+- Total records counter
+- Maintains search and filter state
+
+## Quick Actions
+
+### In List Views
+
+- **Click row**: View complete details
+- **Context menu (⋮)**:
+  - Edit record
+  - Delete record
+  - Contact (students & instructors)
+    - WhatsApp with pre-loaded message
+    - Email
+
+### In Calendar
+
+- **Click empty cell**: Create class with pre-filled data
+- **Click class**: View details in popover
+- **Quick state change**: Update status from popover
+- **Navigate to profiles**: Direct links to participants
+
+## Detailed Profile Pages
+
+### Student Profile
+
+- Complete personal information
+- Assigned horse details
+- Class statistics and charts
+- Complete class history
+- Attendance percentage
+- Visual performance graphs
+
+### Instructor Profile
+
+- Personal information
+- Specialty distribution charts
+- Performance statistics
+- Efficiency metrics
+- Complete class history
+
+### Horse Profile
+
+- Horse information
+- Associated owners
+- Type and availability
+- Usage statistics
+- Class history
+
+### Class Details
+
+- Full class information
+- All participants (Student, Instructor, Horse)
+- Quick state change controls
+- Trial class indicator
+- Quick access to all participant profiles
+
+## Notifications & Validations
+
+### Toast Notification System
+
+From `package.json:63`:
+
+```json
+"sonner": "^1.7.4"
+```
+
+**Toast Types:**
+- 🟢 **Success**: Confirmations of successful actions
+- 🔴 **Error**: Validation errors and failures
+- 🟡 **Warning**: Important notices
+- 🔵 **Info**: Informational messages
+
+### Contextual Messages
+
+- **Tooltips**: Explanatory hints on complex fields
+- **Real-time Validation**: Instant feedback as you type
+- **Confirmations**: Required before destructive actions
+- **Field Help**: Inline guidance for complex inputs
+
+## Data Validation Rules
+
+### Critical Validations
+
+<Warning>
+  The system enforces these rules automatically:
+  
+  1. **Time Limit**: Classes cannot end after 18:30
+  2. **DNI Uniqueness**: No duplicate DNIs allowed
+  3. **Edit Restrictions**: Cannot edit completed/started/cancelled classes
+  4. **Trial Classes**: Strict rules for trial class eligibility
+  5. **Private Horses**: Only usable by owners
+  6. **Scheduling Conflicts**: No overlapping classes for same horse/instructor
+</Warning>
+
+### Default Values
+
+- **Class Duration**: 30 minutes
+- **New Class State**: PROGRAMADA
+- **New Student State**: Active
+- **New Instructor State**: Active
+- **New Horse Availability**: Available
+- **Phone Prefix**: +549 (automatic for Argentina)
+
+## Session Management
+
+From `src/components/auth/IdleHandler.tsx`:
+
+**Security Features:**
+- Auto-logout after 15 minutes of inactivity
+- Basic Auth with secure credential storage
+- Session-based authentication
+- Protected routes requiring login
+- Automatic credential refresh
+- Email whitelist for registration
+- Strong password validation
+
+---
+
+This comprehensive feature set makes HRS a complete solution for equestrian school management, handling everything from student enrollment to detailed analytics and reporting.

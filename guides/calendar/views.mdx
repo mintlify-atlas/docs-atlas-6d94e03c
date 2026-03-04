@@ -1,0 +1,200 @@
+---
+title: Calendar Views
+description: Understanding the three calendar view modes in the equestrian school system
+---
+
+The calendar system provides three different view modes to help you visualize and manage classes effectively. Each view is optimized for different workflows and time scales.
+
+## Available Views
+
+The system offers three calendar views:
+
+<CardGroup cols={3}>
+  <Card title="Month View" icon="calendar">
+    Overview of all weeks in the month
+  </Card>
+  <Card title="Week View" icon="calendar-week">
+    Detailed 7-day view with expanded class information
+  </Card>
+  <Card title="Day View" icon="table">
+    Excel-style grid with horses and time slots
+  </Card>
+</CardGroup>
+
+## Month View
+
+The Month View displays all weeks of the current month in a traditional calendar grid format.
+
+### Features
+
+- **Full Month Display**: Shows complete weeks, including days from previous/next month
+- **Class Limit**: Displays up to 3 classes per day
+- **Overflow Indicator**: Shows "+N more" when there are additional classes
+- **Quick Navigation**: Click any day to switch to that date and open the class creation dialog
+
+### Best For
+
+- Getting a high-level overview of the month's schedule
+- Identifying busy vs. quiet days
+- Planning ahead and spotting scheduling gaps
+- Quick date selection for creating new classes
+
+### Visual Information
+
+Each class card shows:
+- Instructor color coding (background)
+- Status color coding (left border)
+- Student name
+- Time
+- Trial class indicator (🎓 emoji)
+
+## Week View
+
+The Week View displays 7 consecutive days (Monday through Sunday) with expanded class information.
+
+### Features
+
+- **7-Day Span**: Shows Monday through Sunday of the current week
+- **Expanded Capacity**: Displays up to 10 classes per day
+- **Weekly Navigation**: Navigate by week increments
+- **More Detail**: Larger class cards with additional information
+
+### Best For
+
+- Planning the current or upcoming week
+- Reviewing instructor workload across the week
+- Checking student schedules for the week
+- Preparing weekly reports
+
+### Visual Information
+
+Each class card includes:
+- Full student name
+- Horse name
+- Instructor name
+- Class time
+- Status badge
+- Specialty type
+- Trial class badge (if applicable)
+
+## Day View (Excel-Style)
+
+The Day View is the most detailed view, displaying classes in a spreadsheet-like grid format.
+
+<Info>
+  The Day View is the recommended view for day-to-day operations and quick class scheduling.
+</Info>
+
+### Grid Structure
+
+```
+┌──────────┬──────────┬──────────┬──────────┐
+│   Time   │  Horse 1 │  Horse 2 │  Horse 3 │
+├──────────┼──────────┼──────────┼──────────┤
+│  09:00   │  [Class] │          │  [Class] │
+│  09:30   │          │  [Class] │  [Class] │
+│  10:00   │  [Class] │          │          │
+│   ...    │   ...    │   ...    │   ...    │
+└──────────┴──────────┴──────────┴──────────┘
+```
+
+### Features
+
+- **Time Slots**: 30-minute intervals from 09:00 to 18:30
+- **Horse Columns**: One column per horse (ordered by type and name)
+- **Quick Creation**: Click any empty cell to create a class with pre-filled horse and time
+- **60-Minute Classes**: Automatically span two consecutive cells
+- **Conflict Detection**: Visual indicators (⚠️) for scheduling conflicts
+
+### Column Organization
+
+Horses are displayed in columns with:
+- **Header Color**: Blue background for school horses, gold for private horses
+- **Horse Type Badge**: "Escuela" or "Privado" indicator
+- **Alphabetical Order**: Within each type category
+
+### Best For
+
+- Daily operations and scheduling
+- Checking horse availability at specific times
+- Creating multiple classes quickly
+- Identifying scheduling conflicts
+- Exporting the daily schedule to Excel
+
+## Switching Between Views
+
+Use the view mode selector in the calendar header to switch between views:
+
+<Tabs>
+  <Tab title="Month">
+    Click the **Month** button to see the full month overview.
+  </Tab>
+  <Tab title="Week">
+    Click the **Week** button to see the current week's details.
+  </Tab>
+  <Tab title="Day">
+    Click the **Day** button to access the Excel-style grid view.
+  </Tab>
+</Tabs>
+
+## Navigation
+
+All views support consistent navigation:
+
+- **Previous/Next**: Arrow buttons to move backward or forward
+- **Today**: Quick button to return to the current date
+- **Time Scale**: Navigation increments match the view (month/week/day)
+
+## Color Coding
+
+All views use consistent color coding:
+
+### Instructor Colors
+
+Each instructor has an assigned color that appears as the class background:
+- Makes it easy to see instructor workload
+- Helps identify which instructor is teaching
+- Customizable per instructor in their profile
+
+### Status Colors (Left Border)
+
+- 🟠 **Orange**: PROGRAMADA (Scheduled)
+- 🔵 **Blue**: INICIADA (Started)
+- 🟢 **Green**: COMPLETADA (Completed)
+- 🔴 **Red**: CANCELADA (Cancelled)
+- 🟣 **Purple**: ACA (Absence with Notice)
+- 🌸 **Pink**: ASA (Absence without Notice)
+
+### Trial Class Indicator
+
+Trial classes are marked with:
+- 🎓 Graduation cap emoji
+- Orange border around the class card
+- "Prueba" badge in class details
+
+## Filtering
+
+All views support the same filtering options:
+
+- **By Student**: Show only classes for a specific student
+- **By Instructor**: Show only classes for a specific instructor
+- **Combined**: Apply both filters simultaneously
+
+Filters persist when switching between views.
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Day View Details" icon="table-cells" href="/guides/calendar/day-view">
+    Learn more about the Excel-style day view
+  </Card>
+  <Card title="Copy Classes" icon="copy" href="/guides/calendar/copy-classes">
+    Copy weekly schedules efficiently
+  </Card>
+  <Card title="Bulk Operations" icon="layer-group" href="/guides/calendar/bulk-operations">
+    Manage multiple classes at once
+  </Card>
+  <Card title="Export to Excel" icon="file-excel" href="/guides/calendar/export-excel">
+    Export daily schedules for printing
+  </Card>
+</CardGroup>

@@ -1,97 +1,294 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "HRS Equestrian School Management System"
+description: "A comprehensive management platform for equestrian schools to handle students, instructors, horses, classes, scheduling, and financial operations."
+mode: "custom"
 ---
 
-## Setting up
+<div className="relative overflow-hidden bg-gradient-to-br from-[#8B4513] via-[#A0522D] to-[#654321] dark:from-[#654321] dark:via-[#8B4513] dark:to-[#4A3319] py-20">
+  <div className="max-w-7xl mx-auto px-6 lg:px-8">
+    <div className="lg:grid lg:grid-cols-12 lg:gap-8 items-center">
+      <div className="lg:col-span-7">
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
+          Equestrian School Management Made Simple
+        </h1>
+        <p className="text-lg sm:text-xl text-white/90 mb-8 max-w-2xl">
+          Streamline your riding school operations with comprehensive tools for student enrollment, class scheduling, instructor management, and financial tracking—all in one powerful platform.
+        </p>
+        <div className="flex flex-wrap gap-4">
+          <a
+            href="/quickstart"
+            className="inline-flex items-center justify-center px-6 py-3 text-base font-semibold rounded-lg bg-white text-[#8B4513] hover:bg-gray-100 transition-colors"
+          >
+            Get Started
+          </a>
+          <a
+            href="/features"
+            className="inline-flex items-center justify-center px-6 py-3 text-base font-semibold rounded-lg border-2 border-white/30 bg-white/10 text-white hover:bg-white/20 transition-colors"
+          >
+            Explore Features
+          </a>
+        </div>
+      </div>
+      <div className="hidden lg:block lg:col-span-5 mt-12 lg:mt-0">
+        <div className="relative">
+          <div className="absolute inset-0 bg-white/10 rounded-2xl blur-3xl"></div>
+          <div className="relative bg-white/5 backdrop-blur-sm border border-white/20 rounded-2xl p-8 text-white">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-lg bg-white/20 flex items-center justify-center text-2xl">
+                  👨‍🎓
+                </div>
+                <div>
+                  <div className="font-semibold">Student Management</div>
+                  <div className="text-sm text-white/70">Track enrollments & class plans</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-lg bg-white/20 flex items-center justify-center text-2xl">
+                  📅
+                </div>
+                <div>
+                  <div className="font-semibold">Smart Scheduling</div>
+                  <div className="text-sm text-white/70">Calendar with conflict detection</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-lg bg-white/20 flex items-center justify-center text-2xl">
+                  🐴
+                </div>
+                <div>
+                  <div className="font-semibold">Horse Management</div>
+                  <div className="text-sm text-white/70">School & private horses</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-lg bg-white/20 flex items-center justify-center text-2xl">
+                  📊
+                </div>
+                <div>
+                  <div className="font-semibold">Reports & Analytics</div>
+                  <div className="text-sm text-white/70">Comprehensive insights</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-Get your documentation site up and running in minutes.
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <div className="text-center mb-12">
+    <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+      Get Started in Minutes
+    </h2>
+    <p className="text-lg text-gray-600 dark:text-gray-400">
+      Follow these steps to set up your equestrian school management system
+    </p>
+  </div>
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
+  <Steps>
+    <Step title="Install and Configure">
+      Set up your environment and configure the application with your school's details. The system supports both development and production deployments.
+      
+      ```bash
+      npm install
+      npm run dev
+      ```
+    </Step>
+    
+    <Step title="Register Your First Instructor">
+      Add instructors to your system with their personal information and assign them unique colors for easy identification in the calendar view.
+      
+      Navigate to **Instructors** → **New Instructor** and fill in the required details including DNI, name, contact information, and preferred color.
+    </Step>
+    
+    <Step title="Add Horses and Students">
+      Register your school's horses (both school-owned and private) and enroll your first students with their class plans and horse assignments.
+      
+      Go to **Horses** or **Students** section and click the **New** button to add entries. Students can choose from 4, 8, 12, or 16 monthly class plans.
+    </Step>
+    
+    <Step title="Schedule Your First Class">
+      Use the intuitive calendar interface to schedule classes. The system automatically validates time slots and prevents scheduling conflicts.
+      
+      Open the **Calendar** in Day View, click on an empty time slot, and select the student, instructor, horse, and specialty to create a class.
+    </Step>
+  </Steps>
+</div>
 
-## Make it yours
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <div className="text-center mb-12">
+    <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+      Explore by Topic
+    </h2>
+    <p className="text-lg text-gray-600 dark:text-gray-400">
+      Dive into comprehensive guides for every aspect of your school management
+    </p>
+  </div>
 
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
-  </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
-  </Card>
+  <CardGroup cols={2}>
     <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
-  </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
+      title="Student Management"
+      icon="user-graduate"
+      href="/guides/students/registration"
+    >
+      Learn how to register students, manage class plans, assign horses, and handle trial classes for prospective riders.
+    </Card>
+    
+    <Card
+      title="Class Scheduling"
+      icon="calendar-days"
+      href="/guides/classes/creating-classes"
+    >
+      Master the art of scheduling classes with our powerful calendar tools, conflict detection, and bulk operations.
+    </Card>
+    
+    <Card
+      title="Instructor Management"
+      icon="chalkboard-user"
+      href="/guides/instructors/registration"
+    >
+      Set up instructor profiles, manage schedules, and use color-coding for visual organization in the calendar.
+    </Card>
+    
+    <Card
+      title="Horse Management"
+      icon="horse"
+      href="/guides/horses/registration"
+    >
+      Track school-owned and private horses, manage availability, and assign them to students and classes.
+    </Card>
+    
+    <Card
+      title="Calendar & Views"
+      icon="calendar"
+      href="/guides/calendar/views"
+    >
+      Explore multiple calendar views (day, week, month), Excel-style day grid, and advanced scheduling features.
+    </Card>
+    
+    <Card
+      title="Reports & Analytics"
+      icon="chart-bar"
+      href="/guides/reports/overview"
+    >
+      Generate comprehensive reports on students, classes, instructors, horses, and export data to Excel.
+    </Card>
+    
+    <Card
+      title="Financial Management"
+      icon="dollar-sign"
+      href="/guides/finances/income-tracking"
+    >
+      Track income from class plans, manage expenses, and monitor board fees for horses.
+    </Card>
+    
+    <Card
+      title="System Configuration"
+      icon="gear"
+      href="/admin/configuration"
+    >
+      Configure system settings, manage user access, and customize the platform for your school's needs.
+    </Card>
+  </CardGroup>
+</div>
 
-## Create beautiful pages
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <div className="text-center mb-12">
+    <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+      Key Features
+    </h2>
+    <p className="text-lg text-gray-600 dark:text-gray-400">
+      Everything you need to run a successful equestrian school
+    </p>
+  </div>
 
-Everything you need to create world-class documentation.
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="p-6 rounded-xl border border-gray-200 dark:border-[#27272a] bg-white dark:bg-[#1a1d27] hover:border-[#8B4513] dark:hover:border-[#D2691E] transition-colors">
+      <div className="w-12 h-12 rounded-lg bg-[#8B4513]/10 dark:bg-[#8B4513]/20 flex items-center justify-center mb-4">
+        <span className="text-2xl">🎓</span>
+      </div>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Trial Class System</h3>
+      <p className="text-sm text-gray-600 dark:text-gray-400">
+        Allow prospective students to take trial classes before enrolling, with automatic validation and tracking.
+      </p>
+    </div>
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+    <div className="p-6 rounded-xl border border-gray-200 dark:border-[#27272a] bg-white dark:bg-[#1a1d27] hover:border-[#8B4513] dark:hover:border-[#D2691E] transition-colors">
+      <div className="w-12 h-12 rounded-lg bg-[#8B4513]/10 dark:bg-[#8B4513]/20 flex items-center justify-center mb-4">
+        <span className="text-2xl">⚠️</span>
+      </div>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Conflict Detection</h3>
+      <p className="text-sm text-gray-600 dark:text-gray-400">
+        Real-time validation prevents double-booking of instructors, horses, and students with visual warnings.
+      </p>
+    </div>
 
-## Need inspiration?
+    <div className="p-6 rounded-xl border border-gray-200 dark:border-[#27272a] bg-white dark:bg-[#1a1d27] hover:border-[#8B4513] dark:hover:border-[#D2691E] transition-colors">
+      <div className="w-12 h-12 rounded-lg bg-[#8B4513]/10 dark:bg-[#8B4513]/20 flex items-center justify-center mb-4">
+        <span className="text-2xl">🎨</span>
+      </div>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Color-Coded Calendar</h3>
+      <p className="text-sm text-gray-600 dark:text-gray-400">
+        Assign unique colors to instructors for instant visual identification in the calendar interface.
+      </p>
+    </div>
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+    <div className="p-6 rounded-xl border border-gray-200 dark:border-[#27272a] bg-white dark:bg-[#1a1d27] hover:border-[#8B4513] dark:hover:border-[#D2691E] transition-colors">
+      <div className="w-12 h-12 rounded-lg bg-[#8B4513]/10 dark:bg-[#8B4513]/20 flex items-center justify-center mb-4">
+        <span className="text-2xl">📋</span>
+      </div>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Excel Export</h3>
+      <p className="text-sm text-gray-600 dark:text-gray-400">
+        Export daily schedules and reports to professionally formatted Excel files for printing and analysis.
+      </p>
+    </div>
+
+    <div className="p-6 rounded-xl border border-gray-200 dark:border-[#27272a] bg-white dark:bg-[#1a1d27] hover:border-[#8B4513] dark:hover:border-[#D2691E] transition-colors">
+      <div className="w-12 h-12 rounded-lg bg-[#8B4513]/10 dark:bg-[#8B4513]/20 flex items-center justify-center mb-4">
+        <span className="text-2xl">💬</span>
+      </div>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">WhatsApp Integration</h3>
+      <p className="text-sm text-gray-600 dark:text-gray-400">
+        Contact students and instructors directly via WhatsApp with pre-formatted messages from the system.
+      </p>
+    </div>
+
+    <div className="p-6 rounded-xl border border-gray-200 dark:border-[#27272a] bg-white dark:bg-[#1a1d27] hover:border-[#8B4513] dark:hover:border-[#D2691E] transition-colors">
+      <div className="w-12 h-12 rounded-lg bg-[#8B4513]/10 dark:bg-[#8B4513]/20 flex items-center justify-center mb-4">
+        <span className="text-2xl">🔄</span>
+      </div>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Bulk Operations</h3>
+      <p className="text-sm text-gray-600 dark:text-gray-400">
+        Copy weekly schedules, cancel entire days, and perform mass updates with advanced bulk operation tools.
+      </p>
+    </div>
+  </div>
+</div>
+
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <div className="rounded-2xl border-2 border-[#8B4513] dark:border-[#D2691E] bg-gradient-to-br from-[#8B4513]/5 to-[#D2691E]/5 dark:from-[#8B4513]/10 dark:to-[#654321]/10 p-8 md:p-12 text-center">
+    <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+      Ready to Transform Your Equestrian School?
+    </h2>
+    <p className="text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
+      Get started with our comprehensive documentation and start managing your school more efficiently today.
+    </p>
+    <div className="flex flex-wrap justify-center gap-4">
+      <a
+        href="/quickstart"
+        className="inline-flex items-center justify-center px-6 py-3 text-base font-semibold rounded-lg bg-[#8B4513] text-white hover:bg-[#654321] transition-colors"
+      >
+        Start Quick Guide
+      </a>
+      <a
+        href="/concepts/system-overview"
+        className="inline-flex items-center justify-center px-6 py-3 text-base font-semibold rounded-lg border-2 border-[#8B4513] dark:border-[#D2691E] text-[#8B4513] dark:text-[#D2691E] hover:bg-[#8B4513]/5 dark:hover:bg-[#8B4513]/10 transition-colors"
+      >
+        Learn Core Concepts
+      </a>
+    </div>
+  </div>
+</div>

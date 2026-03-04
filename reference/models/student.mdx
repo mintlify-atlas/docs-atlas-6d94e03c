@@ -1,0 +1,146 @@
+---
+title: Student (Alumno)
+description: Student data model representing individuals enrolled in riding classes
+---
+
+## Overview
+
+The `Alumno` (Student) model represents individuals enrolled in the equestrian school. Students can take riding classes, own or reserve horses, and have different monthly class plans.
+
+## Data Model
+
+<ParamField path="id" type="number" required>
+  Unique identifier for the student
+</ParamField>
+
+<ParamField path="dni" type="string" required>
+  National identification number (DNI). Only numbers without dots or dashes.
+  
+  **Validation**: Must be unique across all students. The system validates for duplicates in real-time when entering 9 or more digits.
+  
+  Example: `"12345678"`
+</ParamField>
+
+<ParamField path="nombre" type="string" required>
+  Student's first name(s)
+</ParamField>
+
+<ParamField path="apellido" type="string" required>
+  Student's last name(s)
+</ParamField>
+
+<ParamField path="fechaNacimiento" type="string" required>
+  Date of birth in ISO format (yyyy-MM-dd)
+  
+  Used for age calculation and insurance purposes.
+  
+  Example: `"1995-06-15"`
+</ParamField>
+
+<ParamField path="codigoArea" type="string" required>
+  Phone area code. The system automatically adds the `+549` prefix for Argentine numbers.
+  
+  Example: `"221"`
+</ParamField>
+
+<ParamField path="telefono" type="string" required>
+  Phone number without the leading 0 or 15
+  
+  Example: `"1234567"`
+  
+  **Note**: Combined with `codigoArea`, the full format becomes `+549{codigoArea}{telefono}`
+</ParamField>
+
+<ParamField path="email" type="string">
+  Email address (optional but recommended for communications)
+</ParamField>
+
+<ParamField path="fechaInscripcion" type="string" required>
+  Registration date in ISO format (yyyy-MM-dd)
+  
+  Automatically set to the current date when creating a new student.
+</ParamField>
+
+<ParamField path="cantidadClases" type="number" required>
+  Number of classes contracted per month
+  
+  **Valid values**: `4`, `8`, `12`, or `16`
+</ParamField>
+
+<ParamField path="propietario" type="boolean" required>
+  Indicates if the student owns a private horse
+  
+  Default: `false`
+</ParamField>
+
+<ParamField path="activo" type="boolean" required>
+  Indicates if the student is currently active
+  
+  Default: `true`
+  
+  **Note**: Inactive students cannot take regular classes but may be eligible for trial classes.
+</ParamField>
+
+<ParamField path="caballoPropio" type="number | Caballo">
+  Reference to the student's own horse (if `tipoPension` is `"CABALLO_PROPIO"`) or reserved school horse (if `tipoPension` is `"RESERVA_ESCUELA"`)
+  
+  Can be either:
+  - A horse ID (number)
+  - A full Horse object with expanded data
+</ParamField>
+
+<ParamField path="tipoPension" type="TipoPension" required>
+  Type of board/horse arrangement
+  
+  See [Board Types](/reference/enums/board-types) for possible values.
+</ParamField>
+
+<ParamField path="cuotaPension" type="CuotaPension | null">
+  Board quota (only applicable when `tipoPension` is not `"SIN_CABALLO"`)
+  
+  Possible values:
+  - `"ENTERA"` - Full board
+  - `"MEDIA"` - Half board
+  - `"TERCIO"` - Third board
+  
+  Set to `null` when `tipoPension` is `"SIN_CABALLO"`
+</ParamField>
+
+## Example
+
+```json
+{
+  "id": 123,
+  "dni": "12345678",
+  "nombre": "María",
+  "apellido": "González",
+  "fechaNacimiento": "1995-06-15",
+  "codigoArea": "221",
+  "telefono": "5551234",
+  "email": "maria.gonzalez@example.com",
+  "fechaInscripcion": "2024-01-15",
+  "cantidadClases": 8,
+  "propietario": false,
+  "activo": true,
+  "caballoPropio": 45,
+  "tipoPension": "RESERVA_ESCUELA",
+  "cuotaPension": "ENTERA"
+}
+```
+
+## Related Models
+
+- [Horse (Caballo)](/reference/models/horse) - Horses that students can own or reserve
+- [Class (Clase)](/reference/models/class) - Classes that students attend
+- [Board Types](/reference/enums/board-types) - Enumeration of board types
+
+## Business Rules
+
+- DNI must be unique across all students (validated in real-time)
+- Phone numbers are automatically formatted with `+549` prefix
+- Students with `tipoPension: "SIN_CABALLO"` must have `cuotaPension: null`
+- Private horses can only be used by their owners
+- Inactive students cannot be assigned to regular classes (only trial classes)
+- Students are automatically set as active upon registration
+
+See [Validation Rules](/reference/rules/validation-rules) for more details.

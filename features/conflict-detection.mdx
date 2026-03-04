@@ -1,0 +1,277 @@
+---
+title: Conflict Detection
+description: Automatic detection and prevention of scheduling conflicts
+---
+
+## Overview
+
+The system automatically detects and prevents scheduling conflicts to ensure horses and instructors are not double-booked.
+
+## Conflict Validation
+
+### Automatic Detection
+
+From the README documentation:
+
+```markdown
+### 3. Schedule Conflict Validation
+
+**Verifies**:
+- Horse doesn't have another class at the same time
+- Instructor doesn't have another class at the same time
+- Shows visual indicators (⚠️) in cells with conflicts
+```
+
+From `~/workspace/source/README.md:214-219`
+
+### Business Rule Enforcement
+
+```markdown
+6. **Conflicts**: Cannot schedule two simultaneous classes with same horse or instructor
+```
+
+From `~/workspace/source/README.md:543`
+
+## Visual Indicators
+
+### Conflict Set Tracking
+
+The calendar uses a conflict set to track and display conflicts:
+
+```tsx
+<DayView
+  selectedDate={currentDate}
+  clases={filteredClases}
+  caballos={caballos}
+  onStatusChange={handleStatusChange}
+  onCellClick={handleCellClick}
+  onEditClase={handleEditClase}
+  onDeleteClase={handleDeleteClase}
+  puedeEditarClase={puedeEditarClase}
+  getAlumnoNombre={getAlumnoNombre}
+  getAlumnoNombreCompleto={getAlumnoNombreCompleto}
+  getNombreParaClase={getNombreParaClase}
+  getNombreCompletoParaClase={getNombreCompletoParaClase}
+  getInstructorNombre={getInstructorNombre}
+  getCaballoNombre={getCaballoNombre}
+  getInstructorColor={getInstructorColor}
+  conflictSet={conflictSet}
+/>
+```
+
+From `~/workspace/source/src/pages/Calendario.tsx:171-188`
+
+### Warning Symbol
+
+Cells with conflicts display a warning indicator (⚠️) to alert users:
+
+```markdown
+- Shows visual indicators (⚠️) in cells with conflicts
+```
+
+From `~/workspace/source/README.md:219`
+
+## Conflict Types
+
+### Horse Conflicts
+
+Prevents scheduling the same horse for multiple classes at the same time:
+
+- **Scenario**: Trying to assign Horse A to two classes at 10:00 AM
+- **Detection**: System checks if horse already has a class at that time
+- **Prevention**: Shows warning and prevents double-booking
+
+### Instructor Conflicts
+
+Prevents assigning the same instructor to overlapping classes:
+
+- **Scenario**: Trying to assign Instructor B to classes at 10:00 and 10:30 when first class is 60 minutes
+- **Detection**: System checks instructor availability for the full duration
+- **Prevention**: Displays conflict indicator
+
+## Time-Based Conflict Detection
+
+### 30-Minute Classes
+
+For 30-minute classes, conflicts occur when:
+- Same horse scheduled at exact same time slot
+- Same instructor scheduled at exact same time slot
+
+### 60-Minute Classes
+
+For 60-minute classes (occupying two consecutive slots):
+
+```markdown
+#### **60-minute classes**:
+- Occupy TWO consecutive time slots
+- Example: Class at 10:00 occupies 10:00 and 10:30 cells
+- Continuation cell is clickable (opens same popover)
+- Shows visual border to indicate continuity
+```
+
+From `~/workspace/source/README.md:269-273`
+
+Conflicts occur when:
+- Horse scheduled during either time slot (10:00 or 10:30)
+- Instructor scheduled during either time slot
+
+## Conflict Resolution
+
+### User Actions
+
+When a conflict is detected:
+
+1. **Visual Warning** - Conflict indicator appears in calendar cell
+2. **Review** - User reviews the conflicting classes
+3. **Options**:
+   - Choose different horse
+   - Choose different instructor
+   - Select different time slot
+   - Cancel one of the conflicting classes
+
+### Prevention Strategy
+
+The system prevents conflicts by:
+
+1. **Real-time Checking** - Validates availability when creating/editing classes
+2. **Visual Feedback** - Shows conflicts immediately in calendar view
+3. **Blocking** - Can prevent saving classes with conflicts (depending on implementation)
+
+## Day View Conflict Visualization
+
+### Grid Layout
+
+The day view makes conflicts easily visible:
+
+```markdown
+#### **Day View** (Excel Type)
+- Detailed spreadsheet-style view
+- Columns: Fixed time + column per horse
+- Rows: 30-minute time slots (09:00 - 18:30)
+- Click empty cell to quickly create class
+```
+
+From `~/workspace/source/README.md:257-261`
+
+This layout makes it easy to spot:
+- Multiple classes in same horse column at same time
+- Same instructor color appearing in multiple columns at same time
+
+## Instructor Color Coding
+
+### Visual Conflict Detection
+
+Instructor colors help identify conflicts visually:
+
+```tsx
+<div className="mt-6 flex flex-wrap items-center justify-center gap-4">
+  {instructores.map((instructor) => (
+    <div key={instructor.id} className="flex items-center gap-2">
+      <div
+        className="h-3 w-3 rounded-full border"
+        style={{ backgroundColor: instructor.color }}
+      />
+      <span className="text-sm text-muted-foreground">
+        {instructor.nombre} {instructor.apellido}
+      </span>
+    </div>
+  ))}
+</div>
+```
+
+From `~/workspace/source/src/pages/Calendario.tsx:236-248`
+
+### Identifying Instructor Conflicts
+
+When the same instructor color appears:
+- In multiple columns at the same time row = CONFLICT
+- In adjacent time rows for a 60-minute class = CONFLICT
+
+## Private Horse Protection
+
+### Ownership Validation
+
+Prevents conflicts with horse ownership rules:
+
+```markdown
+5. **Private Horses**: Can only be used by their owners
+```
+
+From `~/workspace/source/README.md:542`
+
+This prevents:
+- Assigning private horses to non-owners
+- Scheduling conflicts with owner's classes
+
+## Conflict Checking Flow
+
+### When Creating a Class
+
+1. User selects date, time, horse, instructor
+2. System queries existing classes for that day
+3. For the selected time slot:
+   - Check if horse has a class
+   - Check if instructor has a class
+   - Account for class duration (30 or 60 minutes)
+4. If conflict found:
+   - Add to conflict set
+   - Display warning indicator
+5. User decides how to proceed
+
+### When Editing a Class
+
+Same process, but excludes the current class being edited from conflict detection.
+
+## Best Practices
+
+1. **Use Day View** - Best view for identifying conflicts visually
+2. **Check Before Creating** - Review calendar before scheduling
+3. **Watch for Colors** - Duplicate instructor colors indicate conflicts
+4. **Verify Warnings** - Always investigate conflict indicators
+5. **Plan Ahead** - Consider instructor and horse availability
+6. **Update Availability** - Mark horses as unavailable when needed
+7. **Stagger Classes** - Use 30-minute slots to maximize scheduling flexibility
+8. **Communication** - Coordinate with instructors about their availability
+
+## Conflict Scenarios
+
+### Scenario 1: Horse Double-Booking
+
+```
+Time: 10:00 AM
+Horse: Thunder
+Class 1: Student A with Instructor X
+Class 2: Student B with Instructor Y (CONFLICT)
+
+Resolution: Choose different horse for Class 2
+```
+
+### Scenario 2: Instructor Overlap
+
+```
+Time: 10:00 AM (60 minutes)
+Instructor: Maria
+Class 1: 10:00-11:00 with Horse A
+Class 2: 10:30-11:00 with Horse B (CONFLICT)
+
+Resolution: Schedule Class 2 at 11:00 or choose different instructor
+```
+
+### Scenario 3: Private Horse Assignment
+
+```
+Horse: Luna (Private, owned by Student A)
+Attempt: Assign Luna to Student B (CONFLICT)
+
+Resolution: Choose a school horse for Student B
+```
+
+## Future Enhancements
+
+Potential improvements to conflict detection:
+
+1. **Automatic Suggestions** - Suggest alternative times/horses/instructors
+2. **Conflict Prevention** - Block saving classes with unresolved conflicts
+3. **Batch Conflict Check** - Validate entire schedule for conflicts
+4. **Smart Scheduling** - AI-powered optimal scheduling
+5. **Waitlist Management** - Queue students when no slots available

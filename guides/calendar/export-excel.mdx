@@ -1,0 +1,402 @@
+---
+title: Export to Excel
+description: Export daily schedules to professionally formatted Excel files for printing and sharing
+---
+
+The Export to Excel feature generates professionally formatted spreadsheets from the Day View, perfect for printing, sharing, or offline reference.
+
+## Overview
+
+Export creates a formatted Excel file (.xlsx) containing:
+- Daily schedule in grid format
+- Color-coded instructors
+- Horse type indicators
+- Complete class details in comments
+- Professional print layout
+
+<Info>
+  **Only available in Day View**: The export button appears when viewing the calendar in Day View mode.
+</Info>
+
+## How to Export
+
+<Steps>
+  <Step title="Navigate to Day View">
+    Switch to Day View in the calendar
+  </Step>
+  <Step title="Select Target Date">
+    Navigate to the day you want to export
+  </Step>
+  <Step title="Click Export Button">
+    Click **"Exportar Excel"** in the toolbar
+  </Step>
+  <Step title="File Downloads">
+    The Excel file downloads automatically to your browser's download folder
+  </Step>
+  <Step title="Open File">
+    Open the file in Excel, LibreOffice, or Google Sheets
+  </Step>
+</Steps>
+
+## File Format
+
+The generated Excel file follows this structure:
+
+### File Naming
+
+```
+Calendario_YYYY-MM-DD.xlsx
+
+Example:
+Calendario_2026-03-04.xlsx
+```
+
+The filename includes the date for easy identification.
+
+### Sheet Structure
+
+<CodeGroup>
+```text Layout
+┌────────────────────────────────────────┐
+│  CALENDARIO - Wednesday, March 4, 2026   │  ← Title
+├──────────┬──────────┬──────────┬──────────┤
+│   Hora   │ Tornado  │  Luna    │  Flash   │  ← Headers
+│          │ (Escuela)│ (Privado)│ (Escuela)│
+├──────────┼──────────┼──────────┼──────────┤
+│  09:00   │  Maria   │          │  Carlos  │  ← Classes
+│  09:30   │  Garcia  │  Ana R.  │  (cont.) │
+│  10:00   │          │  Lopez   │          │
+│   ...    │   ...    │   ...    │   ...    │
+├──────────┴──────────┴──────────┴──────────┤
+│  LEYENDA                                  │  ← Legend
+│  Instructores:                            │
+│  ■ Carlos Ruiz    ■ Ana Martinez        │
+│                                          │
+│  Tipos de Caballo:                        │
+│  Escuela = School Horse                   │
+│  Privado = Private Horse                  │
+└────────────────────────────────────────┘
+```
+</CodeGroup>
+
+## Excel Formatting
+
+### Title Row
+
+<Tabs>
+  <Tab title="Content">
+    **Format**: "CALENDARIO - [Full Date]"
+    
+    Example: `CALENDARIO - Miércoles 4 de marzo de 2026`
+  </Tab>
+  
+  <Tab title="Styling">
+    - Font: Bold, 14pt
+    - Alignment: Centered
+    - Merged: Across all columns
+    - Background: Light grey
+  </Tab>
+</Tabs>
+
+### Column Headers
+
+#### Time Column
+
+- Label: "Hora"
+- Width: Fixed for readability
+- Background: Grey
+- Border: Black outline
+
+#### Horse Columns
+
+<Tabs>
+  <Tab title="School Horses">
+    - **Background**: Blue (#4472C4)
+    - **Label**: Horse name + "(Escuela)"
+    - **Text**: White for contrast
+    - **Order**: Alphabetically first
+  </Tab>
+  
+  <Tab title="Private Horses">
+    - **Background**: Gold (#D4A017)
+    - **Label**: Horse name + "(Privado)"
+    - **Text**: White for contrast
+    - **Order**: After school horses
+  </Tab>
+</Tabs>
+
+### Class Cells
+
+#### Background Colors
+
+Each class cell uses the **instructor's assigned color**:
+
+```
+Instructor: Carlos Ruiz (Blue #3B82F6)
+→ All his classes have blue background
+
+Instructor: Ana Martinez (Green #22C55E)
+→ All her classes have green background
+```
+
+#### Cell Content
+
+Regular classes show:
+```
+Maria
+Garcia
+```
+
+MONTA classes show:
+```
+Carlos
+Ruiz
+(MONTA)
+```
+
+60-minute classes:
+```
+First cell:  Carlos Garcia
+Second cell: (cont.)
+```
+
+#### Trial Classes
+
+Trial classes get **orange border** around the cell.
+
+### Cell Comments
+
+Each class cell includes a **comment** (hover tooltip) with complete details:
+
+```text
+Student: Maria Garcia
+Horse: Tornado
+Instructor: Carlos Ruiz
+Time: 10:00 - 10:30
+Duration: 30 min
+Specialty: Equitación
+Status: PROGRAMADA
+Observations: Primera clase del mes
+```
+
+<Info>
+  Hover over any class cell in Excel to see the comment popup with full details.
+</Info>
+
+### Legend Section
+
+The bottom of the sheet contains a legend:
+
+#### Instructor Colors
+
+Shows each instructor with their color:
+```
+Instructores:
+■ Carlos Ruiz    ■ Ana Martinez    ■ Pedro Lopez
+```
+
+#### Horse Types
+
+Explains the type labels:
+```
+Tipos de Caballo:
+Escuela = Caballo de escuela (disponible para todos)
+Privado = Caballo privado (solo para su dueño)
+```
+
+## Print Optimization
+
+The Excel file is optimized for printing:
+
+### Page Setup
+
+- **Orientation**: Landscape (horizontal)
+- **Paper Size**: A4
+- **Margins**: Narrow (0.5 inches)
+- **Scaling**: Fit to one page wide
+
+### Print-Friendly Features
+
+✅ **Column widths**: Auto-adjusted for content
+✅ **Row heights**: Consistent for alignment
+✅ **Grid lines**: Visible borders on all cells
+✅ **Headers**: Bold and distinct
+✅ **Colors**: Print-safe (not too light)
+
+### Printing Tips
+
+<Steps>
+  <Step title="Open in Excel">
+    Open the downloaded file in Microsoft Excel or compatible software
+  </Step>
+  <Step title="Print Preview">
+    Go to File > Print to see preview
+  </Step>
+  <Step title="Adjust if Needed">
+    - Check if all columns fit on one page
+    - Adjust scaling if necessary
+    - Verify colors are visible
+  </Step>
+  <Step title="Print">
+    Send to printer or save as PDF
+  </Step>
+</Steps>
+
+## Use Cases
+
+<AccordionGroup>
+  <Accordion title="Daily Instructor Reference">
+    Print the daily schedule and post it in the instructor lounge:
+    
+    - Instructors can see their schedule at a glance
+    - Color coding makes it easy to identify their classes
+    - No need to access the computer system
+  </Accordion>
+  
+  <Accordion title="Barn/Stable Posting">
+    Print and display in the stable area:
+    
+    - Shows which horse is in use at what time
+    - Helps stable hands prepare horses
+    - Prevents conflicts and confusion
+  </Accordion>
+  
+  <Accordion title="Client Communication">
+    Export and email to clients:
+    
+    - Parents can see when their child has classes
+    - Easy to view on any device
+    - Can be printed at home
+  </Accordion>
+  
+  <Accordion title="Archive/Records">
+    Keep historical records:
+    
+    - Export at the end of each day/week
+    - Store in a records folder
+    - Reference for future planning
+  </Accordion>
+  
+  <Accordion title="Offline Access">
+    Have a backup when internet/system is down:
+    
+    - Pre-export the week's schedules
+    - Keep on laptop or tablet
+    - Operate without live system access
+  </Accordion>
+</AccordionGroup>
+
+## Filters and Export
+
+If you have **filters applied** when exporting:
+
+<Warning>
+  The export includes **only visible classes** based on active filters.
+</Warning>
+
+### Example with Student Filter
+
+If filtering for "Maria Garcia":
+- Export shows only Maria's classes
+- Other students' classes are omitted
+- Empty cells where other classes exist
+
+### Example with Instructor Filter
+
+If filtering for "Carlos Ruiz":
+- Export shows only Carlos's classes
+- Other instructors' classes are omitted
+
+### Tip: Full Export
+
+To export the complete day:
+1. Remove all filters
+2. Click "Restablecer Filtros" if needed
+3. Then click "Exportar Excel"
+
+## File Compatibility
+
+The exported file works with:
+
+✅ **Microsoft Excel** (2010 and later)
+✅ **LibreOffice Calc**
+✅ **Google Sheets** (upload the file)
+✅ **Apple Numbers**
+✅ **OpenOffice Calc**
+
+<Note>
+  Colors and formatting are best preserved in Microsoft Excel.
+</Note>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Download Not Starting">
+    If the file doesn't download:
+    
+    - Check browser popup blocker
+    - Ensure sufficient disk space
+    - Try a different browser
+    - Check browser download settings
+  </Accordion>
+  
+  <Accordion title="Colors Not Showing">
+    If colors are missing:
+    
+    - Open in Microsoft Excel (best support)
+    - Update your spreadsheet software
+    - Check that file downloaded completely
+  </Accordion>
+  
+  <Accordion title="Comments Not Visible">
+    To see cell comments:
+    
+    - Hover over class cells (Excel)
+    - Or go to Review > Show All Comments
+    - Comments may not work in all programs
+  </Accordion>
+  
+  <Accordion title="Print Cutoff">
+    If content is cut off when printing:
+    
+    - Use Print Preview to check
+    - Adjust page scaling (fit to 1 page wide)
+    - Try landscape orientation
+    - Adjust margins to narrow
+  </Accordion>
+</AccordionGroup>
+
+## Advanced: Editing the Export
+
+You can modify the exported file:
+
+### What You Can Do
+
+- Add notes or annotations
+- Highlight specific classes
+- Add additional columns (e.g., payment status)
+- Create summary totals
+- Copy to other sheets/workbooks
+
+### What to Avoid
+
+- Don't use the edited file to import back (no import feature exists)
+- Don't rely on edited file as the source of truth (calendar is master)
+- Don't expect edits to sync back to the system
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Day View" icon="table" href="/guides/calendar/day-view">
+    Learn about the Day View layout
+  </Card>
+  <Card title="Reports" icon="chart-bar" href="/guides/reports/overview">
+    Generate analytical reports
+  </Card>
+  <Card title="Calendar Views" icon="calendar" href="/guides/calendar/views">
+    Understanding different views
+  </Card>
+  <Card title="Bulk Operations" icon="layer-group" href="/guides/calendar/bulk-operations">
+    Manage multiple classes
+  </Card>
+</CardGroup>

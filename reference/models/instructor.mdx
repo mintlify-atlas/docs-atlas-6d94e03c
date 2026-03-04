@@ -1,0 +1,130 @@
+---
+title: Instructor
+description: Instructor data model representing teaching staff at the equestrian school
+---
+
+## Overview
+
+The `Instructor` model represents teaching staff at the equestrian school. Instructors are assigned to classes and have a unique color for visual identification in the calendar.
+
+## Data Model
+
+<ParamField path="id" type="number" required>
+  Unique identifier for the instructor
+</ParamField>
+
+<ParamField path="dni" type="string" required>
+  National identification number (DNI). Only numbers without dots or dashes.
+  
+  **Validation**: Must be unique across all instructors. The system validates for duplicates in real-time when entering 9 or more digits.
+  
+  Example: `"12345678"`
+</ParamField>
+
+<ParamField path="nombre" type="string" required>
+  Instructor's first name(s)
+</ParamField>
+
+<ParamField path="apellido" type="string" required>
+  Instructor's last name(s)
+</ParamField>
+
+<ParamField path="fechaNacimiento" type="string" required>
+  Date of birth in ISO format (yyyy-MM-dd)
+  
+  Example: `"1985-03-20"`
+</ParamField>
+
+<ParamField path="codigoArea" type="string" required>
+  Phone area code. The system automatically adds the `+549` prefix for Argentine numbers.
+  
+  Example: `"221"`
+</ParamField>
+
+<ParamField path="telefono" type="string" required>
+  Phone number without the leading 0 or 15
+  
+  Example: `"1234567"`
+  
+  **Note**: Combined with `codigoArea`, the full format becomes `+549{codigoArea}{telefono}`
+</ParamField>
+
+<ParamField path="email" type="string">
+  Email address (optional but recommended for communications)
+</ParamField>
+
+<ParamField path="activo" type="boolean" required>
+  Indicates if the instructor is currently active
+  
+  Default: `true`
+  
+  Only active instructors can be assigned to new classes.
+</ParamField>
+
+<ParamField path="color" type="string" required>
+  Color assigned to the instructor for visual identification in the calendar
+  
+  **Available colors**: 7 predefined colors
+  
+  Used to:
+  - Distinguish classes in the calendar view
+  - Color-code cells in day view
+  - Identify instructor assignments at a glance
+  
+  Example: `"#3B82F6"` (blue)
+</ParamField>
+
+## Example
+
+```json
+{
+  "id": 5,
+  "dni": "23456789",
+  "nombre": "Carlos",
+  "apellido": "Rodríguez",
+  "fechaNacimiento": "1985-03-20",
+  "codigoArea": "221",
+  "telefono": "5559876",
+  "email": "carlos.rodriguez@example.com",
+  "activo": true,
+  "color": "#3B82F6"
+}
+```
+
+## Visual Identification
+
+### Calendar Display
+
+In the calendar views, instructor colors are used to:
+
+- **Background color**: Each class cell displays the instructor's color (lightened for readability)
+- **Quick identification**: Users can instantly see which instructor is assigned to each class
+- **Legends**: Color legends show instructor names with their corresponding colors
+
+### Available Colors
+
+The system provides 7 predefined colors for instructor assignment:
+
+1. Blue (`#3B82F6`)
+2. Green (`#10B981`)
+3. Red (`#EF4444`)
+4. Yellow (`#F59E0B`)
+5. Purple (`#8B5CF6`)
+6. Pink (`#EC4899`)
+7. Indigo (`#6366F1`)
+
+## Related Models
+
+- [Class (Clase)](/reference/models/class) - Classes taught by the instructor
+- [Specialties](/reference/enums/specialties) - Types of classes instructors can teach
+
+## Business Rules
+
+- DNI must be unique across all instructors (validated in real-time)
+- Phone numbers are automatically formatted with `+549` prefix
+- Instructors are automatically set as active upon registration
+- Only active instructors can be assigned to new classes
+- Each instructor must have a unique color for calendar visualization
+- Instructors cannot have overlapping class schedules (schedule conflict validation)
+
+See [Validation Rules](/reference/rules/validation-rules) and [Scheduling Rules](/reference/rules/scheduling-rules) for more details.

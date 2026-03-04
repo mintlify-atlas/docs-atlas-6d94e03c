@@ -1,0 +1,212 @@
+---
+title: Introduction to HRS
+description: Welcome to the HRS Equestrian School Management System - A comprehensive solution for managing riding schools
+---
+
+# Introduction to HRS
+
+Welcome to **HRS (Horse Riding School)** - a comprehensive, modern management system designed specifically for equestrian schools. HRS streamlines all aspects of running a riding school, from student enrollment to class scheduling, financial tracking, and detailed reporting.
+
+<Note>
+  HRS is built with React, TypeScript, and modern web technologies to provide a fast, reliable, and user-friendly experience.
+</Note>
+
+## What is HRS?
+
+HRS is a full-featured school management platform that helps equestrian schools efficiently manage:
+
+<CardGroup cols={2}>
+  <Card title="Student Management" icon="user">
+    Complete registration system with enrollment tracking, lesson plans, and horse assignments
+  </Card>
+  <Card title="Horse Management" icon="horse">
+    Track both school-owned and privately-owned horses with availability and boarding options
+  </Card>
+  <Card title="Instructor Management" icon="graduation-cap">
+    Manage instructors with color-coded scheduling and workload tracking
+  </Card>
+  <Card title="Class Scheduling" icon="calendar">
+    Powerful calendar system with multiple views and automated conflict detection
+  </Card>
+  <Card title="Financial Tracking" icon="dollar-sign">
+    Monitor income and expenses with detailed financial reports
+  </Card>
+  <Card title="Analytics & Reports" icon="chart-bar">
+    Comprehensive reporting system with Excel export capabilities
+  </Card>
+</CardGroup>
+
+## Key Features
+
+### Comprehensive Student (Alumno) System
+
+Manage student enrollment with:
+- Complete personal information tracking (DNI, contact details, birth date)
+- Flexible lesson plans: 4, 8, 12, or 16 classes per month
+- Three boarding types:
+  - **No assigned horse**: School assigns a horse for each class
+  - **Reserved school horse**: Student reserves a specific school horse
+  - **Private horse**: Student brings their own horse
+- Automatic duplicate DNI validation
+- Trial class system for prospective students
+
+### Intelligent Class Management
+
+From `src/pages/Index.tsx:46`, the system offers:
+
+```tsx
+{
+  title: "Clases",
+  description: "Programa y gestiona las clases de equitación",
+  icon: NotebookPen,
+  href: "/clases",
+}
+```
+
+- Four specialties: Equitation, Dressage (Adiestramiento), Equine Therapy, and Riding
+- Six class states: PROGRAMADA, INICIADA, COMPLETADA, CANCELADA, ACA (Absence with Notice), ASA (Absence without Notice)
+- Duration options: 30 or 60 minutes
+- Operating hours: 9:00 AM to 6:30 PM
+- Automatic validation preventing classes from ending after 6:30 PM
+
+### Advanced Calendar System
+
+Three powerful calendar views:
+
+1. **Month View**: Overview with up to 3 classes per day
+2. **Week View**: Full week display with up to 10 classes per day
+3. **Day View**: Excel-style grid with columns for each horse and 30-minute time slots
+
+<Warning>
+  The system automatically validates scheduling conflicts to prevent double-booking horses or instructors.
+</Warning>
+
+### Professional Reporting
+
+From `src/pages/Index.tsx:59`, comprehensive analytics:
+
+```tsx
+{
+  title: "Reportes",
+  description: "Estadísticas y análisis de la escuela",
+  icon: BarChart,
+  href: "/reportes",
+}
+```
+
+- Student distribution by lesson plans
+- Class status analytics with charts
+- Instructor workload and efficiency metrics
+- Horse utilization statistics
+- All reports exportable to Excel with professional formatting
+
+## Technology Stack
+
+HRS is built with modern, reliable technologies:
+
+<CodeGroup>
+```json package.json
+{
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-router-dom": "^6.30.1",
+    "@tanstack/react-query": "^5.83.0",
+    "date-fns": "^3.6.0",
+    "exceljs": "^4.4.0",
+    "recharts": "^2.15.4",
+    "zod": "^3.25.76"
+  }
+}
+```
+</CodeGroup>
+
+**Frontend:**
+- React 18.3 with TypeScript
+- Vite for fast development and builds
+- TailwindCSS for styling
+- Radix UI for accessible components
+- shadcn/ui component library
+
+**State Management:**
+- TanStack Query for server state
+- React Context for authentication
+
+**Key Libraries:**
+- ExcelJS for professional report exports
+- Recharts for data visualization
+- date-fns for date manipulation
+- Zod for schema validation
+- React Hook Form for form management
+
+## Authentication & Security
+
+From `src/services/authService.ts:104`, HRS implements:
+
+```typescript
+// Login con Basic Auth
+export const login = async (credentials: LoginCredentials): Promise<User> => {
+  const encoded = encodeCredentials(credentials.username, credentials.password);
+  
+  const response = await fetch(`${API_BASE_URL}/login`, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${encoded}`,
+      "Content-Type": "application/json",
+    },
+  });
+  // ...
+}
+```
+
+- Basic Auth with secure credential storage
+- Session-based authentication with auto-logout after 15 minutes of inactivity
+- Email whitelist for registration
+- Protected routes requiring authentication
+- Automatic session refresh
+
+## Who Should Use HRS?
+
+HRS is designed for:
+
+- **Equestrian School Administrators**: Streamline daily operations and reduce administrative overhead
+- **Riding Instructors**: Easily view schedules and manage classes
+- **School Owners**: Access comprehensive reports and financial tracking
+- **Administrative Staff**: Efficiently handle student enrollment and communications
+
+## System Requirements
+
+<Steps>
+  <Step title="Modern Web Browser">
+    Chrome, Firefox, Safari, or Edge (latest version recommended)
+  </Step>
+  <Step title="Internet Connection">
+    Stable internet connection for API communication
+  </Step>
+  <Step title="Screen Resolution">
+    Minimum 1280x720 for optimal experience (responsive design supports mobile)
+  </Step>
+</Steps>
+
+## Getting Help
+
+Navigate through the documentation to learn more about specific features:
+
+- [Quick Start Guide](/quickstart) - Get started in minutes
+- [Features Overview](/features) - Deep dive into all capabilities
+- [System Architecture](/concepts/system-overview) - Understand how HRS works
+- [User Roles](/concepts/user-roles) - Learn about permissions and access
+- [Data Structure](/concepts/data-structure) - Explore the data model
+
+<Note>
+  HRS is continuously updated with new features and improvements. Check back regularly for updates!
+</Note>
+
+## About This Documentation
+
+This documentation is generated from the actual HRS source code, ensuring accuracy and up-to-date information. All code examples are real implementations from the system.
+
+---
+
+**Version**: 2.0  
+**Last Updated**: February 2026  
+**System**: HRS - Equestrian School Management System

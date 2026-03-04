@@ -1,0 +1,388 @@
+---
+title: 'Trial Classes'
+description: 'Set up and manage trial classes for prospective students'
+---
+
+## Overview
+
+Trial classes allow prospective students to experience the riding school before committing to full enrollment. The HRS system supports two types of trial classes with built-in validation to prevent abuse.
+
+<Note>
+  Trial classes do NOT count toward a student's monthly class quota and are clearly marked in the calendar and reports.
+</Note>
+
+## What is a Trial Class?
+
+A trial class enables someone **without an active student account** to take a riding lesson to evaluate the school before formal registration.
+
+### Key Characteristics
+
+- Marked with 🎓 emoji in calendar
+- Orange border styling in schedule
+- "Prueba" (Trial) badge in class details
+- Does not count toward monthly quotas
+- Subject to strict validation rules
+
+## Types of Trial Classes
+
+<CardGroup cols={2}>
+  <Card title="Type 1: New Person" icon="user-plus">
+    For someone who has never been a student at the school.
+    
+    - No student account required
+    - Just enter name and surname
+    - Creates "Trial Person" record
+  </Card>
+  
+  <Card title="Type 2: Existing Inactive Student" icon="user-clock">
+    For a previously registered student trying a new specialty.
+    
+    - Student must be INACTIVE
+    - Cannot have classes in that specialty
+    - Select from student list
+  </Card>
+</CardGroup>
+
+## Type 1: New Person Trial
+
+For prospective students who have never attended the school.
+
+### Requirements
+
+- First name
+- Last name
+- No existing student record needed
+
+### Setup Process
+
+<Steps>
+  <Step title="Create Class">
+    Navigate to the calendar or Classes section and click to create a new class.
+  </Step>
+  
+  <Step title="Enable Trial Mode">
+    Check the **"Trial Class"** checkbox in the class form.
+  </Step>
+  
+  <Step title="Select New Person">
+    Choose **"New Person"** from the trial type options.
+  </Step>
+  
+  <Step title="Enter Details">
+    Fill in:
+    - First name
+    - Last name
+    - Select instructor
+    - Select horse
+    - Choose specialty
+    - Set date and time
+  </Step>
+  
+  <Step title="Save Trial Class">
+    Click **Create Class**. The system:
+    - Creates a trial person record
+    - Marks class with `esPrueba: true`
+    - Does not count toward quotas
+  </Step>
+</Steps>
+
+### System Behavior
+
+```tsx
+// Trial classes are identified in the calendar
+// From README.md:182-187
+const esPrueba = true; // Marked as trial
+const alumnoId = null; // No student account
+const nombreParticipante = "Juan Pérez"; // Trial person name
+```
+
+### Visual Identification
+
+- **Calendar**: 🎓 emoji displayed
+- **Border**: Orange highlight
+- **Badge**: "Prueba" label
+- **Details**: Alert showing trial class info
+
+## Type 2: Inactive Student Trial
+
+For previously enrolled students who want to try a different specialty.
+
+### Requirements
+
+<Warning>
+  **Strict Validation Rules:**
+  
+  1. Student must be **INACTIVE** (`activo: false`)
+  2. Student cannot have any classes (scheduled or completed) in the chosen specialty
+  3. Student cannot repeat trial class for same specialty
+</Warning>
+
+### Setup Process
+
+<Steps>
+  <Step title="Create Class">
+    Navigate to create a new class from calendar or Classes section.
+  </Step>
+  
+  <Step title="Enable Trial Mode">
+    Check the **"Trial Class"** checkbox.
+  </Step>
+  
+  <Step title="Select Existing Student">
+    Choose **"Existing Student"** from trial type options.
+  </Step>
+  
+  <Step title="Choose Student">
+    Select from the dropdown of **INACTIVE** students only.
+    
+    <Note>
+      Active students will not appear in this list.
+    </Note>
+  </Step>
+  
+  <Step title="Select Specialty">
+    Choose a specialty the student has NOT previously tried:
+    - Equitación (Riding)
+    - Adiestramiento (Training)
+    - Equinoterapia (Equine Therapy)
+    - Monta (Free Riding)
+  </Step>
+  
+  <Step title="Complete Details">
+    Fill in:
+    - Instructor
+    - Horse
+    - Date and time
+    - Duration
+  </Step>
+  
+  <Step title="Save">
+    System validates all rules before allowing creation.
+  </Step>
+</Steps>
+
+## Validation Rules
+
+The system enforces three critical validation rules:
+
+### Rule 1: No Active Students
+
+```typescript
+// Students must be inactive to take trial classes
+student.activo === false
+```
+
+<Check>
+  **Valid**: Inactive student trying new specialty
+</Check>
+
+<Warning>
+  **Invalid**: Active student cannot book trial class
+</Warning>
+
+### Rule 2: No Previous Classes in Specialty
+
+```typescript
+// Check for existing classes in the specialty
+const hasClassesInSpecialty = clases.some(
+  clase => 
+    clase.alumnoId === student.id && 
+    clase.especialidad === selectedSpecialty
+);
+```
+
+<Check>
+  **Valid**: Student has no classes in "Equinoterapia", can book trial
+</Check>
+
+<Warning>
+  **Invalid**: Student has completed classes in "Equitación", cannot book trial for that specialty
+</Warning>
+
+### Rule 3: No Repeat Trial Classes
+
+```typescript
+// Students cannot repeat trial for same specialty
+const hasTrialInSpecialty = clases.some(
+  clase => 
+    clase.alumnoId === student.id && 
+    clase.especialidad === selectedSpecialty &&
+    clase.esPrueba === true
+);
+```
+
+<Check>
+  **Valid**: First trial class in "Adiestramiento"
+</Check>
+
+<Warning>
+  **Invalid**: Already took trial class in "Adiestramiento"
+</Warning>
+
+## Quota Tracking
+
+Trial classes have special handling in the quota system:
+
+```tsx
+// From Alumnos.tsx:405-419
+const clasesAlumnoMes = clases.filter(
+  (c) =>
+    c.nombreParticipante === nombreCompleto &&
+    !c.esPrueba &&  // ← Trial classes excluded
+    ["COMPLETADA", "ASA"].includes(c.estado) &&
+    new Date(c.dia).getMonth() + 1 === mesActual &&
+    new Date(c.dia).getFullYear() === añoActual,
+);
+```
+
+<Note>
+  The `!c.esPrueba` filter ensures trial classes are excluded from monthly quota calculations.
+</Note>
+
+## Visual Indicators
+
+### In Calendar
+
+Trial classes are distinctly marked:
+
+```markdown
+From README.md:182-187:
+- 🎓 Emoji in the calendar
+- Orange border on the cell
+- "Prueba" badge in details
+- Alert notification when editing
+```
+
+### In Class Details
+
+When viewing a trial class:
+
+- Badge displaying "Prueba"
+- Alert message explaining trial status
+- Different styling to distinguish from regular classes
+
+## Converting Trial to Regular Student
+
+After a successful trial class:
+
+<Steps>
+  <Step title="Evaluate Interest">
+    Determine if the trial participant wants to enroll.
+  </Step>
+  
+  <Step title="Register as Student">
+    For **new persons**:
+    - Navigate to Students → New Student
+    - Enter full information (DNI, contact, etc.)
+    - Select class plan
+    - Configure horse assignment
+    
+    For **inactive students**:
+    - Edit the student record
+    - Change status to Active (`activo: true`)
+    - Update class plan if needed
+  </Step>
+  
+  <Step title="Schedule Regular Classes">
+    Once registered/activated, book regular classes without trial flag.
+  </Step>
+</Steps>
+
+## Common Scenarios
+
+<AccordionGroup>
+  <Accordion title="Someone wants to try riding before enrolling">
+    **Solution**: Use Type 1 (New Person)
+    
+    1. Create class, check "Trial Class"
+    2. Select "New Person"
+    3. Enter their name
+    4. Complete class details and save
+  </Accordion>
+  
+  <Accordion title="Former student wants to try equine therapy">
+    **Solution**: Use Type 2 (Existing Student)
+    
+    1. Verify student is inactive
+    2. Check they have no equine therapy classes
+    3. Create trial class, select the student
+    4. Choose "Equinoterapia" specialty
+  </Accordion>
+  
+  <Accordion title="Active student wants a trial class">
+    **Solution**: Not allowed
+    
+    Active students cannot book trial classes. They should book regular classes that count toward their quota.
+  </Accordion>
+  
+  <Accordion title="Student already has classes in a specialty">
+    **Solution**: Not allowed for that specialty
+    
+    Validation prevents trial classes in specialties where the student has prior experience. They can try a different specialty.
+  </Accordion>
+</AccordionGroup>
+
+## Business Rules Summary
+
+### What Trial Classes Can Do
+
+<Check>
+  - Allow prospective students to try the school
+  - Enable inactive students to explore new specialties
+  - Provide risk-free introduction to riding
+  - Do not count toward monthly quotas
+</Check>
+
+### What Trial Classes Cannot Do
+
+<Warning>
+  - Cannot be used by active students
+  - Cannot be repeated for same specialty
+  - Cannot be used if student has classes in that specialty
+  - Do not count as regular classes in reports
+</Warning>
+
+## Reporting
+
+Trial classes appear separately in reports:
+
+- Excluded from quota calculations
+- Tracked in dedicated trial class metrics
+- Help measure conversion rates (trial → enrolled)
+- Analyze which specialties attract trial students
+
+## Technical Details
+
+### Trial Class Flag
+
+```typescript
+esPrueba: boolean; // true for trial classes
+```
+
+### Trial Person Storage
+
+```typescript
+// For Type 1 (New Person)
+{
+  nombreParticipante: string; // "Juan Pérez"
+  alumnoId: null; // No student record
+  esPrueba: true;
+}
+```
+
+### Specialty Types
+
+```typescript
+// From enums.ts:3-7
+export type EspecialidadClase =
+  | "ADIESTRAMIENTO"
+  | "EQUINOTERAPIA"
+  | "EQUITACION"
+  | "MONTA";
+```
+
+## Related Pages
+
+- [Student Registration](/guides/students/registration) - Convert trial participants to students
+- [Class Scheduling](/guides/classes/creating-classes) - Creating and managing classes
+- [Class Plans](/guides/students/class-plans) - Understanding quota systems

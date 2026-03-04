@@ -1,0 +1,312 @@
+---
+title: Authentication System
+description: Secure user authentication with session management and access control
+---
+
+## Overview
+
+The authentication system provides secure access control with features including login, registration with email whitelisting, session management, and automatic idle timeout.
+
+## Login
+
+### Basic Authentication
+
+The login page accepts username and password credentials:
+
+```tsx
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (!username.trim() || !password.trim()) {
+    toast({
+      title: "Error",
+      description: "Por favor completa todos los campos",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  setError("");
+  setIsSubmitting(true);
+
+  try {
+    await login({ username: username.trim(), password });
+    toast({
+      title: "¡Bienvenido!",
+      description: `Sesión iniciada como ${username}`,
+    });
+    navigate(from, { replace: true });
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Credenciales inválidas";
+    setError(errorMessage);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+```
+
+From `~/workspace/source/src/pages/Login.tsx:34-68`
+
+### Password Visibility Toggle
+
+```tsx
+const [showPassword, setShowPassword] = useState(false);
+
+<div className="relative">
+  <Input
+    id="password"
+    type={showPassword ? "text" : "password"}
+    placeholder="••••••••"
+    value={password}
+    onChange={(e) => setPassword(e.target.value)}
+    disabled={isSubmitting}
+    autoComplete="current-password"
+  />
+  <Button
+    type="button"
+    variant="ghost"
+    size="sm"
+    onClick={() => setShowPassword(!showPassword)}
+  >
+    {showPassword ? (
+      <EyeOff className="h-4 w-4 text-muted-foreground" />
+    ) : (
+      <Eye className="h-4 w-4 text-muted-foreground" />
+    )}
+  </Button>
+</div>
+```
+
+From `~/workspace/source/src/pages/Login.tsx:105-128`
+
+## Registration
+
+### Email Whitelist Validation
+
+Registration requires email to be on the authorized whitelist:
+
+```tsx
+const checkEmailWhitelist = async (email: string): Promise<boolean> => {
+  setIsCheckingEmail(true);
+  try {
+    const response = await fetch(`${API_BASE_URL}/check-email/${email}`);
+    return response.ok;
+  } catch {
+    return false;
+  } finally {
+    setIsCheckingEmail(false);
+  }
+};
+
+// Validate whitelist
+const isAllowed = await checkEmailWhitelist(email.trim());
+if (!isAllowed) {
+  setError("Este correo no está autorizado para registrarse");
+  toast({
+    title: "Email no autorizado",
+    description: "Este correo no está en la lista de usuarios autorizados",
+    variant: "destructive",
+  });
+  return;
+}
+```
+
+From `~/workspace/source/src/pages/Register.tsx:47-94`
+
+### Password Strength Validation
+
+Real-time password strength calculation:
+
+```tsx
+const calculatePasswordStrength = (password: string): number => {
+  let strength = 0;
+  if (password.length >= 8) strength += 20;
+  if (password.length >= 12) strength += 20;
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength += 20;
+  if (/\d/.test(password)) strength += 20;
+  if (/[^a-zA-Z0-9]/.test(password)) strength += 20;
+  return strength;
+};
+```
+
+From `~/workspace/source/src/pages/Register.tsx:37-45`
+
+### Password Strength Indicator
+
+```tsx
+{formData.password && (
+  <div className="space-y-2">
+    <div className="flex justify-between text-xs">
+      <span className="text-muted-foreground">
+        Seguridad de la contraseña
+      </span>
+      <span className="font-medium">
+        {passwordStrength < 40
+          ? "Débil"
+          : passwordStrength < 80
+            ? "Regular"
+            : "Fuerte"}
+      </span>
+    </div>
+    <Progress value={passwordStrength} className="h-2" />
+  </div>
+)}
+```
+
+From `~/workspace/source/src/pages/Register.tsx:216-232`
+
+### Registration Validation Rules
+
+```tsx
+if (!username.trim() || !password.trim()) {
+  setError("El usuario y la contraseña son obligatorios");
+  return;
+}
+
+if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) {
+  setError("Ingresa un correo electrónico válido");
+  return;
+}
+
+if (password !== confirmPassword) {
+  setError("Las contraseñas no coinciden");
+  return;
+}
+
+if (password.length < 8) {
+  setError("La contraseña debe tener al menos 8 caracteres");
+  return;
+}
+```
+
+From `~/workspace/source/src/pages/Register.tsx:79-109`
+
+## Protected Routes
+
+### Route Protection
+
+Prevent unauthorized access to protected pages:
+
+```tsx
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+  const { isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return <>{children}</>;
+};
+```
+
+From `~/workspace/source/src/components/auth/ProtectedRoute.tsx:10-27`
+
+### Redirect After Login
+
+Redirect users to their intended destination after login:
+
+```tsx
+const from = location.state?.from?.pathname || "/";
+
+// After successful login
+navigate(from, { replace: true });
+```
+
+From `~/workspace/source/src/pages/Login.tsx:32-56`
+
+## Session Management
+
+### Idle Timeout
+
+Automatic logout after 15 minutes of inactivity:
+
+```tsx
+const IdleHandler = () => {
+  const navigate = useNavigate();
+  const timer = useRef<number | null>(null);
+
+  const handleLogout = useCallback(() => {
+    const isLogged = getStoredCredentials();
+    if (isLogged) {
+      clearCredentials();
+      navigate("/login");
+      toast.info("Sesión cerrada por inactividad");
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    const timeout = 15 * 60 * 1000; // 15 minutes
+
+    const resetTimer = () => {
+      if (timer.current) window.clearTimeout(timer.current);
+      timer.current = window.setTimeout(handleLogout, timeout);
+    };
+
+    // Events that reset the counter
+    const events = ["mousedown", "keydown", "scroll", "click", "touchstart"];
+
+    events.forEach((e) => window.addEventListener(e, resetTimer));
+    resetTimer();
+
+    return () => {
+      events.forEach((e) => window.removeEventListener(e, resetTimer));
+      if (timer.current) window.clearTimeout(timer.current);
+    };
+  }, [handleLogout]);
+
+  return null;
+};
+```
+
+From `~/workspace/source/src/components/auth/IdleHandler.tsx:7-43`
+
+## Security Features
+
+### From README Documentation
+
+```markdown
+**Security**:
+- Automatic logout on inactivity (15 minutes)
+- Basic Auth authentication
+- Registration only with whitelisted email
+- Strong password validation
+```
+
+From `~/workspace/source/README.md:513-517`
+
+## User Roles
+
+### Admin Role Assignment
+
+```tsx
+await register({
+  username: username.trim(),
+  email: email.trim(),
+  password,
+  rol: "ADMIN",
+  activo: true,
+  fechaCreacion: new Date().toISOString(),
+});
+```
+
+From `~/workspace/source/src/pages/Register.tsx:114-122`
+
+## Best Practices
+
+1. **Strong Passwords** - Enforce minimum 8 characters with mixed case, numbers, and symbols
+2. **Email Whitelisting** - Restrict registration to authorized users only
+3. **Session Timeout** - Implement automatic logout for security
+4. **Password Visibility** - Allow users to toggle password visibility for better UX
+5. **Error Handling** - Provide clear, user-friendly error messages
+6. **Loading States** - Show loading indicators during authentication operations
+7. **Redirect Handling** - Preserve intended destination across login flow

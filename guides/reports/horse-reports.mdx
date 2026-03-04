@@ -1,0 +1,407 @@
+---
+title: Horse Reports
+description: Monitor horse utilization, availability, and workload distribution
+---
+
+The Horse Reports section provides insights into horse usage, helping you optimize allocation, identify overworked or underutilized horses, and maintain balanced workloads.
+
+## Overview
+
+Access horse analytics through the **Caballos** tab in the Reports section.
+
+## Horse Availability Summary
+
+Displays current availability status across all horses.
+
+### Pie Chart
+
+Shows proportion of available vs unavailable horses:
+
+**Segments**:
+- 🟢 **Green**: Disponibles (Available)
+- 🔴 **Red**: No disponibles (Unavailable)
+
+**Example**:
+```
+Disponibles:     12 horses (80%)
+No disponibles:   3 horses (20%)
+Total:           15 horses
+```
+
+<Info>
+  This reflects **current availability status**, not usage in the selected period.
+</Info>
+
+## Horses Without Activity
+
+Identifies horses with no classes in the selected period.
+
+### Card Display
+
+Shows horses that had zero classes:
+
+**For Each Horse**:
+```
+┌─────────────────────────────────┐
+│  🐎 Tornado                       │
+│                                   │
+│  [Escuela]  [Disponible]           │
+└─────────────────────────────────┘
+```
+
+**Information Shown**:
+- Horse name
+- Type badge (Escuela or Privado)
+- Availability status badge
+
+### Empty State
+
+If all horses had classes:
+```
+┌─────────────────────────────────┐
+│  🐎                              │
+│                                   │
+│  Todos activos en el período     │
+└─────────────────────────────────┘
+```
+
+<Note>
+  Count shown in the header indicates how many horses have no classes: "0 caballos sin clases" or "3 caballos sin clases"
+</Note>
+
+## Horse Usage Chart
+
+Horizontal bar chart showing classes per horse.
+
+### Chart Structure
+
+**Axes**:
+- Y-axis (left): Horse names
+- X-axis (bottom): Number of classes
+- Bars: Color-coded by horse type
+
+**Example**:
+```
+Luna (Privado)    ████████████████████  45
+Tornado (Escuela) █████████████████░░░  38
+Flash (Escuela)   ███████████████░░░░░  35
+Sombra (Privado)  ████████████░░░░░░░░  28
+Rayo (Escuela)    ██████████░░░░░░░░░░  22
+```
+
+### Color Coding
+
+<Tabs>
+  <Tab title="School Horses">
+    - **Color**: Blue (#4472C4)
+    - **Label**: (Escuela)
+    - **Usage**: Shared among all students
+  </Tab>
+  <Tab title="Private Horses">
+    - **Color**: Gold (#D4A017)
+    - **Label**: (Privado)
+    - **Usage**: Owner only
+  </Tab>
+</Tabs>
+
+### Legend
+
+Below the chart:
+```
+■ Escuela  ■ Privado
+```
+
+Quick reference for bar colors.
+
+## Usage Table
+
+Detailed usage metrics for each horse.
+
+### Table (Not explicitly shown, but data available)
+
+Based on chart data:
+
+| Horse    | Type     | Classes | Percentage |
+|----------|----------|---------|------------|
+| Luna     | Privado  | 45      | 18.2%      |
+| Tornado  | Escuela  | 38      | 15.4%      |
+| Flash    | Escuela  | 35      | 14.2%      |
+| Sombra   | Privado  | 28      | 11.3%      |
+| Rayo     | Escuela  | 22      | 8.9%       |
+
+**Percentage Calculation**:
+```
+Percentage = (Horse Classes / Total Classes in Period) × 100
+
+Example (Luna):
+  Horse classes: 45
+  Total period classes: 247
+  Percentage: (45/247) × 100 = 18.2%
+```
+
+## Interpreting Horse Usage
+
+### School Horses (Escuela)
+
+**Expected Pattern**:
+- Relatively even distribution
+- All horses getting regular use
+- Usage based on availability and suitability
+
+**Concerns**:
+⚠️ One horse significantly higher than others:
+  - May indicate overwork
+  - Check for fatigue or health issues
+  - Redistribute to protect horse welfare
+
+⚠️ One horse significantly lower than others:
+  - May be less suitable for common class types
+  - Could be availability issue
+  - Might need training or repositioning
+
+### Private Horses (Privado)
+
+**Expected Pattern**:
+- Usage matches owner's plan
+- More variable than school horses
+- Depends on owner's schedule
+
+**Example**:
+```
+Owner has 12-class plan:
+  Expected: ~12 uses per month
+  Actual: Should be close to plan
+  
+Owner has 4-class plan:
+  Expected: ~4 uses per month
+  Lower usage is normal
+```
+
+## Workload Analysis
+
+### Healthy Workload (School Horses)
+
+<Tabs>
+  <Tab title="Light Use (10-20 classes/month)">
+    **Appropriate for**:
+    - Younger horses
+    - Older horses
+    - Horses returning from injury
+    - Specialized use horses
+  </Tab>
+  
+  <Tab title="Moderate Use (20-35 classes/month)">
+    **Standard workload**:
+    - Healthy adult horses
+    - Regular rotation
+    - Balanced schedule
+    - Sustainable long-term
+  </Tab>
+  
+  <Tab title="Heavy Use (35-50 classes/month)">
+    **Monitor closely**:
+    - Ensure adequate rest days
+    - Watch for fatigue signs
+    - Rotate with lighter weeks
+    - Excellent for fit horses
+  </Tab>
+  
+  <Tab title="Overuse (50+ classes/month)">
+    **Action needed**:
+    - Likely too much work
+    - Risk of injury or burnout
+    - Redistribute load
+    - Add rest periods
+  </Tab>
+</Tabs>
+
+### Red Flags
+
+<Warning>
+  - **Extreme imbalance**: One horse ×3 usage of another
+  - **Sudden changes**: Horse usage drops dramatically
+  - **No rest pattern**: Classes every single day
+  - **Zero usage**: Available horse with no classes
+</Warning>
+
+## Using Horse Reports
+
+### Workload Balancing
+
+<Steps>
+  <Step title="Review Usage Chart">
+    Identify horses with high vs low usage
+  </Step>
+  <Step title="Check Health/Availability">
+    Ensure low-usage horses are actually available
+  </Step>
+  <Step title="Redistribute">
+    Assign future classes to balance load
+  </Step>
+  <Step title="Monitor">
+    Re-check next period for improvement
+  </Step>
+</Steps>
+
+### Identifying Capacity
+
+Determine if you need more horses:
+
+**Calculation Example**:
+```
+Current horses: 8 school horses
+Average usage: 32 classes/month each
+Total capacity: 8 × 32 = 256 classes/month
+
+Current demand: 240 classes/month
+Utilization: 94%
+
+Conclusion: Near capacity, consider acquiring another horse
+```
+
+### Horse Welfare
+
+Use reports to ensure horse well-being:
+
+<Check>
+  - **Rest days**: Ensure horses aren't worked every day
+  - **Rotation**: Balance workload across all available horses
+  - **Monitoring**: Track sudden usage changes
+  - **Veterinary**: Correlate usage with health check schedules
+</Check>
+
+## Horses Without Activity
+
+If a horse shows zero classes:
+
+### Investigate Reasons
+
+1. **Unavailable status**: Check if marked unavailable
+2. **Health issues**: Injury, illness, recovery
+3. **Training**: New horse being trained
+4. **Vacation**: Deliberate rest period
+5. **Private owner absence**: Owner on vacation
+6. **Oversight**: Mistakenly not scheduled
+
+### Action Items
+
+Depending on the reason:
+- **Update availability** if status is wrong
+- **Schedule vet** if health concern
+- **Resume scheduling** if rest period over
+- **Confirm with owner** for private horses
+
+## Exporting Horse Data
+
+Export the usage data:
+
+<Steps>
+  <Step title="Click Export">
+    Click **"Exportar"** button above the chart/table area
+  </Step>
+  <Step title="Download File">
+    File downloads as `Reporte_Caballos_YYYY-MM-DD.xlsx`
+  </Step>
+  <Step title="Open in Excel">
+    Open in your preferred spreadsheet application
+  </Step>
+</Steps>
+
+### Excel File Contents
+
+Includes:
+- Horse names
+- Type (Escuela/Privado)
+- Class counts
+- Usage percentages
+- Formatted headers
+- Color-coded types
+
+### Use Cases for Export
+
+<AccordionGroup>
+  <Accordion title="Veterinary Records">
+    Track usage for health management:
+    - Correlate workload with vet visits
+    - Plan farrier schedules
+    - Monitor stress indicators
+  </Accordion>
+  
+  <Accordion title="Owner Reports">
+    Share with private horse owners:
+    - Show how much their horse was used
+    - Justify boarding fees
+    - Demonstrate care and attention
+  </Accordion>
+  
+  <Accordion title="Capacity Planning">
+    Determine acquisition needs:
+    - Current utilization rates
+    - Forecast growth
+    - Budget for new horses
+  </Accordion>
+  
+  <Accordion title="Historical Trends">
+    Build usage database:
+    - Export monthly
+    - Track long-term patterns
+    - Identify seasonal variations
+  </Accordion>
+</AccordionGroup>
+
+## Seasonal Patterns
+
+Horse usage may vary by season:
+
+**Summer** (June-August):
+- Typically higher usage
+- More available students
+- Better weather
+
+**Winter** (December-February):
+- May be lower usage
+- Weather cancellations
+- Holiday breaks
+
+**Compare year-over-year** to identify patterns.
+
+## Private vs School Horses
+
+### Private Horse Expectations
+
+Private horses are used **only by their owner**:
+- Usage matches owner's plan
+- Not available for other students
+- More variable usage patterns
+
+<Note>
+  A private horse with low usage isn't necessarily a problem—it reflects the owner's schedule and plan.
+</Note>
+
+### School Horse Expectations
+
+School horses are **shared resources**:
+- Should have balanced usage
+- Available for all students (unless unavailable)
+- More predictable usage patterns
+
+<Info>
+  School horses with consistently low usage may indicate a problem (health, suitability, scheduling).
+</Info>
+
+## Related Reports
+
+<CardGroup cols={2}>
+  <Card title="Class Reports" icon="book-open" href="/guides/reports/class-reports">
+    Overall class volume and distribution
+  </Card>
+  <Card title="Student Reports" icon="users" href="/guides/reports/student-reports">
+    Student usage patterns
+  </Card>
+  <Card title="General Reports" icon="chart-line" href="/guides/reports/overview">
+    School-wide statistics
+  </Card>
+  <Card title="Horse Management" icon="horse" href="/guides/horses/registration">
+    Managing horse profiles
+  </Card>
+</CardGroup>

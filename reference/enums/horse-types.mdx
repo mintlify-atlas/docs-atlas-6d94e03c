@@ -1,0 +1,264 @@
+---
+title: Horse Types
+description: Enumeration of horse ownership types (TipoCaballo)
+---
+
+## Overview
+
+The `TipoCaballo` enumeration defines the ownership type of horses in the system, distinguishing between school-owned horses and privately-owned horses.
+
+## Type Definition
+
+```typescript
+export type TipoCaballo = 
+  | "ESCUELA" 
+  | "PRIVADO";
+```
+
+## Values
+
+### ESCUELA
+
+**Meaning**: School horse
+
+**Description**: Horse owned by the equestrian school, available for use by all students.
+
+**Characteristics**:
+- Owned by the school
+- Available to all students
+- Can be used for students with `tipoPension: "SIN_CABALLO"`
+- Can be reserved by students with `tipoPension: "RESERVA_ESCUELA"`
+- Suitable for beginners and regular lessons
+- Managed by school staff
+
+**Assignment Rules**:
+- ✅ Can be assigned to any student
+- ✅ Can be used for trial classes
+- ✅ Can be reserved for exclusive student use
+- ✅ Can be assigned per-class basis to students without reservation
+
+**Visual Indicators**:
+- **Calendar header color**: 🔵 Blue
+- Clearly marked in horse selection dropdowns
+- Shown in reports as school assets
+
+**Typical Use Cases**:
+- Beginner student lessons
+- Students without their own horse
+- Trial classes for new people
+- General riding instruction
+- Students who want to try different horses
+
+---
+
+### PRIVADO
+
+**Meaning**: Private horse
+
+**Description**: Horse owned by an individual student, boarded at the school.
+
+**Characteristics**:
+- Owned by a specific student
+- **Can only be used by the owner**
+- Requires `tipoPension: "CABALLO_PROPIO"` for owner
+- Boarded at school facilities
+- Owner pays board quota
+- Owner has exclusive rights
+
+**Assignment Rules**:
+- ✅ Can only be assigned to classes with the owner
+- ❌ Cannot be used by other students
+- ❌ Cannot be used for trial classes (unless owner is the trial student)
+- ⚠️ System validates ownership when assigning to classes
+
+**Visual Indicators**:
+- **Calendar header color**: 🟡 Gold
+- Marked with owner's name in horse listings
+- Distinguished in reports and exports
+
+**Ownership Validation**:
+The system enforces strict ownership rules:
+```typescript
+// Valid: Owner using their private horse
+{
+  alumnoId: 123,
+  caballoId: 45,  // Horse with tipo: "PRIVADO" owned by student 123
+}
+
+// Invalid: Different student trying to use private horse
+{
+  alumnoId: 999,  // Different student
+  caballoId: 45,  // Returns validation error
+}
+```
+
+**Typical Use Cases**:
+- Advanced students with their own horses
+- Competition horses
+- Students in specialized training
+- Long-term committed students
+- Students who own horses
+
+---
+
+## Comparison Table
+
+| Feature | ESCUELA | PRIVADO |
+|---------|---------|----------|
+| **Ownership** | School | Individual student |
+| **Availability** | All students | Owner only |
+| **Reservation** | Optional | Exclusive to owner |
+| **Trial Classes** | ✅ Yes | ❌ No (owner only) |
+| **Per-Class Assignment** | ✅ Yes | ❌ No |
+| **Board Payment** | N/A or reservation fee | Required |
+| **Calendar Color** | 🔵 Blue | 🟡 Gold |
+| **Management** | School staff | Owner + school |
+
+## Business Rules
+
+### Horse Assignment Validation
+
+When assigning a horse to a class:
+
+1. **School Horse (`ESCUELA`)**:
+   - ✅ Any active student can use it
+   - ✅ Can check for schedule conflicts only
+   - ✅ No ownership validation needed
+
+2. **Private Horse (`PRIVADO`)**:
+   - ⚠️ Must validate student is the owner
+   - ⚠️ Check student has `tipoPension: "CABALLO_PROPIO"`
+   - ⚠️ Check student's `caballoPropio` matches horse ID
+   - ❌ Reject if student is not the owner
+
+### Student-Horse Relationships
+
+| Student TipoPension | Horse Type | Relationship |
+|---------------------|------------|-------------|
+| SIN_CABALLO | ESCUELA | Assigned per class |
+| SIN_CABALLO | PRIVADO | ❌ Not allowed |
+| RESERVA_ESCUELA | ESCUELA | Reserved horse |
+| RESERVA_ESCUELA | PRIVADO | ❌ Not allowed |
+| CABALLO_PROPIO | ESCUELA | ❌ Not allowed |
+| CABALLO_PROPIO | PRIVADO | Owned horse |
+
+### Horse Registration
+
+When registering a new horse:
+
+1. **School Horse**:
+   ```json
+   {
+     "nombre": "Luna",
+     "tipo": "ESCUELA",
+     "disponible": true
+   }
+   ```
+
+2. **Private Horse**:
+   ```json
+   {
+     "nombre": "Thunder",
+     "tipo": "PRIVADO",
+     "disponible": true
+   }
+   ```
+   Then associate with student:
+   ```json
+   {
+     "alumnoId": 123,
+     "tipoPension": "CABALLO_PROPIO",
+     "caballoPropio": 45,  // Thunder's ID
+     "propietario": true
+   }
+   ```
+
+## Calendar Visualization
+
+### Day View (Excel-Style)
+
+In the calendar day view:
+
+- Each horse has its own **column**
+- Horse columns are **color-coded by type**:
+  - **🔵 Blue header**: School horses (`ESCUELA`)
+  - **🟡 Gold header**: Private horses (`PRIVADO`)
+- Column headers show:
+  - Horse name
+  - Horse type indicator
+  - Owner name (for private horses)
+
+### Excel Export
+
+When exporting the calendar to Excel:
+
+- **School horses**: Blue header background
+- **Private horses**: Gold header background
+- **Legend included**: Explains the color coding
+- **Owner info**: Listed for private horses
+
+## API Examples
+
+### Create School Horse
+
+```json
+POST /caballos
+{
+  "nombre": "Luna",
+  "tipo": "ESCUELA",
+  "disponible": true
+}
+```
+
+### Create Private Horse
+
+```json
+POST /caballos
+{
+  "nombre": "Thunder",
+  "tipo": "PRIVADO",
+  "disponible": true
+}
+```
+
+### Query School Horses Only
+
+```json
+GET /caballos/buscar?tipo=ESCUELA
+```
+
+### Query Private Horses Only
+
+```json
+GET /caballos/buscar?tipo=PRIVADO
+```
+
+## Validation Error Messages
+
+### Attempting to Use Private Horse with Wrong Student
+
+```json
+{
+  "error": "Validation Error",
+  "mensaje": "Este caballo privado solo puede ser usado por su propietario",
+  "status": 400
+}
+```
+
+### Attempting to Assign School Horse to CABALLO_PROPIO Student
+
+```json
+{
+  "error": "Validation Error",
+  "mensaje": "Un alumno con caballo propio debe tener un caballo de tipo PRIVADO",
+  "status": 400
+}
+```
+
+## Related
+
+- [Horse Model](/reference/models/horse)
+- [Student Model](/reference/models/student)
+- [Board Types](/reference/enums/board-types)
+- [Validation Rules](/reference/rules/validation-rules)
+- [Scheduling Rules](/reference/rules/scheduling-rules)

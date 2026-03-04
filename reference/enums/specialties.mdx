@@ -1,0 +1,214 @@
+---
+title: Specialties
+description: Enumeration of class specialties (EspecialidadClase)
+---
+
+## Overview
+
+The `EspecialidadClase` enumeration defines the different types of riding class specialties offered by the equestrian school.
+
+## Type Definition
+
+```typescript
+export type EspecialidadClase =
+  | "ADIESTRAMIENTO"
+  | "EQUINOTERAPIA"
+  | "EQUITACION"
+  | "MONTA";
+```
+
+## Values
+
+### EQUITACION
+
+**Meaning**: Regular riding class
+
+**Description**: Standard equestrian riding lessons where students learn basic to advanced riding techniques.
+
+**Characteristics**:
+- Most common class type
+- Suitable for all skill levels
+- Requires student assignment
+- Counts toward monthly quota
+- Available for trial classes
+
+**Typical Use Cases**:
+- Beginner riding lessons
+- Intermediate skill development
+- Advanced riding techniques
+- General riding practice
+
+---
+
+### ADIESTRAMIENTO
+
+**Meaning**: Horse training class
+
+**Description**: Specialized training sessions focused on developing the horse's skills and obedience.
+
+**Characteristics**:
+- Focus on horse development
+- Requires experienced students or trainers
+- Counts toward monthly quota
+- May have specific horse requirements
+
+**Typical Use Cases**:
+- Training young horses
+- Developing specific horse skills
+- Behavioral correction
+- Competition preparation
+
+---
+
+### EQUINOTERAPIA
+
+**Meaning**: Equine therapy class
+
+**Description**: Therapeutic riding sessions using horses for physical, emotional, or cognitive therapy.
+
+**Characteristics**:
+- Therapeutic purpose
+- May require special certifications for instructors
+- Specialized horse selection (calm, well-trained horses)
+- Counts toward monthly quota
+- Available for trial classes
+
+**Typical Use Cases**:
+- Physical therapy
+- Emotional support therapy
+- Cognitive development
+- Special needs support
+
+---
+
+### MONTA
+
+**Meaning**: Free riding / Open mount
+
+**Description**: Open riding sessions without formal instruction, typically for experienced riders.
+
+**Special Behavior**: Automatically assigns a placeholder student (ID 1) since it's not tied to a specific student enrollment.
+
+**Characteristics**:
+- **Auto-assigns student ID 1** (placeholder/wildcard student)
+- Less structured than regular classes
+- For experienced, independent riders
+- Does not require specific student enrollment
+- Counts toward horse usage
+
+**Typical Use Cases**:
+- Experienced riders practicing independently
+- Horse exercise without formal lesson
+- Owner riding their private horse
+- Practice sessions between lessons
+
+---
+
+## Trial Class Eligibility
+
+Not all specialties may be available for trial classes depending on school policies:
+
+| Specialty | Trial Class Allowed | Notes |
+|-----------|-------------------|-------|
+| EQUITACION | ✅ Yes | Most common for trial classes |
+| ADIESTRAMIENTO | ⚠️ Conditional | May require evaluation first |
+| EQUINOTERAPIA | ✅ Yes | Subject to therapeutic assessment |
+| MONTA | ❌ No | Requires experience, uses placeholder student |
+
+## Validation Rules
+
+### Specialty-Specific Rules
+
+**MONTA**:
+- Automatically sets `alumnoId = 1` (placeholder student)
+- Cannot be assigned to regular students in class creation
+- System override prevents manual student selection
+
+**Trial Classes**:
+- Student cannot have a trial class if they already have regular/completed classes in that specialty
+- Each specialty is tracked independently for trial eligibility
+- Example: Student can have trial for EQUITACION even if they've done ADIESTRAMIENTO
+
+## Usage in the System
+
+### Class Creation
+
+When creating a class:
+1. Select the specialty from dropdown
+2. If `MONTA` is selected:
+   - Student selector is disabled
+   - System auto-assigns ID 1
+3. For other specialties:
+   - Student must be manually selected
+   - Trial class option available (if conditions met)
+
+### Filtering and Reporting
+
+Specialties are used to:
+- Filter classes in calendar views
+- Generate specialty-specific reports
+- Track student progress per specialty
+- Analyze class distribution
+- Monitor instructor workload by specialty
+
+### Student Progress Tracking
+
+Each student can:
+- Take classes in multiple specialties
+- Have different progress levels per specialty
+- Qualify for trial classes in specialties they haven't tried
+- Have separate attendance records per specialty
+
+## API Examples
+
+### Create Regular Class
+
+```json
+{
+  "especialidad": "EQUITACION",
+  "alumnoId": 123,
+  "instructorId": 5,
+  "caballoId": 12,
+  "dia": "2024-03-15",
+  "hora": "14:30",
+  "duracion": 60
+}
+```
+
+### Create MONTA Class
+
+```json
+{
+  "especialidad": "MONTA",
+  "alumnoId": 1,  // Automatically set
+  "instructorId": 5,
+  "caballoId": 12,
+  "dia": "2024-03-15",
+  "hora": "10:00",
+  "duracion": 30
+}
+```
+
+### Create Trial Class
+
+```json
+{
+  "especialidad": "EQUINOTERAPIA",
+  "esPrueba": true,
+  "alumnoId": null,
+  "personaPruebaNombre": "Laura",
+  "personaPruebaApellido": "Martínez",
+  "instructorId": 5,
+  "caballoId": 12,
+  "dia": "2024-03-16",
+  "hora": "10:00",
+  "duracion": 30
+}
+```
+
+## Related
+
+- [Class Model](/reference/models/class)
+- [Student Model](/reference/models/student)
+- [Business Logic](/reference/rules/business-logic)
+- [Validation Rules](/reference/rules/validation-rules)

@@ -1,0 +1,604 @@
+---
+title: User Roles & Permissions
+description: Understanding user roles, permissions, and access control in the HRS system
+---
+
+# User Roles & Permissions
+
+HRS implements a role-based access control system to manage what different users can do within the application. This page explains the user model, roles, and permission structure.
+
+## User Model
+
+From `src/services/authService.ts:5`, the system defines users as:
+
+```typescript
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  password: string;
+  rol?: string;
+  activo: boolean;
+  fechaCreacion: string;
+  avatarUrl?: string;
+}
+
+export type SafeUser = Omit<User, "password">;
+```
+
+<Note>
+  The system separates `User` (full model) from `SafeUser` (without password) to ensure sensitive data is never exposed in the client.
+</Note>
+
+## User Attributes
+
+### Core Attributes
+
+<ParamField path="id" type="number" required>
+  Unique identifier for the user
+</ParamField>
+
+<ParamField path="username" type="string" required>
+  Unique username for login authentication
+</ParamField>
+
+<ParamField path="email" type="string" required>
+  User's email address (must be in whitelist for registration)
+</ParamField>
+
+<ParamField path="password" type="string" required>
+  Hashed password (never stored in browser, only transmitted for authentication)
+</ParamField>
+
+<ParamField path="rol" type="string" optional>
+  User's role designation (determines permissions)
+</ParamField>
+
+<ParamField path="activo" type="boolean" required>
+  Whether the user account is active
+  - `true`: User can log in and access system
+  - `false`: User account is disabled
+</ParamField>
+
+<ParamField path="fechaCreacion" type="string" required>
+  ISO date string of when the account was created
+</ParamField>
+
+<ParamField path="avatarUrl" type="string" optional>
+  URL to user's profile avatar image
+</ParamField>
+
+## Authentication Flow
+
+### Registration Process
+
+From `src/services/authService.ts:127`:
+
+```typescript
+export const register = async (data: RegisterData): Promise<User> => {
+  const response = await fetch(`${API_BASE_URL}/register`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+  
+  if (!response.ok) {
+    await parseApiError(response);
+  }
+  
+  return response.json();
+};
+```
+
+<Steps>
+  <Step title="User Submits Registration">
+    User provides:
+    - Username
+    - Email (must be in whitelist)
+    - Password (must meet strength requirements)
+  </Step>
+  
+  <Step title="Server Validation">
+    Backend validates:
+    - Email is in approved whitelist
+    - Username is unique
+    - Password meets complexity requirements
+    - All required fields are present
+  </Step>
+  
+  <Step title="Account Creation">
+    System creates account with:
+    - `activo: true` (active by default)
+    - `fechaCreacion: current date`
+    - `rol: default role` (if applicable)
+  </Step>
+  
+  <Step title="Registration Complete">
+    User can now log in with credentials
+  </Step>
+</Steps>
+
+<Warning>
+  **Email Whitelist**: Only pre-approved email addresses can register. This prevents unauthorized access to the school management system.
+</Warning>
+
+### Login Process
+
+From `src/services/authService.ts:104`:
+
+```typescript
+export const login = async (credentials: LoginCredentials): Promise<User> => {
+  const encoded = encodeCredentials(credentials.username, credentials.password);
+  
+  const response = await fetch(`${API_BASE_URL}/login`, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${encoded}`,
+      "Content-Type": "application/json",
+    },
+  });
+  
+  if (!response.ok) {
+    await parseApiError(response);
+  }
+  
+  const user = await response.json();
+  storeCredentials(encoded, user);
+  
+  const { password, ...safeUser } = user;
+  return safeUser as User;
+};
+```
+
+<Steps>
+  <Step title="User Enters Credentials">
+    User provides username and password on login page
+  </Step>
+  
+  <Step title="Credential Encoding">
+    Credentials are Base64 encoded for Basic Authentication:
+    
+    ```typescript
+    export const encodeCredentials = (
+      username: string,
+      password: string,
+    ): string => {
+      return btoa(`${username}:${password}`);
+    };
+    ```
+  </Step>
+  
+  <Step title="Authentication Request">
+    Client sends credentials to `/auth/login` with Basic Auth header
+  </Step>
+  
+  <Step title="Server Verification">
+    Backend verifies:
+    - User exists
+    - Password is correct
+    - Account is active (`activo: true`)
+  </Step>
+  
+  <Step title="Session Establishment">
+    On success:
+    - Encoded credentials stored in session storage
+    - User data (without password) stored in session storage
+    - User redirected to dashboard
+    
+    ```typescript
+    export const storeCredentials = (credentials: string, user: User): void => {
+      sessionStorage.setItem("authCredentials", credentials);
+      const { password, ...safeUser } = user;
+      sessionStorage.setItem("user", JSON.stringify(safeUser));
+    };
+    ```
+  </Step>
+</Steps>
+
+### Session Management
+
+**Session Storage Strategy:**
+
+From `src/services/authService.ts:62`:
+
+```typescript
+export const getStoredCredentials = (): string | null => {
+  return sessionStorage.getItem("authCredentials");
+};
+
+export const clearCredentials = (): void => {
+  sessionStorage.removeItem("authCredentials");
+  sessionStorage.removeItem("user");
+};
+```
+
+<CardGroup cols={2}>
+  <Card title="Session Storage" icon="clock">
+    **Stored Data:**
+    - `authCredentials`: Base64 encoded credentials
+    - `user`: User object without password
+    
+    **Lifetime:**
+    - Persists during browser tab session
+    - Cleared when tab/window closes
+    - Cleared on logout
+    - Cleared on 401 responses
+  </Card>
+  
+  <Card title="Auto-Logout" icon="door-open">
+    **Idle Timeout:**
+    - 15 minutes of inactivity
+    - Tracks mouse, keyboard, touch events
+    - Warning before logout
+    - Automatic credential clearing
+    
+    From `src/components/auth/IdleHandler.tsx`
+  </Card>
+</CardGroup>
+
+### Protected Routes
+
+From `src/App.tsx:42`:
+
+```typescript
+<Route
+  path="/"
+  element={
+    <ProtectedRoute>
+      <Index />
+    </ProtectedRoute>
+  }
+/>
+```
+
+All main routes are wrapped in `ProtectedRoute` component:
+
+```typescript
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const credentials = sessionStorage.getItem("authCredentials");
+  
+  if (!credentials) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return <>{children}</>;
+};
+```
+
+<Note>
+  **Route Protection**: Every route except `/login` and `/register` requires authentication. Unauthenticated users are automatically redirected to login.
+</Note>
+
+## User Roles (Conceptual)
+
+While the system has a `rol` field, the current implementation appears to grant all authenticated users full access to all features. Here's how roles could be structured:
+
+### Administrator Role
+
+<AccordionGroup>
+  <Accordion title="Full System Access">
+    **Permissions:**
+    - Create, read, update, delete all students
+    - Create, read, update, delete all instructors
+    - Create, read, update, delete all horses
+    - Create, read, update, delete all classes
+    - Access all calendar views
+    - Generate all reports
+    - Manage financial data
+    - Access system settings
+    - Manage user accounts
+  </Accordion>
+  
+  <Accordion title="Use Cases">
+    - School owner
+    - Office manager
+    - System administrator
+    - Anyone needing full control
+  </Accordion>
+</AccordionGroup>
+
+### Instructor Role (Potential)
+
+<AccordionGroup>
+  <Accordion title="Instructor Permissions">
+    **Could Have:**
+    - View all students
+    - View all horses
+    - View all instructors
+    - Create/update/view their own classes
+    - View calendar (all or filtered to their classes)
+    - Update class states (PROGRAMADA → INICIADA → COMPLETADA)
+    - Mark student absences (ACA, ASA)
+    - View reports related to their classes
+    
+    **Cannot:**
+    - Modify other instructors' classes
+    - Delete classes
+    - Access financial data
+    - Manage student enrollments
+    - Manage user accounts
+  </Accordion>
+  
+  <Accordion title="Use Cases">
+    - Riding instructors
+    - Part-time coaches
+    - Specialized trainers
+  </Accordion>
+</AccordionGroup>
+
+### Receptionist Role (Potential)
+
+<AccordionGroup>
+  <Accordion title="Receptionist Permissions">
+    **Could Have:**
+    - Create/read/update students
+    - View instructors and horses
+    - Create/schedule classes
+    - View calendar (all views)
+    - Contact students (WhatsApp, Email)
+    - Generate student and class reports
+    
+    **Cannot:**
+    - Delete students or classes
+    - Manage instructors
+    - Manage horses
+    - Access financial reports
+    - Modify completed classes
+  </Accordion>
+  
+  <Accordion title="Use Cases">
+    - Front desk staff
+    - Administrative assistants
+    - Customer service representatives
+  </Accordion>
+</AccordionGroup>
+
+### Read-Only Role (Potential)
+
+<AccordionGroup>
+  <Accordion title="Viewer Permissions">
+    **Could Have:**
+    - View students
+    - View instructors
+    - View horses
+    - View classes and calendar
+    - View reports
+    
+    **Cannot:**
+    - Create, update, or delete anything
+    - Contact students
+    - Modify class states
+    - Access financial data
+  </Accordion>
+  
+  <Accordion title="Use Cases">
+    - Auditors
+    - Parents/guardians
+    - Observers
+    - Reporting analysts
+  </Accordion>
+</AccordionGroup>
+
+## Permission Matrix
+
+Here's a conceptual permission matrix showing what each role could access:
+
+| Feature | Admin | Instructor | Receptionist | Read-Only |
+|---------|-------|------------|--------------|----------|
+| **Students** |
+| View Students | ✅ | ✅ | ✅ | ✅ |
+| Create Students | ✅ | ❌ | ✅ | ❌ |
+| Edit Students | ✅ | ❌ | ✅ | ❌ |
+| Delete Students | ✅ | ❌ | ❌ | ❌ |
+| **Instructors** |
+| View Instructors | ✅ | ✅ | ✅ | ✅ |
+| Manage Instructors | ✅ | ❌ | ❌ | ❌ |
+| **Horses** |
+| View Horses | ✅ | ✅ | ✅ | ✅ |
+| Manage Horses | ✅ | ❌ | ❌ | ❌ |
+| **Classes** |
+| View All Classes | ✅ | ✅ | ✅ | ✅ |
+| Create Classes | ✅ | 🟡 Own | ✅ | ❌ |
+| Edit Classes | ✅ | 🟡 Own | ✅ | ❌ |
+| Delete Classes | ✅ | ❌ | ❌ | ❌ |
+| Change Class State | ✅ | 🟡 Own | ✅ | ❌ |
+| **Calendar** |
+| View Calendar | ✅ | ✅ | ✅ | ✅ |
+| Copy Classes | ✅ | ❌ | ✅ | ❌ |
+| Cancel Day | ✅ | ❌ | 🟡 Maybe | ❌ |
+| Export Excel | ✅ | ✅ | ✅ | ❌ |
+| **Reports** |
+| View Reports | ✅ | 🟡 Own | ✅ | ✅ |
+| Export Reports | ✅ | 🟡 Own | ✅ | ❌ |
+| **Finances** |
+| View Finances | ✅ | ❌ | ❌ | ❌ |
+| Manage Finances | ✅ | ❌ | ❌ | ❌ |
+| **System** |
+| Manage Users | ✅ | ❌ | ❌ | ❌ |
+| System Settings | ✅ | ❌ | ❌ | ❌ |
+
+**Legend:**
+- ✅ Full access
+- 🟡 Limited access (specified in cell)
+- ❌ No access
+
+## User Profile Management
+
+From `src/services/authService.ts:184`:
+
+```typescript
+export const updateProfile = async (
+  id: number,
+  data: Partial<UpdateData>,
+): Promise<User> => {
+  const credentials = getStoredCredentials();
+  
+  const response = await fetch(`${API_BASE_URL}/users/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...(credentials && { Authorization: `Basic ${credentials}` }),
+    },
+    body: JSON.stringify(data),
+  });
+  
+  if (!response.ok) {
+    await parseApiError(response);
+  }
+  
+  const updatedUser = await response.json();
+  const { password, ...safeUser } = updatedUser;
+  sessionStorage.setItem("user", JSON.stringify(safeUser));
+  
+  return safeUser as User;
+};
+```
+
+### Updatable Fields
+
+```typescript
+export interface UpdateData {
+  id: number;
+  username: string;
+  email: string;
+  rol?: string;
+  activo: boolean;
+  fechaCreacion: string;
+}
+```
+
+Users can update:
+- Username
+- Email
+- Avatar (via `avatarUrl`)
+
+Administrators can additionally update:
+- User role (`rol`)
+- Active status (`activo`)
+
+## Current User Access
+
+### Getting Current User
+
+```typescript
+const getCurrentUser = (): SafeUser | null => {
+  const userJson = sessionStorage.getItem("user");
+  if (!userJson) return null;
+  return JSON.parse(userJson);
+};
+```
+
+### Checking Authentication
+
+```typescript
+const isAuthenticated = (): boolean => {
+  return sessionStorage.getItem("authCredentials") !== null;
+};
+```
+
+## Security Best Practices
+
+<Warning>
+  **Important Security Measures:**
+  
+  1. **Never Store Passwords**: Password is stripped before storage
+  2. **Session Storage**: Cleared automatically on browser close
+  3. **Auto Logout**: 15-minute idle timeout
+  4. **Email Whitelist**: Only approved emails can register
+  5. **Strong Passwords**: Password strength requirements enforced
+  6. **401 Handling**: Auto-logout on unauthorized responses
+  7. **Basic Auth**: Credentials encoded in Base64 over HTTPS
+</Warning>
+
+### Password Security
+
+From the authentication flow:
+
+```typescript
+const { password, ...safeUser } = user;
+sessionStorage.setItem("user", JSON.stringify(safeUser));
+```
+
+- Password never stored in browser
+- Only transmitted during login
+- Server handles hashing and verification
+- Client receives user data without password
+
+## Logout Process
+
+From `src/services/authService.ts:168`:
+
+```typescript
+export const logout = async (): Promise<void> => {
+  const credentials = getStoredCredentials();
+  
+  try {
+    await fetch(`${API_BASE_URL}/logout`, {
+      method: "POST",
+      headers: {
+        ...(credentials && { Authorization: `Basic ${credentials}` }),
+      },
+    });
+  } finally {
+    clearCredentials();
+  }
+};
+```
+
+<Steps>
+  <Step title="User Clicks Logout">
+    From user dropdown or idle timeout
+  </Step>
+  
+  <Step title="Server Notification">
+    Client notifies server of logout (if connected)
+  </Step>
+  
+  <Step title="Clear Local Data">
+    Both `authCredentials` and `user` removed from session storage
+  </Step>
+  
+  <Step title="Redirect to Login">
+    User redirected to login page
+  </Step>
+</Steps>
+
+## Future Enhancements
+
+<CardGroup cols={2}>
+  <Card title="Role-Based UI" icon="shield">
+    Implement conditional rendering based on user role:
+    - Hide features user can't access
+    - Disable buttons for restricted actions
+    - Show role-appropriate navigation
+  </Card>
+  
+  <Card title="Granular Permissions" icon="key">
+    More fine-grained control:
+    - Permission-based instead of role-based
+    - Custom permission sets
+    - Resource-level permissions
+  </Card>
+  
+  <Card title="Audit Logging" icon="file-text">
+    Track user actions:
+    - Who created/modified records
+    - Timestamp of changes
+    - History of modifications
+    - Compliance reporting
+  </Card>
+  
+  <Card title="Multi-Factor Auth" icon="smartphone">
+    Enhanced security:
+    - SMS verification
+    - Email verification
+    - Authenticator apps
+    - Backup codes
+  </Card>
+</CardGroup>
+
+---
+
+Understanding the user roles and permissions structure is crucial for maintaining security and ensuring users have appropriate access to HRS features.

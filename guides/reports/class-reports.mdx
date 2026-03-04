@@ -1,0 +1,395 @@
+---
+title: Class Reports
+description: Analyze class completion rates, status distribution, and scheduling patterns
+---
+
+The Class Reports section provides detailed analytics on class performance, helping you understand completion rates, cancellation patterns, and optimal scheduling.
+
+## Overview
+
+Access class analytics through the **Clases** tab in the Reports section.
+
+## Summary Metrics
+
+Three key cards display class totals:
+
+### Total Classes
+
+```
+┌──────────────────┐
+│      Total        │
+│                  │
+│      256         │  ← All classes in period
+│                  │
+│ Clases registradas│
+└──────────────────┘
+```
+
+All classes regardless of status.
+
+### Completed Classes
+
+```
+┌──────────────────┐
+│   Completadas    │
+│                  │
+│      211         │  ← Successfully completed
+│                  │
+│  82.4% del total │  ← Success rate
+└──────────────────┘
+```
+
+Green text indicates healthy completion rate.
+
+### Cancelled Classes
+
+```
+┌──────────────────┐
+│   Canceladas     │
+│                  │
+│       28         │  ← Cancelled count
+│                  │
+│  10.9% del total │  ← Cancellation rate
+└──────────────────┘
+```
+
+Red text highlights cancellations needing attention.
+
+## Class Status Distribution
+
+Two visualizations show status breakdown:
+
+### Pie Chart
+
+Visual proportion of all class statuses.
+
+**Segments**:
+- 🟠 **PROGRAMADA** (Orange): Scheduled, not yet completed
+- 🔵 **INICIADA** (Blue): Currently in progress
+- 🟢 **COMPLETADA** (Green): Successfully finished
+- 🔴 **CANCELADA** (Red): Facility cancellations
+- 🟣 **ACA** (Purple): Student absence with notice
+- 🌸 **ASA** (Pink): Student absence without notice
+
+**Example**:
+```
+PROGRAMADA:   17 classes  (6.6%)
+INICIADA:      0 classes  (0.0%)
+COMPLETADA:  211 classes (82.4%)
+CANCELADA:    28 classes (10.9%)
+ACA:           0 classes  (0.0%)
+ASA:           0 classes  (0.0%)
+```
+
+<Info>
+  Hover over pie segments to see exact counts and percentages.
+</Info>
+
+### Bar Chart (by Status)
+
+Same data in bar format for easier comparison.
+
+- X-axis: Status name
+- Y-axis: Count
+- Bars: Color-matched to status
+
+## Weekly Distribution
+
+Shows how classes are distributed across days of the week.
+
+### Bar Chart (by Day)
+
+**Days** (X-axis):
+- Lunes (Monday)
+- Martes (Tuesday)
+- Miércoles (Wednesday)
+- Jueves (Thursday)
+- Viernes (Friday)
+- Sábado (Saturday)
+- Domingo (Sunday)
+
+**Example Data**:
+```
+Lunes:      45 classes
+Martes:     42 classes
+Miércoles:  38 classes
+Jueves:     40 classes
+Viernes:    35 classes
+Sábado:     32 classes
+Domingo:    24 classes
+```
+
+### Insights from Weekly Distribution
+
+<AccordionGroup>
+  <Accordion title="Identify Peak Days">
+    Which days are busiest?
+    
+    - High demand days may need more instructors
+    - Consider adding time slots
+    - Optimize horse allocation
+  </Accordion>
+  
+  <Accordion title="Spot Low-Demand Days">
+    Which days are underutilized?
+    
+    - Potential for promotional pricing
+    - Maintenance scheduling
+    - Instructor time off
+  </Accordion>
+  
+  <Accordion title="Balance Workload">
+    Redistribute classes for better balance:
+    
+    - Move classes from peak to low days
+    - Offer incentives for off-peak
+    - Adjust instructor schedules
+  </Accordion>
+  
+  <Accordion title="Weekend Patterns">
+    Compare weekday vs weekend:
+    
+    - Weekend popularity
+    - Adult vs child patterns
+    - Facility utilization
+  </Accordion>
+</AccordionGroup>
+
+## Understanding Status Categories
+
+### PROGRAMADA (Scheduled)
+
+Classes that are:
+- Created and scheduled
+- Not yet completed
+- Future or current day
+- Waiting to happen
+
+**Normal**: 5-10% of historical data
+**High**: 15%+ may indicate:
+- Looking at future dates
+- Classes not being marked complete
+- Scheduling ahead heavily
+
+### COMPLETADA (Completed)
+
+Classes that:
+- Took place as scheduled
+- Student attended
+- Instructor taught
+- Normal successful outcome
+
+**Healthy**: 75-90% of historical data
+**Target**: Maximize this percentage
+
+### CANCELADA (Cancelled)
+
+Facility-initiated cancellations:
+- Weather (rain, storms)
+- Holidays
+- Maintenance
+- Emergencies
+- Special events
+
+**Normal**: 5-15% depending on weather/location
+**High**: 20%+ may indicate:
+- Frequent weather issues
+- Facility problems
+- Over-scheduling holidays
+
+### ACA (Absence with Advance Notice)
+
+Student couldn't attend but notified:
+- Called ahead
+- Sent message
+- Gave reasonable notice
+
+**Normal**: 2-5%
+**Action**: Generally acceptable
+
+### ASA (Absence without Advance Notice)
+
+Student no-show without warning:
+- Didn't attend
+- Didn't notify
+- No communication
+
+**Target**: Minimize to 0-2%
+**High**: 5%+ requires intervention
+
+## Completion Rate Analysis
+
+### Calculating Completion Rate
+
+```
+Completion Rate = (Completed / Total) × 100
+
+Example:
+  Total: 256
+  Completed: 211
+  Rate: (211/256) × 100 = 82.4%
+```
+
+### Benchmarks
+
+<Tabs>
+  <Tab title="Excellent">
+    **85-95%** completion rate
+    
+    Indicates:
+    - Good weather period
+    - Engaged students
+    - Effective scheduling
+    - Few facility issues
+  </Tab>
+  
+  <Tab title="Good">
+    **75-85%** completion rate
+    
+    Indicates:
+    - Normal operations
+    - Some weather/cancellations
+    - Acceptable attendance
+    - Room for improvement
+  </Tab>
+  
+  <Tab title="Concerning">
+    **65-75%** completion rate
+    
+    May indicate:
+    - Weather-heavy period
+    - Engagement issues
+    - Scheduling problems
+    - Needs investigation
+  </Tab>
+  
+  <Tab title="Action Needed">
+    **Below 65%** completion rate
+    
+    Likely causes:
+    - Major weather events
+    - Facility closures
+    - Student retention crisis
+    - Review urgently
+  </Tab>
+</Tabs>
+
+### Seasonal Variations
+
+Completion rates vary by season:
+
+**Summer** (June-August):
+- Typically higher (vacation flexibility)
+- Better weather
+- Target: 85%+
+
+**Winter** (December-February):
+- May be lower (weather, holidays)
+- Holiday closures
+- Target: 70-80%
+
+**Spring/Fall** (March-May, September-November):
+- Moderate rates
+- School schedules impact
+- Target: 80-85%
+
+## Using Class Reports for Planning
+
+### Capacity Planning
+
+<Steps>
+  <Step title="Review Total Classes">
+    Check current volume across periods
+  </Step>
+  <Step title="Identify Growth Trends">
+    Compare month-over-month
+  </Step>
+  <Step title="Check Day Distribution">
+    See which days need more capacity
+  </Step>
+  <Step title="Project Forward">
+    Estimate future needs
+  </Step>
+  <Step title="Adjust Resources">
+    Add instructors, horses, or time slots
+  </Step>
+</Steps>
+
+### Schedule Optimization
+
+Use weekly distribution to:
+1. **Identify gaps**: Low-demand days/times
+2. **Redistribute**: Move classes from peak to off-peak
+3. **Promote**: Market off-peak times with discounts
+4. **Maximize**: Utilize facility fully
+
+### Cancellation Analysis
+
+High cancellation rate? Investigate:
+
+<Check>
+  - **Weather patterns**: Consider indoor arena
+  - **Holiday planning**: Better advance scheduling
+  - **Maintenance**: Schedule during low-demand times
+  - **Communication**: Improve weather policies
+</Check>
+
+## Comparing Periods
+
+Run reports for different periods to compare:
+
+### Month-over-Month
+
+```
+March 2026:
+  Total: 256
+  Completed: 211 (82.4%)
+  Cancelled: 28 (10.9%)
+
+February 2026:
+  Total: 220
+  Completed: 178 (80.9%)
+  Cancelled: 32 (14.5%)
+
+Insight: Growth in volume, better completion rate
+```
+
+### Year-over-Year
+
+```
+March 2026: 256 classes
+March 2025: 198 classes
+
+Growth: 29.3% increase
+Insight: Strong year-over-year growth
+```
+
+## Export Options
+
+While the Class Reports tab doesn't have a dedicated export button, you can:
+
+1. **Screenshot charts** for presentations
+2. **Manually record metrics** in external spreadsheets
+3. **Export from Calendar** for detailed class lists
+4. **Use Student Reports export** for attendance data
+
+<Info>
+  For detailed class-by-class data, use the Classes section export instead of Reports.
+</Info>
+
+## Related Reports
+
+<CardGroup cols={2}>
+  <Card title="Student Reports" icon="users" href="/guides/reports/student-reports">
+    See student-level attendance
+  </Card>
+  <Card title="Instructor Reports" icon="chalkboard-user" href="/guides/reports/instructor-reports">
+    Compare instructor completion rates
+  </Card>
+  <Card title="General Reports" icon="chart-line" href="/guides/reports/overview">
+    Overall school statistics
+  </Card>
+  <Card title="Calendar" icon="calendar" href="/guides/calendar/views">
+    View and manage classes
+  </Card>
+</CardGroup>

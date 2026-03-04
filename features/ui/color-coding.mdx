@@ -1,0 +1,356 @@
+---
+title: Color Coding System
+description: Visual identification through instructor colors and status indicators
+---
+
+## Overview
+
+The system uses a comprehensive color coding system for visual identification of instructors and class statuses, making the calendar and reports easy to scan.
+
+## Instructor Colors
+
+### Color Assignment
+
+Each instructor is assigned a unique color:
+
+```markdown
+### Instructor Configuration:
+- **Color**: A color assigned to visually identify them in the calendar
+  - Selection of 7 predefined colors
+  - Color is used to distinguish classes in calendar
+```
+
+From `~/workspace/source/README.md:99-102`
+
+### Color Display in Calendar
+
+```markdown
+### Color Identification:
+
+Each class shows:
+- **Background**: Assigned instructor color (lighter for readability)
+- **Left Border**: Color by class status
+```
+
+From `~/workspace/source/README.md:277-280`
+
+### Instructor Legend
+
+Color legend displayed below calendar:
+
+```tsx
+<div className="mt-6 flex flex-wrap items-center justify-center gap-4">
+  {instructores.map((instructor) => (
+    <div key={instructor.id} className="flex items-center gap-2">
+      <div
+        className="h-3 w-3 rounded-full border"
+        style={{ backgroundColor: instructor.color }}
+      />
+      <span className="text-sm text-muted-foreground">
+        {instructor.nombre} {instructor.apellido}
+      </span>
+    </div>
+  ))}
+</div>
+```
+
+From `~/workspace/source/src/pages/Calendario.tsx:237-248`
+
+## Class Status Colors
+
+### Status Color Mapping
+
+Defined color palette for class statuses:
+
+```tsx
+const CHART_COLORS = {
+  programada: "#F59E0B",
+  iniciada: "#3B82F6",
+  completada: "#22C55E",
+  cancelada: "#EF4444",
+  aca: "#8B5CF6",
+  asa: "#EC4899",
+  equitacion: "#4472C4",
+  adiestramiento: "#ED7D31",
+  equinoterapia: "#A9D18E",
+  monta: "#FF0000",
+  escuela: "#4472C4",
+  privado: "#D4A017",
+};
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:54-67`
+
+### Status Color System
+
+```tsx
+const ESTADO_COLORS: Record<string, string> = {
+  PROGRAMADA: CHART_COLORS.programada,
+  INICIADA: CHART_COLORS.iniciada,
+  COMPLETADA: CHART_COLORS.completada,
+  CANCELADA: CHART_COLORS.cancelada,
+  ACA: CHART_COLORS.aca,
+  ASA: CHART_COLORS.asa,
+};
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:69-76`
+
+### Visual Status Indicators
+
+```markdown
+- **Left Border**: Color by class status:
+  - 🟠 Orange: PROGRAMADA
+  - 🔵 Blue: INICIADA
+  - 🟢 Green: COMPLETADA
+  - 🔴 Red: CANCELADA
+  - 🟣 Purple: ACA (Absence with Notice)
+  - 🌸 Pink: ASA (Absence without Notice)
+```
+
+From `~/workspace/source/README.md:281-286`
+
+## Specialty Colors
+
+### Color Coding by Specialty
+
+```tsx
+const ESPECIALIDAD_COLORS: Record<string, string> = {
+  EQUITACION: CHART_COLORS.equitacion,
+  ADIESTRAMIENTO: CHART_COLORS.adiestramiento,
+  EQUINOTERAPIA: CHART_COLORS.equinoterapia,
+  MONTA: CHART_COLORS.monta,
+};
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:78-83`
+
+## Horse Type Colors
+
+### School vs Private Horses
+
+Different colors for horse types:
+
+```markdown
+### Excel Export Features:
+- Header with colors by horse type:
+  - 🔵 Blue: School Horses
+  - 🟡 Gold: Private Horses
+```
+
+From `~/workspace/source/README.md:324-327`
+
+## Chart Colors
+
+### Pie Chart Colors
+
+Consistent colors in pie charts:
+
+```tsx
+<PieChart>
+  <Pie
+    data={estadosClases}
+    dataKey="cantidad"
+    nameKey="estado"
+  >
+    {estadosClases.map((entry) => (
+      <Cell
+        key={entry.estado}
+        fill={ESTADO_COLORS[entry.estado] || "#8884d8"}
+      />
+    ))}
+  </Pie>
+</PieChart>
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:578-597`
+
+### Bar Chart Colors
+
+Specialty-based coloring:
+
+```tsx
+<Bar
+  dataKey="cantidad"
+  name="Clases"
+  radius={[0, 4, 4, 0]}
+>
+  {especialidadesDemanda.map((entry) => (
+    <Cell
+      key={entry.especialidad}
+      fill={
+        ESPECIALIDAD_COLORS[entry.especialidad] ||
+        "#8884d8"
+      }
+    />
+  ))}
+</Bar>
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:640-654`
+
+## Trial Class Indicators
+
+### Orange Border for Trial Classes
+
+```markdown
+### Visual Indicators:
+
+Trial classes are identified with:
+- 🎓 Emoji in the calendar
+- Orange border in the cell
+- "Prueba" badge in details
+- Informational alert when editing
+```
+
+From `~/workspace/source/README.md:182-188`
+
+## Status Badges
+
+### Colored Status Badges
+
+```tsx
+<StatusBadge
+  status={c.tipo === "ESCUELA" ? "info" : "warning"}
+>
+  {c.tipo === "ESCUELA" ? "Escuela" : "Privado"}
+</StatusBadge>
+<StatusBadge
+  status={c.disponible ? "success" : "error"}
+>
+  {c.disponible ? "Disponible" : "No disp."}
+</StatusBadge>
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:1215-1224`
+
+## Attendance Color Coding
+
+### Table Column Colors
+
+Color-coded attendance columns:
+
+```tsx
+<th className="text-center p-3 font-semibold text-sm text-success">
+  Completadas
+</th>
+<th className="text-center p-3 font-semibold text-sm text-destructive">
+  Canceladas
+</th>
+<th
+  className="text-center p-3 font-semibold text-sm"
+  style={{ color: CHART_COLORS.aca }}
+>
+  ACA
+</th>
+<th
+  className="text-center p-3 font-semibold text-sm"
+  style={{ color: CHART_COLORS.asa }}
+>
+  ASA
+</th>
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:821-838`
+
+### Cell Value Colors
+
+```tsx
+<td className="p-3 text-sm text-center text-success font-medium">
+  {item.completadas}
+</td>
+<td className="p-3 text-sm text-center text-destructive">
+  {item.canceladas}
+</td>
+<td
+  className="p-3 text-sm text-center font-medium"
+  style={{ color: CHART_COLORS.aca }}
+>
+  {item.aca}
+</td>
+<td
+  className="p-3 text-sm text-center font-medium"
+  style={{ color: CHART_COLORS.asa }}
+>
+  {item.asa}
+</td>
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:856-872`
+
+## Progress Indicators
+
+### Colored Progress Bars
+
+```tsx
+<div className="h-2 w-20 overflow-hidden rounded-full bg-muted">
+  <div
+    className="h-full rounded-full bg-success transition-all"
+    style={{
+      width: `${item.porcentajeAsistencia}%`,
+    }}
+  />
+</div>
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:876-882`
+
+## Color Accessibility
+
+### Readability Considerations
+
+```markdown
+- **Background**: Assigned instructor color (lighter for readability)
+```
+
+From `~/workspace/source/README.md:279`
+
+Colors are lightened for backgrounds to ensure text readability.
+
+### Border Emphasis
+
+Status indicated by border color instead of just background:
+
+```markdown
+- **Left Border**: Color by class status
+```
+
+From `~/workspace/source/README.md:280`
+
+This provides clear status indication even with instructor background color.
+
+## Color Meanings
+
+### Status Color Semantics
+
+- **Orange (🟠)** - Scheduled/Pending - Neutral waiting state
+- **Blue (🔵)** - In Progress - Active state
+- **Green (🟢)** - Completed - Success state
+- **Red (🔴)** - Canceled - Error/stopped state
+- **Purple (🟣)** - Excused Absence - Acceptable absence
+- **Pink (🌸)** - Unexcused Absence - Problem absence
+
+### Type Color Semantics
+
+- **Blue** - School horses (institutional)
+- **Gold** - Private horses (premium/personal)
+
+## Best Practices
+
+1. **Consistent Usage** - Always use same colors for same meanings
+2. **High Contrast** - Ensure sufficient contrast for readability
+3. **Color + Text** - Don't rely on color alone, include text labels
+4. **Limited Palette** - Use defined color palette consistently
+5. **Semantic Colors** - Colors should have logical meaning (red=problem, green=success)
+6. **Accessibility** - Consider colorblind users, use patterns or text
+7. **Visual Hierarchy** - Use color to guide attention to important information
+8. **Legend Provision** - Always provide color legends for charts
+
+## Color Customization
+
+The system uses CSS custom properties and Tailwind for theming:
+
+- Theme colors defined in CSS variables
+- Consistent across light/dark modes
+- Semantic color naming (primary, success, destructive)
+- Chart colors defined in constants for consistency

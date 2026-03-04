@@ -1,0 +1,398 @@
+---
+title: 'Environment Setup'
+description: 'Configure development and production environments'
+icon: 'code'
+---
+
+## Overview
+
+The Equestrian School Management System uses environment variables to configure different aspects of the application. This guide covers both development and production environment setup.
+
+## Environment Variables
+
+### Required Variables
+
+<ParamField path="VITE_API_BASE_URL" type="string" required>
+  Base URL for the backend API endpoint
+  
+  **Example:** `https://your-api.com/api/v1`
+</ParamField>
+
+### Environment Files
+
+Create the appropriate environment file for your setup:
+
+<CodeGroup>
+
+```bash .env.development
+# Development Environment
+VITE_API_BASE_URL=http://localhost:8080/api/v1
+```
+
+```bash .env.production
+# Production Environment
+VITE_API_BASE_URL=https://api.production.com/api/v1
+```
+
+```bash .env.local
+# Local Overrides (not committed to git)
+VITE_API_BASE_URL=http://192.168.1.100:8080/api/v1
+```
+
+</CodeGroup>
+
+<Warning>
+  Never commit sensitive credentials to version control. Use `.env.local` for local development secrets.
+</Warning>
+
+## Development Environment
+
+### Local Development Setup
+
+**Step 1: Create Environment File**
+
+```bash
+cp .env.example .env
+```
+
+**Step 2: Configure API Endpoint**
+
+Edit `.env` and set your local backend URL:
+
+```bash
+VITE_API_BASE_URL=http://localhost:8080/api/v1
+```
+
+**Step 3: Start Development Server**
+
+<CodeGroup>
+
+```bash npm
+npm run dev
+```
+
+```bash yarn
+yarn dev
+```
+
+```bash pnpm
+pnpm dev
+```
+
+</CodeGroup>
+
+The application will be available at:
+- **Local:** `http://localhost:5173`
+- **Network:** `http://[your-ip]:5173`
+
+### Development Server Configuration
+
+The dev server is configured in `vite.config.ts:8-11`:
+
+```typescript
+server: {
+  host: "::",  // Listen on all network interfaces
+  port: 5173,  // Default port
+}
+```
+
+**Features:**
+- Hot Module Replacement (HMR)
+- Fast Refresh with SWC
+- IPv6 support
+- Network access for mobile testing
+
+### Development Tools
+
+**React DevTools**
+- Install browser extension for debugging
+- Inspect component hierarchy
+- Profile performance
+
+**Vite DevTools**
+- Module graph visualization
+- HMR debugging
+- Build analysis
+
+## Production Environment
+
+### Building for Production
+
+**Step 1: Configure Production Variables**
+
+Create `.env.production`:
+
+```bash
+VITE_API_BASE_URL=https://api.yourdomain.com/api/v1
+```
+
+**Step 2: Build the Application**
+
+<CodeGroup>
+
+```bash npm
+npm run build
+```
+
+```bash yarn
+yarn build
+```
+
+```bash pnpm
+pnpm build
+```
+
+</CodeGroup>
+
+**Build Output:**
+- Optimized JavaScript bundles
+- Minified CSS
+- Compressed assets
+- Output directory: `dist/`
+
+**Step 3: Preview Production Build**
+
+```bash
+npm run preview
+```
+
+Test the production build locally before deployment.
+
+### Production Optimizations
+
+The production build includes (`vite.config.ts:20-25`):
+
+<Steps>
+  <Step title="Code Minification">
+    JavaScript and CSS are minified for smaller file sizes
+  </Step>
+  <Step title="Tree Shaking">
+    Unused code is removed from the final bundle
+  </Step>
+  <Step title="Console Removal">
+    All console.log statements are stripped (`drop_console: true`)
+  </Step>
+  <Step title="Debugger Removal">
+    Debugger statements are removed (`drop_debugger: true`)
+  </Step>
+  <Step title="Code Splitting">
+    Automatic chunking for optimal loading
+  </Step>
+</Steps>
+
+## Backend API Configuration
+
+### API Endpoints
+
+The application expects the following API structure:
+
+**Authentication Endpoints** (`src/services/authService.ts:3`)
+```
+POST   /auth/login          - User login
+POST   /auth/register       - User registration
+POST   /auth/logout         - User logout
+PUT    /auth/update         - Update user profile
+GET    /auth/check-email/:email - Check email whitelist
+```
+
+### Authentication Method
+
+The system uses **Basic Authentication** with Base64 encoding:
+
+```typescript
+// Credentials are encoded as: base64(username:password)
+Authorization: Basic <base64-encoded-credentials>
+```
+
+**Session Management:**
+- Credentials stored in `sessionStorage`
+- Automatically cleared on browser close
+- 15-minute idle timeout
+
+### CORS Configuration
+
+Ensure your backend API allows requests from your frontend domain:
+
+```javascript
+// Backend CORS example
+Access-Control-Allow-Origin: https://yourdomain.com
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE
+Access-Control-Allow-Headers: Authorization, Content-Type
+```
+
+## Deployment Environments
+
+### Vercel Deployment
+
+**1. Install Vercel CLI**
+```bash
+npm install -g vercel
+```
+
+**2. Deploy**
+```bash
+vercel
+```
+
+**3. Set Environment Variables**
+```bash
+vercel env add VITE_API_BASE_URL production
+```
+
+**4. Redeploy**
+```bash
+vercel --prod
+```
+
+### Netlify Deployment
+
+**1. Install Netlify CLI**
+```bash
+npm install -g netlify-cli
+```
+
+**2. Build and Deploy**
+```bash
+netlify deploy --prod
+```
+
+**3. Configure in netlify.toml**
+```toml
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  VITE_API_BASE_URL = "https://api.yourdomain.com/api/v1"
+```
+
+### Docker Deployment
+
+**Dockerfile Example:**
+```dockerfile
+FROM node:18-alpine as build
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+
+RUN npm run build
+
+FROM nginx:alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+**Build and Run:**
+```bash
+docker build --build-arg VITE_API_BASE_URL=https://api.yourdomain.com/api/v1 -t equestrian-school .
+docker run -p 80:80 equestrian-school
+```
+
+## Environment-Specific Features
+
+### Development Mode Features
+
+- Component tagging with `lovable-tagger`
+- Hot Module Replacement
+- Detailed error messages
+- Source maps enabled
+- Console logs preserved
+
+### Production Mode Features
+
+- Optimized bundle size
+- No source maps (`sourcemap: false`)
+- Console logs removed
+- Debug statements stripped
+- Aggressive minification
+
+## Security Considerations
+
+<AccordionGroup>
+  <Accordion title="Environment Variables">
+    - Never commit `.env` files with sensitive data
+    - Use `.env.example` as a template
+    - Store secrets in deployment platform's secret management
+    - Rotate credentials regularly
+  </Accordion>
+
+  <Accordion title="API Security">
+    - Always use HTTPS in production
+    - Implement rate limiting on API endpoints
+    - Validate all user inputs
+    - Use secure session storage
+  </Accordion>
+
+  <Accordion title="Authentication">
+    - 15-minute idle timeout (`src/components/auth/IdleHandler.tsx:21`)
+    - Session credentials cleared on logout
+    - Email whitelist for registration
+    - Strong password requirements (min 8 characters)
+  </Accordion>
+</AccordionGroup>
+
+## Monitoring and Debugging
+
+### Development Debugging
+
+**Browser Console:**
+- View network requests
+- Check authentication headers
+- Monitor state changes
+
+**React DevTools:**
+- Inspect component props
+- Track state updates
+- Profile performance
+
+### Production Monitoring
+
+Consider integrating:
+- **Sentry** - Error tracking
+- **LogRocket** - Session replay
+- **Google Analytics** - Usage analytics
+- **Datadog** - Performance monitoring
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Environment variables not loading">
+    1. Ensure variable names start with `VITE_`
+    2. Restart the dev server after changes
+    3. Check file is named exactly `.env`
+    4. Verify file is in project root
+  </Accordion>
+
+  <Accordion title="API connection failed">
+    1. Verify `VITE_API_BASE_URL` is correct
+    2. Check backend is running
+    3. Verify CORS configuration
+    4. Check network tab for errors
+    5. Ensure authentication headers are present
+  </Accordion>
+
+  <Accordion title="Production build fails">
+    1. Clear node_modules and reinstall
+    2. Check for TypeScript errors: `npx tsc --noEmit`
+    3. Verify all environment variables are set
+    4. Check ESLint warnings: `npm run lint`
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="User Management" icon="users" href="/admin/user-management">
+    Configure user authentication and roles
+  </Card>
+  <Card title="Data Backup" icon="database" href="/admin/data-backup">
+    Set up backup and recovery procedures
+  </Card>
+</CardGroup>

@@ -1,0 +1,460 @@
+---
+title: Bulk Operations
+description: Manage multiple classes efficiently with bulk delete and cancel operations
+---
+
+Bulk operations allow you to manage large numbers of classes at once, saving time when dealing with schedule changes, holidays, or unexpected closures.
+
+## Available Operations
+
+The system provides two bulk operations:
+
+<CardGroup cols={2}>
+  <Card title="Delete Class Range" icon="trash">
+    Permanently remove all classes between two dates
+  </Card>
+  <Card title="Cancel Entire Day" icon="calendar-xmark">
+    Cancel all classes on a specific day with a reason
+  </Card>
+</CardGroup>
+
+## Delete Class Range
+
+Remove multiple classes permanently across a date range.
+
+### When to Use
+
+- Clearing a vacation period
+- Removing incorrectly copied classes
+- Cleaning up old draft schedules
+- Resetting a date range for replanning
+
+<Warning>
+  **Permanent Action**: Deleted classes cannot be recovered. Use carefully!
+</Warning>
+
+### How It Works
+
+<Steps>
+  <Step title="Open Delete Dialog">
+    Click **"Eliminar Clases"** in the calendar toolbar
+  </Step>
+  <Step title="Select Start Date">
+    Choose the first date of the range (Día de Inicio)
+  </Step>
+  <Step title="Select End Date">
+    Choose the last date of the range (Día de Fin)
+  </Step>
+  <Step title="Confirm Deletion">
+    Review the range and click "Eliminar"
+  </Step>
+  <Step title="Classes Removed">
+    All classes within the range are permanently deleted
+  </Step>
+</Steps>
+
+### Date Range Behavior
+
+<Tabs>
+  <Tab title="Inclusive Range">
+    Both start and end dates are **included** in the deletion:
+    
+    Example:
+    - Start: March 1
+    - End: March 7
+    - Deletes: All classes from March 1 through March 7 (inclusive)
+  </Tab>
+  
+  <Tab title="Single Day">
+    To delete a single day, use the **same date** for both start and end:
+    
+    Example:
+    - Start: March 5
+    - End: March 5
+    - Deletes: Only March 5 classes
+  </Tab>
+  
+  <Tab title="Multiple Weeks">
+    You can delete across multiple weeks or months:
+    
+    Example:
+    - Start: March 1
+    - End: March 31
+    - Deletes: Entire month of March
+  </Tab>
+</Tabs>
+
+### What Gets Deleted
+
+The operation removes classes **regardless of status**:
+- ❌ PROGRAMADA classes
+- ❌ COMPLETADA classes
+- ❌ CANCELADA classes
+- ❌ All other statuses
+
+<Info>
+  To preserve completed classes, use the Cancel Day feature instead.
+</Info>
+
+### Validation
+
+Before deletion:
+- Both dates must be selected
+- End date must be equal to or after start date
+- Confirmation dialog appears
+
+### After Deletion
+
+- Calendar refreshes automatically
+- Success notification confirms how many classes were deleted
+- Deleted classes are gone permanently
+- No undo option available
+
+## Cancel Entire Day
+
+Cancel all scheduled classes on a specific day while preserving completed classes.
+
+<Info>
+  **Available only in Day View**: This feature appears in the toolbar when viewing the Day View.
+</Info>
+
+### When to Use
+
+- Weather-related closures (rain, storms)
+- Unexpected facility issues
+- Public holidays
+- Special events requiring facility closure
+- Emergency situations
+
+### How It Works
+
+<Steps>
+  <Step title="Switch to Day View">
+    Navigate to the Day View and select the target date
+  </Step>
+  <Step title="Click Cancel Day">
+    Click the **"Cancelar Día (X)"** button in the toolbar
+    
+    The button shows how many classes can be cancelled
+  </Step>
+  <Step title="Select Reason">
+    Choose a cancellation reason from the dropdown
+  </Step>
+  <Step title="Add Observations (Optional)">
+    Enter additional details if needed
+  </Step>
+  <Step title="Confirm Cancellation">
+    Click "Cancelar Clases" to proceed
+  </Step>
+  <Step title="Classes Updated">
+    All eligible classes are marked as CANCELADA
+  </Step>
+</Steps>
+
+### Cancellation Reasons
+
+Select from predefined reasons:
+
+<Tabs>
+  <Tab title="Lluvia (Rain)">
+    Weather-related closure due to rain
+    
+    Common for outdoor facilities
+  </Tab>
+  
+  <Tab title="Feriado (Holiday)">
+    Public holiday or school closure
+    
+    National or local holidays
+  </Tab>
+  
+  <Tab title="Mantenimiento (Maintenance)">
+    Facility maintenance or repairs
+    
+    Scheduled or emergency maintenance
+  </Tab>
+  
+  <Tab title="Evento Especial (Special Event)">
+    Special event requiring facility use
+    
+    Competitions, demonstrations, etc.
+  </Tab>
+  
+  <Tab title="Emergencia (Emergency)">
+    Emergency situation
+    
+    Unexpected urgent closure
+  </Tab>
+  
+  <Tab title="Otro (Other)">
+    Custom reason
+    
+    Requires observations field to be filled
+  </Tab>
+</Tabs>
+
+### Which Classes Are Cancelled
+
+The operation affects **only eligible classes**:
+
+✅ **Cancelled**:
+- PROGRAMADA (Scheduled)
+- INICIADA (Started)
+
+❌ **NOT Cancelled** (Preserved):
+- COMPLETADA (Completed)
+- CANCELADA (Already cancelled)
+
+<Check>
+  **Smart Behavior**: The system protects completed classes from accidental cancellation.
+</Check>
+
+### Cancellation Counter
+
+The button label shows the count:
+
+```text
+Cancelar Día (12)
+         │
+         └── Number of classes that will be cancelled
+```
+
+- Updates in real-time based on the current day
+- Shows 0 if no eligible classes exist
+- Button is disabled when count is 0
+
+### What Happens to Each Class
+
+For each cancelled class:
+
+1. **Status** → Changed to CANCELADA
+2. **Observations** → Updated with:
+   - Selected reason
+   - Custom observations (if provided)
+   - Format: `"Razón: [reason]. [custom text]"`
+
+### After Cancellation
+
+- Calendar refreshes with updated statuses
+- Cancelled classes show red left border
+- Success notification displays count
+- Observations preserved for record-keeping
+
+## Comparison: Delete vs Cancel
+
+<Tabs>
+  <Tab title="Delete Range">
+    **Use When**:
+    - Removing draft/test data
+    - Clearing incorrectly copied weeks
+    - Resetting schedule for replanning
+    - Data no longer needed
+    
+    **Result**:
+    - Classes permanently removed
+    - No history preserved
+    - Cannot be undone
+  </Tab>
+  
+  <Tab title="Cancel Day">
+    **Use When**:
+    - Weather closure
+    - Holiday closure
+    - Facility issues
+    - Need to preserve history
+    
+    **Result**:
+    - Classes marked CANCELADA
+    - History preserved
+    - Records maintained
+    - Can appear in reports
+  </Tab>
+</Tabs>
+
+## Best Practices
+
+### For Delete Range
+
+<AccordionGroup>
+  <Accordion title="Always Double-Check Dates">
+    Before deleting:
+    - Verify start and end dates
+    - Switch to the affected week/month in calendar
+    - Review what will be deleted
+    - Confirm it's the correct range
+  </Accordion>
+  
+  <Accordion title="Use Filters First">
+    To see what you're deleting:
+    - Apply filters to preview affected classes
+    - Check if any important classes are included
+    - Remove filters before actual deletion
+  </Accordion>
+  
+  <Accordion title="Start Small">
+    If unsure:
+    - Delete a single day first
+    - Verify it worked as expected
+    - Then delete larger ranges
+  </Accordion>
+</AccordionGroup>
+
+### For Cancel Day
+
+<AccordionGroup>
+  <Accordion title="Choose Appropriate Reason">
+    Select the reason that best describes the situation:
+    - Helps with reporting and analytics
+    - Provides context for future reference
+    - Assists with pattern identification
+  </Accordion>
+  
+  <Accordion title="Add Detailed Observations">
+    Include helpful details:
+    - Specific weather conditions
+    - Maintenance type performed
+    - Event name or description
+    - Any follow-up actions needed
+  </Accordion>
+  
+  <Accordion title="Communicate with Clients">
+    After cancelling:
+    - Notify affected students
+    - Consider rescheduling options
+    - Update any external calendars
+  </Accordion>
+</AccordionGroup>
+
+## Use Cases
+
+### Scenario 1: Rain Closure
+
+<Steps>
+  <Step title="Morning Rain Forecast">
+    Weather forecast shows heavy rain for the afternoon
+  </Step>
+  <Step title="Navigate to Day View">
+    Open calendar and switch to Day View for that date
+  </Step>
+  <Step title="Click Cancel Day">
+    Button shows "Cancelar Día (18)" - 18 classes affected
+  </Step>
+  <Step title="Select Reason">
+    Choose "Lluvia" from dropdown
+  </Step>
+  <Step title="Add Observations">
+    "Tormenta eléctrica. Pista cerrada por seguridad."
+  </Step>
+  <Step title="Confirm">
+    All 18 scheduled classes now show as CANCELADA with red border
+  </Step>
+</Steps>
+
+### Scenario 2: Delete Test Week
+
+<Steps>
+  <Step title="Test Schedule Created">
+    You created a test schedule for March 10-16 to try different configurations
+  </Step>
+  <Step title="Open Delete Dialog">
+    Click "Eliminar Clases" in toolbar
+  </Step>
+  <Step title="Select Range">
+    - Start: March 10
+    - End: March 16
+  </Step>
+  <Step title="Confirm Deletion">
+    All test classes removed permanently
+  </Step>
+  <Step title="Clean Slate">
+    Week is now clear for actual scheduling
+  </Step>
+</Steps>
+
+### Scenario 3: Holiday Period
+
+<Steps>
+  <Step title="Identify Holiday Dates">
+    School closed March 20-27 for spring break
+  </Step>
+  <Step title="Choose Operation">
+    Decision: Delete (no classes should exist) vs Cancel (preserve records)
+  </Step>
+  <Step title="If Deleting">
+    - Use Delete Range: March 20 to March 27
+    - Removes all classes
+  </Step>
+  <Step title="If Cancelling">
+    - Cancel each day individually with reason "Feriado"
+    - Preserves records for reporting
+  </Step>
+</Steps>
+
+## Limitations
+
+<Warning>
+  - **Delete Range**: No undo, permanent deletion
+  - **Cancel Day**: Only works in Day View
+  - **Cancel Day**: Only affects current displayed date
+  - **No Multi-Day Cancel**: Must cancel each day separately
+</Warning>
+
+## Safety Features
+
+### Confirmation Dialogs
+
+Both operations require confirmation:
+- Prevents accidental clicks
+- Shows summary of what will happen
+- Provides cancel option
+
+### Smart Status Preservation
+
+Cancel Day intelligently:
+- Skips completed classes
+- Skips already-cancelled classes
+- Only affects scheduled/started classes
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Button Disabled/Greyed Out">
+    If the button is disabled:
+    - **Cancel Day**: No eligible classes on current date
+    - **Delete Range**: Check that dates are selected and valid
+    - Verify you have the necessary permissions
+  </Accordion>
+  
+  <Accordion title="Classes Still Showing After Delete">
+    If classes remain after deletion:
+    - Refresh the calendar view
+    - Check that filters aren't hiding the change
+    - Verify the correct date range was selected
+    - Check browser console for errors
+  </Accordion>
+  
+  <Accordion title="Wrong Classes Cancelled">
+    If wrong classes were cancelled:
+    - Manually change status back to PROGRAMADA
+    - Edit each class individually
+    - Remove cancellation observations
+    - Note: No bulk "un-cancel" feature exists
+  </Accordion>
+</AccordionGroup>
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Copy Classes" icon="copy" href="/guides/calendar/copy-classes">
+    Replicate weekly schedules efficiently
+  </Card>
+  <Card title="Day View" icon="table" href="/guides/calendar/day-view">
+    Excel-style daily scheduling view
+  </Card>
+  <Card title="Class Status" icon="circle-check" href="/guides/classes/class-states">
+    Understanding class statuses
+  </Card>
+  <Card title="Reports" icon="chart-bar" href="/guides/reports/overview">
+    View cancellation statistics
+  </Card>
+</CardGroup>

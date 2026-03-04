@@ -1,0 +1,296 @@
+---
+title: Board Types
+description: Enumeration of board/pension types for students (TipoPension and CuotaPension)
+---
+
+## Overview
+
+The board types system defines how students arrange their horse usage and boarding at the equestrian school. It consists of two related enumerations: `TipoPension` (type of arrangement) and `CuotaPension` (board quota).
+
+## TipoPension (Board Type)
+
+Defines the student's horse arrangement type.
+
+### Type Definition
+
+```typescript
+export type TipoPension = 
+  | "SIN_CABALLO" 
+  | "RESERVA_ESCUELA" 
+  | "CABALLO_PROPIO";
+```
+
+### Values
+
+#### SIN_CABALLO
+
+**Meaning**: Without assigned horse
+
+**Description**: The student does not reserve any specific horse. A school horse is assigned per class based on availability.
+
+**Characteristics**:
+- No specific horse assignment
+- Horse assigned on a per-class basis
+- Most flexible option
+- No board quota required (`cuotaPension` must be `null`)
+- Uses available school horses
+
+**Required Fields**:
+```typescript
+{
+  tipoPension: "SIN_CABALLO",
+  cuotaPension: null,
+  caballoPropio: undefined
+}
+```
+
+**Typical Use Cases**:
+- Beginner students
+- Students trying different horses
+- Students without commitment to a specific horse
+- Irregular attendance schedules
+
+---
+
+#### RESERVA_ESCUELA
+
+**Meaning**: School horse reservation
+
+**Description**: The student reserves a specific school horse for their exclusive use during classes.
+
+**Characteristics**:
+- Student reserves a specific school horse
+- Horse is prioritized for this student
+- Requires board quota selection
+- Horse type must be `"ESCUELA"`
+- Provides consistency for student-horse relationship
+
+**Required Fields**:
+```typescript
+{
+  tipoPension: "RESERVA_ESCUELA",
+  cuotaPension: "ENTERA" | "MEDIA" | "TERCIO",  // Required
+  caballoPropio: number  // ID of school horse
+}
+```
+
+**Typical Use Cases**:
+- Intermediate students wanting consistency
+- Students developing relationship with specific horse
+- Students who don't own a horse but want dedicated access
+- Regular attendees
+
+---
+
+#### CABALLO_PROPIO
+
+**Meaning**: Private/own horse
+
+**Description**: The student has their own private horse boarded at the school.
+
+**Characteristics**:
+- Student owns the horse
+- Horse type must be `"PRIVADO"`
+- Requires board quota selection
+- Horse can only be used by its owner
+- Student is marked as `propietario: true`
+
+**Required Fields**:
+```typescript
+{
+  tipoPension: "CABALLO_PROPIO",
+  cuotaPension: "ENTERA" | "MEDIA" | "TERCIO",  // Required
+  caballoPropio: number,  // ID of private horse
+  propietario: true
+}
+```
+
+**Typical Use Cases**:
+- Advanced students
+- Competition riders
+- Students with their own horses
+- Long-term committed students
+
+---
+
+## CuotaPension (Board Quota)
+
+Defines the board payment quota when applicable.
+
+### Type Definition
+
+```typescript
+export type CuotaPension = 
+  | "ENTERA" 
+  | "MEDIA" 
+  | "TERCIO";
+```
+
+### Values
+
+#### ENTERA
+
+**Meaning**: Full board
+
+**Description**: Complete boarding services for the horse, including feeding, stabling, grooming, and care.
+
+**Typical Includes**:
+- Full-time stabling
+- Daily feeding and care
+- Grooming services
+- Paddock access
+- Complete facilities use
+
+---
+
+#### MEDIA
+
+**Meaning**: Half board
+
+**Description**: Partial boarding services, typically split responsibilities between school and owner.
+
+**Typical Includes**:
+- Part-time stabling
+- Shared care responsibilities
+- Limited grooming services
+- Reduced facilities use
+
+---
+
+#### TERCIO
+
+**Meaning**: Third board / Minimal board
+
+**Description**: Minimal boarding services, mostly student-managed with basic facilities.
+
+**Typical Includes**:
+- Basic stabling access
+- Minimal care services
+- Student handles most care
+- Limited facilities
+
+---
+
+## Combination Rules
+
+### Valid Combinations
+
+| TipoPension | CuotaPension | CaballoPropio | Propietario |
+|-------------|--------------|---------------|-------------|
+| SIN_CABALLO | `null` (required) | - | `false` |
+| RESERVA_ESCUELA | ENTERA/MEDIA/TERCIO (required) | School horse ID | `false` |
+| CABALLO_PROPIO | ENTERA/MEDIA/TERCIO (required) | Private horse ID | `true` |
+
+### Invalid Combinations
+
+❌ `SIN_CABALLO` with `cuotaPension` set
+```typescript
+// INVALID
+{
+  tipoPension: "SIN_CABALLO",
+  cuotaPension: "ENTERA"  // Should be null!
+}
+```
+
+❌ `RESERVA_ESCUELA` or `CABALLO_PROPIO` without `cuotaPension`
+```typescript
+// INVALID
+{
+  tipoPension: "RESERVA_ESCUELA",
+  cuotaPension: null  // Required!
+}
+```
+
+❌ `RESERVA_ESCUELA` with private horse
+```typescript
+// INVALID
+{
+  tipoPension: "RESERVA_ESCUELA",
+  caballoPropio: 23  // Horse with tipo: "PRIVADO"
+}
+```
+
+## Examples
+
+### Student Without Horse
+
+```json
+{
+  "id": 101,
+  "nombre": "Ana",
+  "apellido": "López",
+  "tipoPension": "SIN_CABALLO",
+  "cuotaPension": null,
+  "propietario": false
+}
+```
+
+### Student Reserving School Horse
+
+```json
+{
+  "id": 102,
+  "nombre": "Carlos",
+  "apellido": "Gómez",
+  "tipoPension": "RESERVA_ESCUELA",
+  "cuotaPension": "ENTERA",
+  "caballoPropio": 12,
+  "propietario": false
+}
+```
+
+### Student With Private Horse
+
+```json
+{
+  "id": 103,
+  "nombre": "María",
+  "apellido": "Rodríguez",
+  "tipoPension": "CABALLO_PROPIO",
+  "cuotaPension": "MEDIA",
+  "caballoPropio": 23,
+  "propietario": true
+}
+```
+
+## Validation Rules
+
+### System Validations
+
+1. **Quota Requirement**: When `tipoPension` is `RESERVA_ESCUELA` or `CABALLO_PROPIO`, `cuotaPension` must be set
+
+2. **Quota Prohibition**: When `tipoPension` is `SIN_CABALLO`, `cuotaPension` must be `null`
+
+3. **Horse Type Match**:
+   - `RESERVA_ESCUELA` requires horse with `tipo: "ESCUELA"`
+   - `CABALLO_PROPIO` requires horse with `tipo: "PRIVADO"`
+
+4. **Ownership Flag**: Students with `tipoPension: "CABALLO_PROPIO"` must have `propietario: true`
+
+5. **Horse Assignment**: Private horses can only be assigned to classes with their owner
+
+## UI Behavior
+
+### Form Dynamics
+
+When creating/editing a student:
+
+1. Select `tipoPension`
+2. If `SIN_CABALLO`:
+   - Hide quota selector
+   - Hide horse selector
+   - Set `cuotaPension = null`
+3. If `RESERVA_ESCUELA`:
+   - Show quota selector (required)
+   - Show horse selector filtered to `tipo: "ESCUELA"`
+4. If `CABALLO_PROPIO`:
+   - Show quota selector (required)
+   - Show horse selector filtered to `tipo: "PRIVADO"`
+   - Set `propietario = true`
+
+## Related
+
+- [Student Model](/reference/models/student)
+- [Horse Model](/reference/models/horse)
+- [Horse Types](/reference/enums/horse-types)
+- [Validation Rules](/reference/rules/validation-rules)

@@ -1,0 +1,564 @@
+---
+title: Business Logic
+description: Core business rules and operational logic
+---
+
+## Overview
+
+This document outlines the core business logic, operational rules, and workflows that govern the equestrian school management system.
+
+## Student Lifecycle
+
+### Registration
+
+**Process**:
+1. Student provides personal information (DNI, name, birth date, phone, email)
+2. System validates DNI uniqueness
+3. Student selects monthly class plan (4, 8, 12, or 16 classes)
+4. Student configures horse arrangement (board type)
+5. System sets `activo: true` and records `fechaInscripcion`
+
+**Automatic Fields**:
+- `fechaInscripcion`: Current date
+- `activo`: `true`
+- `propietario`: `true` if `tipoPension: "CABALLO_PROPIO"`, else `false`
+- `codigoArea` + `telefono`: Formatted as `+549{codigoArea}{telefono}`
+
+**Board Configuration**:
+
+**Option 1: No Assigned Horse** (`SIN_CABALLO`):
+- Student doesn't reserve any horse
+- School assigns available horse per class
+- `cuotaPension: null`
+- Most flexible option
+
+**Option 2: Reserve School Horse** (`RESERVA_ESCUELA`):
+- Student reserves a specific school horse
+- Must select horse with `tipo: "ESCUELA"`
+- Must select board quota (ENTERA, MEDIA, TERCIO)
+- Horse is prioritized for this student
+
+**Option 3: Own Horse** (`CABALLO_PROPIO`):
+- Student has private horse boarded at school
+- Must select horse with `tipo: "PRIVADO"`
+- Must select board quota (ENTERA, MEDIA, TERCIO)
+- Sets `propietario: true`
+- Horse can only be used by owner
+
+---
+
+### Monthly Class Quota
+
+**Available Plans**:
+- 4 classes/month
+- 8 classes/month
+- 12 classes/month
+- 16 classes/month
+
+**Quota Tracking**:
+```typescript
+// Count classes in current month
+const clasesTomadas = clasesDelMes.filter(c =>
+  ["COMPLETADA", "PROGRAMADA", "INICIADA"].includes(c.estado) &&
+  !c.esPrueba  // Trial classes don't count
+).length;
+
+const clasesRestantes = student.cantidadClases - clasesTomadas;
+```
+
+**Quota States**:
+- **Normal**: > 2 classes remaining
+- **Warning**: ≤ 2 classes remaining (show alert)
+- **Exhausted**: 0 classes remaining (allow with confirmation)
+- **Over-quota**: Negative remaining (allow with confirmation)
+
+**Rules**:
+- Trial classes (`esPrueba: true`) do NOT count toward quota
+- Cancelled classes (`CANCELADA`) do NOT count toward quota
+- Absences with notice (`ACA`) policy-dependent (currently count)
+- Absences without notice (`ASA`) count toward quota
+- Quota resets monthly (tracked per calendar month)
+
+---
+
+### Student Status Management
+
+**Active Students** (`activo: true`):
+- Can be assigned to regular classes
+- Cannot take trial classes
+- Appear in student selection dropdowns
+- Count toward active student metrics
+
+**Inactive Students** (`activo: false`):
+- Cannot be assigned to regular classes
+- Can take trial classes (if eligible)
+- May appear in special dropdowns (trial class selection)
+- Don't count toward active metrics
+
+**Deactivation**:
+- Manual process (edit student, set `activo: false`)
+- Use when student pauses or leaves
+- Preserves historical data
+- Can be reactivated later
+
+---
+
+## Trial Classes System
+
+### Purpose
+
+Allow prospective students to try a class before enrolling.
+
+### Types
+
+#### Type 1: New Person
+
+**Who**: Someone who has never been a student
+
+**Process**:
+1. Create class with `esPrueba: true`
+2. Select "Persona nueva" option
+3. Enter first name and last name
+4. System creates `PersonaPrueba` record
+5. Class has `alumnoId: null`, `personaPruebaId: {id}`
+
+**Data Structure**:
+```typescript
+{
+  esPrueba: true,
+  alumnoId: null,
+  personaPruebaId: 78,
+  personaPruebaNombre: "Laura",
+  personaPruebaApellido: "Martínez",
+  // ... other class fields
+}
+```
+
+#### Type 2: Existing Inactive Student
+
+**Who**: Former student wanting to try a new specialty
+
+**Requirements**:
+- Student must be inactive (`activo: false`)
+- Student must NOT have classes in that specialty
+- Student must NOT have had trial class in that specialty
+
+**Process**:
+1. Create class with `esPrueba: true`
+2. Select "Alumno existente" option
+3. Choose inactive student from dropdown
+4. System validates eligibility
+5. Class has `alumnoId: {id}`, `personaPruebaId: null`
+
+**Validation**:
+```typescript
+function canTakeTrialClass(
+  alumno: Alumno,
+  especialidad: EspecialidadClase
+): boolean {
+  // Must be inactive
+  if (alumno.activo === true) {
+    return false;
+  }
+  
+  // Check for existing classes in specialty
+  const existingClasses = await clasesApi.buscar({
+    alumnoId: alumno.id,
+    especialidad
+  });
+  
+  // No regular classes in specialty
+  const hasRegularClasses = existingClasses.some(c => 
+    ["PROGRAMADA", "COMPLETADA", "INICIADA"].includes(c.estado) &&
+    !c.esPrueba
+  );
+  
+  if (hasRegularClasses) {
+    return false;
+  }
+  
+  // No trial classes in specialty
+  const hasTrialClass = existingClasses.some(c => c.esPrueba === true);
+  
+  return !hasTrialClass;
+}
+```
+
+### Visual Identification
+
+**Calendar**:
+- 🎓 Emoji indicator
+- Orange border on class cell
+- "Prueba" badge in details popover
+
+**Class List**:
+- "Prueba" badge
+- Shows person name instead of student name (for Type 1)
+- Orange highlight
+
+**Export**:
+- Orange border in Excel export
+- Special notation in printed materials
+
+### Business Rules
+
+**Rule 1**: Trial classes do NOT count toward monthly quota
+
+**Rule 2**: Cannot repeat trial class in same specialty
+
+**Rule 3**: Cannot have trial class if already has classes in that specialty
+
+**Rule 4**: After trial class, person must enroll as regular student to continue
+
+**Rule 5**: Trial class data is preserved for conversion to regular student
+
+---
+
+## Class Scheduling
+
+### Creation Methods
+
+#### Method 1: From Classes Section
+
+1. Click "Nueva Clase" button
+2. Manually select all fields:
+   - Day (defaults to today)
+   - Time
+   - Duration (30 or 60 min)
+   - Student (or trial person)
+   - Instructor
+   - Horse
+   - Specialty
+   - Trial class flag (optional)
+3. System validates:
+   - End time ≤ 18:30
+   - No horse conflicts
+   - No instructor conflicts (warning only)
+   - Horse ownership (for private horses)
+4. Create with `estado: "PROGRAMADA"`
+
+#### Method 2: From Calendar (Day View)
+
+1. Click on empty cell (horse column × time row)
+2. System pre-fills:
+   - Day (from current date)
+   - Time (from row clicked)
+   - Horse (from column clicked)
+3. User completes:
+   - Student
+   - Instructor
+   - Specialty
+   - Duration
+4. System validates (same as Method 1)
+5. Create with `estado: "PROGRAMADA"`
+
+**Advantage of Method 2**:
+- Visual availability check
+- Faster scheduling
+- Immediate conflict visibility
+
+---
+
+### Class States Flow
+
+```
+┌─────────────┐
+│ PROGRAMADA  │ ← Initial state (scheduled)
+└──────┬──────┘
+       │
+       ├──→ INICIADA ──→ COMPLETADA (typical flow)
+       │
+       ├──→ CANCELADA (cancelled before starting)
+       │
+       ├──→ ACA (student notified absence)
+       │
+       └──→ ASA (student no-show)
+```
+
+**Transitions**:
+
+**PROGRAMADA → INICIADA**:
+- Class starts
+- Instructor marks as started
+- Becomes non-editable
+
+**PROGRAMADA → COMPLETADA**:
+- Class finished successfully (can skip INICIADA)
+- Counts as attended
+- Becomes non-editable
+
+**PROGRAMADA → CANCELADA**:
+- Class cancelled before starting
+- Reason recorded in observations
+- Does not count toward quota
+- Becomes non-editable
+
+**PROGRAMADA → ACA**:
+- Student notified they won't attend
+- Better than ASA for student record
+- May or may not count toward quota (policy)
+- Becomes non-editable
+
+**PROGRAMADA → ASA**:
+- Student didn't show up
+- No advance notice
+- Counts toward quota
+- Negatively impacts student metrics
+- Becomes non-editable
+
+**INICIADA → COMPLETADA**:
+- Class in progress → finished
+- Only valid transition from INICIADA
+
+---
+
+## Horse Management
+
+### Horse Types
+
+**School Horses** (`ESCUELA`):
+- Owned by school
+- Available to all students
+- Can be reserved by students
+- Used for trial classes
+- Managed by school staff
+
+**Private Horses** (`PRIVADO`):
+- Owned by individual students
+- Only owner can use
+- Requires board payment
+- Owner has `tipoPension: "CABALLO_PROPIO"`
+
+### Assignment Logic
+
+**For Students Without Horse** (`SIN_CABALLO`):
+```typescript
+// When creating class
+function assignHorse(clase: Clase): number {
+  // Filter available school horses
+  const availableHorses = await caballosApi.buscar({
+    tipo: "ESCUELA",
+    disponible: true
+  });
+  
+  // Check which don't have conflict
+  for (const horse of availableHorses) {
+    const hasConflict = await checkHorseConflict(
+      horse.id,
+      clase.dia,
+      clase.hora,
+      clase.duracion
+    );
+    
+    if (!hasConflict) {
+      return horse.id;
+    }
+  }
+  
+  throw new Error("No hay caballos disponibles a esta hora");
+}
+```
+
+**For Students With Reserved Horse** (`RESERVA_ESCUELA`):
+```typescript
+function getStudentHorse(alumno: Alumno): number {
+  if (alumno.tipoPension === "RESERVA_ESCUELA" && alumno.caballoPropio) {
+    return alumno.caballoPropio; // Prioritize reserved horse
+  }
+  // Fall back to assignment logic
+}
+```
+
+**For Students With Private Horse** (`CABALLO_PROPIO`):
+```typescript
+function validatePrivateHorse(alumno: Alumno, caballoId: number): boolean {
+  if (alumno.tipoPension === "CABALLO_PROPIO") {
+    if (alumno.caballoPropio !== caballoId) {
+      throw new Error("Debe usar su caballo propio");
+    }
+  }
+  
+  const caballo = await caballosApi.obtener(caballoId);
+  if (caballo.tipo === "PRIVADO") {
+    const owner = caballo.propietarios?.[0];
+    if (owner?.id !== alumno.id) {
+      throw new Error("Este caballo solo puede ser usado por su propietario");
+    }
+  }
+  
+  return true;
+}
+```
+
+---
+
+## Specialty-Specific Logic
+
+### EQUITACION (Regular Riding)
+
+- Most common class type
+- No special logic
+- Available for all students
+- Available for trial classes
+
+### ADIESTRAMIENTO (Horse Training)
+
+- Focus on horse development
+- May require experienced students
+- Available for trial classes (conditional)
+- Special horse requirements may apply
+
+### EQUINOTERAPIA (Equine Therapy)
+
+- Therapeutic purpose
+- May require special instructor certification
+- Specific calm horse selection
+- Available for trial classes
+- May have different session structure
+
+### MONTA (Free Riding)
+
+**Special Behavior**:
+```typescript
+function handleMontaClass(clase: Partial<Clase>): Clase {
+  if (clase.especialidad === "MONTA") {
+    // Override student selection
+    clase.alumnoId = 1; // Placeholder student
+    clase.esPrueba = false; // Cannot be trial
+  }
+  return clase;
+}
+```
+
+**Characteristics**:
+- Automatically assigns placeholder student (ID 1)
+- User cannot select student
+- Used for open riding sessions
+- Owner practicing with their horse
+- Experienced riders practicing independently
+
+---
+
+## Calendar Features
+
+### Copy Week
+
+**Use Case**: Repeat weekly schedule to future weeks
+
+**Process**:
+1. Select source week (any day in week)
+2. Select target week (any day in week)
+3. Select number of weeks to copy
+4. System copies all classes from source week
+5. Adjusts dates while preserving day-of-week
+6. All copied classes set to `estado: "PROGRAMADA"`
+
+**Example**:
+- Source: March 10-16 (Week 1)
+- Target: March 17 (start of Week 2)
+- Weeks: 2
+- Result: Copies Week 1 → Week 2 and Week 3
+
+### Cancel Full Day
+
+**Use Case**: Cancel all classes on a day (rain, holiday, etc.)
+
+**Process**:
+1. Select day in calendar (day view)
+2. Click "Cancelar Día" button
+3. Select cancellation reason
+4. System finds all `PROGRAMADA` classes
+5. Sets estado → `CANCELADA`
+6. Records reason in observations
+
+**Reasons**:
+- Lluvia
+- Feriado
+- Mantenimiento
+- Evento Especial
+- Emergencia
+- Otro (custom)
+
+**Behavior**:
+- Only affects `PROGRAMADA` classes
+- Leaves completed/cancelled classes untouched
+- Batch operation (all at once)
+
+---
+
+## Reporting Logic
+
+### Attendance Calculation
+
+```typescript
+function calculateAttendance(alumnoId: number, period: DateRange) {
+  const classes = await clasesApi.buscar({
+    alumnoId,
+    dia: { gte: period.start, lte: period.end }
+  });
+  
+  const scheduled = classes.filter(c => 
+    ["PROGRAMADA", "INICIADA", "COMPLETADA", "ACA", "ASA"]
+    .includes(c.estado)
+  ).length;
+  
+  const attended = classes.filter(c => 
+    c.estado === "COMPLETADA"
+  ).length;
+  
+  const cancelled = classes.filter(c => 
+    c.estado === "CANCELADA"
+  ).length;
+  
+  const noShow = classes.filter(c => 
+    c.estado === "ASA"
+  ).length;
+  
+  return {
+    scheduled,
+    attended,
+    cancelled,
+    noShow,
+    attendanceRate: (attended / scheduled) * 100,
+    noShowRate: (noShow / scheduled) * 100
+  };
+}
+```
+
+### Quota Usage
+
+```typescript
+function getQuotaUsage(alumnoId: number, month: string) {
+  const startDate = `${month}-01`;
+  const endDate = `${month}-${getLastDayOfMonth(month)}`;
+  
+  const classes = await clasesApi.buscar({
+    alumnoId,
+    dia: { gte: startDate, lte: endDate }
+  });
+  
+  const counted = classes.filter(c =>
+    ["PROGRAMADA", "INICIADA", "COMPLETADA", "ASA"].includes(c.estado) &&
+    !c.esPrueba
+  ).length;
+  
+  const student = await alumnosApi.obtener(alumnoId);
+  
+  return {
+    used: counted,
+    total: student.cantidadClases,
+    remaining: student.cantidadClases - counted,
+    percentage: (counted / student.cantidadClases) * 100
+  };
+}
+```
+
+---
+
+## Related
+
+- [Validation Rules](/reference/rules/validation-rules)
+- [Scheduling Rules](/reference/rules/scheduling-rules)
+- [Class States](/reference/enums/class-states)
+- [Specialties](/reference/enums/specialties)
+- [Board Types](/reference/enums/board-types)

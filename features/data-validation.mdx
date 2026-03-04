@@ -1,0 +1,283 @@
+---
+title: Data Validation
+description: Comprehensive validation system for data integrity and business rules
+---
+
+## Overview
+
+The system implements multiple layers of validation to ensure data integrity, prevent conflicts, and enforce business rules.
+
+## DNI Validation
+
+### Duplicate DNI Detection
+
+Real-time validation to prevent duplicate DNI entries:
+
+```tsx
+export const useValidarDniDuplicado = (
+  entidad: "alumnos" | "instructores",
+  dni: string,
+  idActual?: number,
+) => {
+  return useQuery({
+    queryKey: [`${entidad}-validar-dni`, dni, idActual],
+    queryFn: async () => {
+      if (!dni || dni.length < 9) {
+        return { duplicado: false, mensaje: "" };
+      }
+
+      const api = entidad === "alumnos" ? alumnosApi : instructoresApi;
+      const resultados = await api.buscar({ dni });
+
+      const duplicado = resultados.some((r) => r.id !== idActual);
+
+      return {
+        duplicado,
+        mensaje: duplicado
+          ? `Ya existe ${entidad === "alumnos" ? "un alumno" : "un instructor"} con DNI ${dni}`
+          : "",
+      };
+    },
+    enabled: dni.length >= 9,
+    staleTime: 10000,
+  });
+};
+```
+
+From `~/workspace/source/src/hooks/useValidarDniDuplicado.ts:5-32`
+
+### Validation Trigger
+
+```tsx
+const [validacionHabilitada, setValidacionHabilitada] = useState(false);
+const [dni, setDni] = useState<Alumno["dni"]>("");
+
+const { data: validacionDni } = useValidarDniDuplicado(
+  "alumnos",
+  dni,
+  editingAlumno?.id,
+);
+
+const validacionActiva =
+  validacionHabilitada && dni.length >= 9
+    ? validacionDni
+    : { duplicado: false, mensaje: "" };
+```
+
+From `~/workspace/source/src/pages/Alumnos.tsx:70-84`
+
+### From README Documentation
+
+```markdown
+### 2. DNI Duplicate Validation
+
+**Behavior**:
+- When entering a DNI in Student or Instructor forms
+- System validates in real-time if DNI already exists
+- If exists, shows error message and prevents saving
+- Validation activates automatically when typing 9 or more digits
+```
+
+From `~/workspace/source/README.md:205-212`
+
+## Class Schedule Validation
+
+### Time Limit Validation
+
+Classes cannot end after 6:30 PM:
+
+```markdown
+### 1. Schedule Limit Validation
+
+**Rule**: Classes cannot end after **18:30**
+
+**Example**:
+- ❌ 60-minute class at 18:00 (would end at 19:00)
+- ✅ 60-minute class at 17:30 (would end at 18:30)
+- ✅ 30-minute class at 18:00 (would end at 18:30)
+
+**Error message**: 
+> "The class cannot end after 18:30. With 60-minute duration at 18:00 it would end at 19:00."
+```
+
+From `~/workspace/source/README.md:193-204`
+
+## Conflict Detection
+
+### Schedule Conflicts
+
+```markdown
+### 3. Schedule Conflict Validation
+
+**Verifies**:
+- Horse doesn't have another class at the same time
+- Instructor doesn't have another class at the same time
+- Shows visual indicators (⚠️) in cells with conflicts
+```
+
+From `~/workspace/source/README.md:214-219`
+
+## Trial Class Validation
+
+### Business Rules for Trial Classes
+
+```markdown
+### Automatic Validations:
+
+The system validates automatically:
+
+✅ **Rule 1**: A student CANNOT have a trial class if they already have classes (scheduled or completed) of that specialty
+
+✅ **Rule 2**: A student CANNOT repeat trial class of the same specialty
+
+✅ **Rule 3**: Trial classes DO NOT count towards the student's monthly quota
+```
+
+From `~/workspace/source/README.md:172-179`
+
+### Trial Class Type Validation
+
+```markdown
+#### **Type 1: New Person**
+For someone who has never been a student:
+- Complete **Name** and **Last Name** of the person
+- Does not require creating a student account
+- Registered as "Trial Person" in the system
+- Identified with 🎓 emoji in calendar
+
+#### **Type 2: Existing Inactive Student**
+For an already registered student wanting to try a new specialty:
+- Select student from the list
+- **Requirement**: Student must be **INACTIVE**
+- **Requirement**: Must not have classes (scheduled/completed) of that specialty
+```
+
+From `~/workspace/source/README.md:157-170`
+
+## Edit Restrictions
+
+### State-Based Editing
+
+```markdown
+### 4. Edit Restrictions
+
+**Cannot edit classes with status**:
+- COMPLETADA (Completed)
+- INICIADA (Started)
+- CANCELADA (Canceled)
+
+**Reason**: Finalized classes are historical records
+
+**Visual indicators**:
+- "Edit" and "Delete" buttons disabled
+- Explanatory tooltip: "Cannot edit a finalized class"
+- Reduced opacity on controls
+```
+
+From `~/workspace/source/README.md:221-233`
+
+## Form Validation
+
+### Required Fields
+
+```markdown
+### Personal Data (required):
+- **DNI**: Only numbers without dots (e.g., 12345678)
+  - System automatically validates duplicate DNIs
+  - If DNI exists, error message is shown
+- **Name**: Student's full name
+- **Last Name**: Student's full last name
+- **Birth Date**: Needed for age calculation and insurance
+- **Phone**: Without the 0 or 15 (e.g., 221234567)
+  - ⚠️ **IMPORTANT**: System automatically adds `+549` prefix for Argentine numbers
+- **Email**: Optional but recommended for communications
+```
+
+From `~/workspace/source/README.md:20-29`
+
+## Phone Number Validation
+
+### Automatic Prefix Addition
+
+```markdown
+- **Phone**: Without the 0 or 15
+  - ⚠️ **IMPORTANT**: System automatically adds `+549` prefix for Argentine numbers
+```
+
+From `~/workspace/source/README.md:94-95`
+
+### Phone Format
+
+```markdown
+- **Phones**: +549XXXXXXXXX (with automatic Argentine prefix)
+```
+
+From `~/workspace/source/README.md:570`
+
+## Class Quota Validation
+
+### Remaining Classes Check
+
+```markdown
+### 5. Remaining Classes Validation
+
+**Automatic monitoring**:
+- System calculates classes taken vs. classes contracted
+- Shows alerts when student is near the limit
+- Allows creating classes even if quota is exhausted (with confirmation)
+```
+
+From `~/workspace/source/README.md:235-240`
+
+## Data Format Validation
+
+### Standard Formats
+
+```markdown
+### Data Format:
+
+- **Dates**: yyyy-MM-dd
+- **Times**: HH:mm (24-hour format)
+- **Phones**: +549XXXXXXXXX (with automatic Argentine prefix)
+- **DNI**: Numbers only, no dots or dashes
+```
+
+From `~/workspace/source/README.md:566-572`
+
+## Private Horse Validation
+
+### Ownership Validation
+
+```markdown
+5. **Private Horses**: Can only be used by their owners
+```
+
+From `~/workspace/source/README.md:542`
+
+## Critical Validations Summary
+
+```markdown
+### ✅ Critical Validations:
+
+1. **Schedule**: Classes cannot end after 18:30
+2. **DNI**: Duplicate DNIs not allowed (students and instructors)
+3. **Editing**: Cannot edit finalized classes (COMPLETED, STARTED, CANCELED)
+4. **Trial Classes**: 
+   - Only for inactive students
+   - Cannot repeat in same specialty
+   - Not allowed if student already has classes of that specialty
+5. **Private Horses**: Can only be used by their owners
+6. **Conflicts**: Cannot schedule two simultaneous classes with same horse or instructor
+```
+
+From `~/workspace/source/README.md:533-544`
+
+## Best Practices
+
+1. **Real-Time Validation** - Validate critical fields as user types
+2. **Clear Error Messages** - Provide specific, actionable error messages
+3. **Visual Feedback** - Use colors, icons, and tooltips for validation state
+4. **Prevent Invalid States** - Disable submit buttons when validation fails
+5. **Server-Side Validation** - Always validate on server as well as client
+6. **Business Rule Enforcement** - Encode business rules in validation logic
+7. **User-Friendly** - Balance strict validation with good user experience

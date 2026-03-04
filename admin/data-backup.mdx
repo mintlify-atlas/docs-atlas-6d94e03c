@@ -1,0 +1,457 @@
+---
+title: 'Data Backup & Recovery'
+description: 'Backup strategies and data recovery procedures'
+icon: 'database'
+---
+
+## Overview
+
+Implementing a robust backup strategy is essential for protecting your Equestrian School Management System data. This guide covers backup procedures, export capabilities, and recovery strategies.
+
+## Export Capabilities
+
+The system includes built-in export functionality for data backup and reporting.
+
+### Excel Export
+
+The application uses **ExcelJS** for generating professional Excel reports with full styling support.
+
+**Installation:** (`package.json:51-52`)
+```json
+"exceljs": "^4.4.0",
+"file-saver": "^2.0.5"
+```
+
+### Available Exports
+
+The system supports exporting:
+
+<CardGroup cols={2}>
+  <Card title="Student Data" icon="user-graduate">
+    - Complete student registry
+    - Enrollment information
+    - Assigned horses
+    - Monthly plans
+  </Card>
+  <Card title="Class Schedule" icon="calendar">
+    - Daily class schedules
+    - Weekly programming
+    - Instructor assignments
+    - Horse allocations
+  </Card>
+  <Card title="Instructor Reports" icon="chalkboard-user">
+    - Workload statistics
+    - Class completion rates
+    - Performance metrics
+    - Schedule efficiency
+  </Card>
+  <Card title="Horse Utilization" icon="horse">
+    - Usage statistics
+    - School vs. Private horses
+    - Availability tracking
+    - Assignment history
+  </Card>
+</CardGroup>
+
+### Export Features
+
+**Professional Formatting:**
+- Colored headers
+- Alternating row colors
+- Auto-sized columns
+- Formatted dates and numbers
+- Embedded comments
+- Print-optimized layout
+
+**File Naming Convention:**
+```
+Reporte_[Type]_[Date].xlsx
+```
+
+Example: `Reporte_Alumnos_2026-03-04.xlsx`
+
+## Database Backup Strategies
+
+### Backend Database Backup
+
+Since this is a frontend application, database backups should be handled by your backend system.
+
+<Steps>
+  <Step title="Identify Database Type">
+    Determine your backend database (PostgreSQL, MySQL, MongoDB, etc.)
+  </Step>
+  <Step title="Configure Automated Backups">
+    Set up automated backup schedules on your database server
+  </Step>
+  <Step title="Store Off-Site">
+    Keep backups in separate location from production server
+  </Step>
+  <Step title="Test Restoration">
+    Regularly test backup restoration procedures
+  </Step>
+</Steps>
+
+### Recommended Backup Frequency
+
+<CardGroup cols={3}>
+  <Card title="Daily" icon="calendar-day">
+    Full database backup
+    
+    **Time:** Off-peak hours (e.g., 2 AM)
+  </Card>
+  <Card title="Hourly" icon="clock">
+    Incremental backups
+    
+    **Time:** Every hour during business hours
+  </Card>
+  <Card title="Weekly" icon="calendar-week">
+    Complete system backup
+    
+    **Time:** Sunday nights
+  </Card>
+</CardGroup>
+
+### Backup Retention Policy
+
+**Suggested retention schedule:**
+
+- **Daily backups:** Keep for 30 days
+- **Weekly backups:** Keep for 3 months
+- **Monthly backups:** Keep for 1 year
+- **Annual backups:** Keep indefinitely (or per compliance requirements)
+
+## Export Data for Backup
+
+### Manual Data Export
+
+Use the built-in export features to create manual backups:
+
+<Steps>
+  <Step title="Navigate to Reports Section">
+    Access the reports/statistics area of the application
+  </Step>
+  <Step title="Select Report Type">
+    Choose which data to export:
+    - Students
+    - Classes
+    - Instructors
+    - Horses
+  </Step>
+  <Step title="Set Date Range">
+    Select the period for export (default: current month)
+  </Step>
+  <Step title="Export to Excel">
+    Click export button to download Excel file
+  </Step>
+  <Step title="Store Safely">
+    Save exported files in secure backup location
+  </Step>
+</Steps>
+
+### Automated Export Scripts
+
+Create automated export scripts for regular backups:
+
+```bash
+#!/bin/bash
+# Automated daily export script
+
+DATE=$(date +%Y-%m-%d)
+BACKUP_DIR="/path/to/backups/$DATE"
+
+mkdir -p "$BACKUP_DIR"
+
+# Copy exported files to backup directory
+cp /path/to/exports/*.xlsx "$BACKUP_DIR/"
+
+# Compress backup
+tar -czf "$BACKUP_DIR.tar.gz" "$BACKUP_DIR"
+
+# Upload to cloud storage (example with AWS S3)
+aws s3 cp "$BACKUP_DIR.tar.gz" s3://your-bucket/backups/
+
+# Clean up old backups (keep last 30 days)
+find /path/to/backups -type d -mtime +30 -exec rm -rf {} \;
+
+echo "Backup completed: $BACKUP_DIR.tar.gz"
+```
+
+## Cloud Storage Integration
+
+### Recommended Storage Solutions
+
+<Tabs>
+  <Tab title="AWS S3">
+    **Amazon S3 Setup:**
+    
+    1. Create S3 bucket
+    2. Configure versioning
+    3. Enable encryption
+    4. Set lifecycle policies
+    5. Configure access controls
+    
+    ```bash
+    # Upload to S3
+    aws s3 cp backup.xlsx s3://bucket-name/backups/
+    ```
+  </Tab>
+  
+  <Tab title="Google Cloud Storage">
+    **GCS Setup:**
+    
+    1. Create storage bucket
+    2. Enable object versioning
+    3. Configure retention policy
+    4. Set up IAM permissions
+    
+    ```bash
+    # Upload to GCS
+    gsutil cp backup.xlsx gs://bucket-name/backups/
+    ```
+  </Tab>
+  
+  <Tab title="Azure Blob Storage">
+    **Azure Setup:**
+    
+    1. Create storage account
+    2. Create blob container
+    3. Enable soft delete
+    4. Configure access policies
+    
+    ```bash
+    # Upload to Azure
+    az storage blob upload --file backup.xlsx --container backups
+    ```
+  </Tab>
+</Tabs>
+
+## Session Storage Backup
+
+### User Session Data
+
+The application stores session data in browser `sessionStorage`:
+
+**Stored Items:**
+- `authCredentials` - Encoded authentication credentials
+- `user` - User profile (without password)
+
+<Warning>
+  SessionStorage is **temporary** and cleared when the browser closes. 
+  It is NOT suitable for long-term data backup.
+</Warning>
+
+### Session Data Structure
+
+(`src/services/authService.ts:68-72`)
+```typescript
+export const storeCredentials = (credentials: string, user: User): void => {
+  sessionStorage.setItem("authCredentials", credentials);
+  const { password, ...safeUser } = user;
+  sessionStorage.setItem("user", JSON.stringify(safeUser));
+};
+```
+
+## Data Recovery Procedures
+
+### Recovery Scenarios
+
+<AccordionGroup>
+  <Accordion title="Scenario 1: Accidental Data Deletion">
+    **Steps:**
+    1. Identify the deletion time
+    2. Locate most recent backup before deletion
+    3. Restore from backup
+    4. Verify data integrity
+    5. Communicate with users about restoration
+    
+    **Timeframe:** Minutes to hours depending on backup size
+  </Accordion>
+
+  <Accordion title="Scenario 2: Database Corruption">
+    **Steps:**
+    1. Stop application to prevent further corruption
+    2. Assess extent of corruption
+    3. Restore from last known good backup
+    4. Apply transaction logs if available
+    5. Verify data consistency
+    6. Resume operations
+    
+    **Timeframe:** Hours to restore and verify
+  </Accordion>
+
+  <Accordion title="Scenario 3: Complete System Failure">
+    **Steps:**
+    1. Set up new infrastructure
+    2. Install application (see [Installation](/admin/installation))
+    3. Restore database from backup
+    4. Configure environment (see [Environment Setup](/admin/environment-setup))
+    5. Test all functionality
+    6. Restore user access
+    
+    **Timeframe:** Several hours to days
+  </Accordion>
+
+  <Accordion title="Scenario 4: Partial Data Loss">
+    **Steps:**
+    1. Identify affected records
+    2. Export current state
+    3. Restore specific data from backup
+    4. Merge with current data
+    5. Validate accuracy
+    
+    **Timeframe:** Varies by data volume
+  </Accordion>
+</AccordionGroup>
+
+### Recovery Testing
+
+Regularly test your recovery procedures:
+
+<Steps>
+  <Step title="Schedule Quarterly Tests">
+    Perform recovery drills every 3 months
+  </Step>
+  <Step title="Use Test Environment">
+    Never test on production systems
+  </Step>
+  <Step title="Document Process">
+    Record steps and time required
+  </Step>
+  <Step title="Verify Data Integrity">
+    Confirm restored data is complete and accurate
+  </Step>
+  <Step title="Update Procedures">
+    Improve recovery documentation based on findings
+  </Step>
+</Steps>
+
+## Disaster Recovery Plan
+
+### Recovery Time Objective (RTO)
+
+**Target:** System operational within 4 hours of disaster
+
+**Components:**
+- Infrastructure provisioning: 1 hour
+- Application deployment: 30 minutes
+- Database restoration: 2 hours
+- Testing and verification: 30 minutes
+
+### Recovery Point Objective (RPO)
+
+**Target:** Maximum 1 hour of data loss
+
+**Strategy:**
+- Hourly incremental backups
+- Transaction log backups every 15 minutes
+- Real-time replication for critical data
+
+### Disaster Recovery Checklist
+
+<Checklist>
+  <Check>Backup systems operational and tested</Check>
+  <Check>Off-site backup storage configured</Check>
+  <Check>Recovery procedures documented</Check>
+  <Check>Contact list for emergency response</Check>
+  <Check>Alternative infrastructure identified</Check>
+  <Check>Application deployment scripts ready</Check>
+  <Check>Database restoration scripts tested</Check>
+  <Check>User communication plan prepared</Check>
+  <Check>Recovery time objectives documented</Check>
+  <Check>Regular disaster recovery drills scheduled</Check>
+</Checklist>
+
+## Backup Best Practices
+
+### 3-2-1 Backup Rule
+
+<Steps>
+  <Step title="3 Copies">
+    Maintain at least 3 copies of your data:
+    - Production database
+    - Local backup
+    - Remote backup
+  </Step>
+  <Step title="2 Different Media">
+    Use at least 2 different storage types:
+    - Disk storage
+    - Cloud storage
+  </Step>
+  <Step title="1 Off-Site">
+    Keep at least 1 copy off-site:
+    - Cloud storage
+    - Remote data center
+  </Step>
+</Steps>
+
+### Security Measures
+
+<CardGroup cols={2}>
+  <Card title="Encryption" icon="lock">
+    - Encrypt backups at rest
+    - Use encryption in transit
+    - Secure encryption keys
+  </Card>
+  <Card title="Access Control" icon="shield">
+    - Limit backup access
+    - Audit access logs
+    - Rotate credentials
+  </Card>
+  <Card title="Integrity Checks" icon="check">
+    - Verify backup checksums
+    - Test restoration regularly
+    - Monitor backup status
+  </Card>
+  <Card title="Documentation" icon="book">
+    - Document procedures
+    - Maintain runbooks
+    - Update regularly
+  </Card>
+</CardGroup>
+
+### Monitoring and Alerts
+
+Set up monitoring for:
+
+- Backup completion status
+- Backup file size anomalies
+- Failed backup attempts
+- Storage capacity warnings
+- Restore test results
+
+**Alert Channels:**
+- Email notifications
+- SMS for critical failures
+- Monitoring dashboard
+- Incident management system
+
+## Compliance Considerations
+
+### Data Retention Requirements
+
+Ensure backups comply with:
+
+- Local data protection laws (GDPR, CCPA, etc.)
+- Industry regulations
+- Organizational policies
+- Student privacy requirements
+
+### Audit Trail
+
+Maintain records of:
+- Backup timestamps
+- Restoration events
+- Access logs
+- Data modifications
+- System changes
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Troubleshooting" icon="wrench" href="/admin/troubleshooting">
+    Common issues and solutions
+  </Card>
+  <Card title="User Management" icon="users" href="/admin/user-management">
+    Manage users and authentication
+  </Card>
+</CardGroup>

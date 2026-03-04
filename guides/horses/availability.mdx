@@ -1,0 +1,250 @@
+---
+title: Horse Availability
+description: Managing horse availability and its impact on class scheduling
+---
+
+## Overview
+
+Horse availability is a critical factor in class scheduling. Only available horses can be assigned to classes, ensuring that horses are not scheduled when they are injured, resting, or otherwise out of service.
+
+## Availability Status
+
+<ParamField path="disponible" type="boolean" default="true">
+  Indicates whether the horse is available for classes
+  - `true`: Horse can be assigned to classes
+  - `false`: Horse cannot be assigned to classes
+</ParamField>
+
+### Default Behavior
+
+When a new horse is registered:
+
+```tsx CaballoForm.tsx
+const [disponible, setDisponible] = useState(true);
+```
+
+See: `~/workspace/source/src/components/forms/CaballoForm.tsx:39`
+
+<Info>
+  New horses are automatically set as **available** upon creation.
+</Info>
+
+## Managing Availability
+
+### Toggle Availability
+
+Availability can only be modified when editing an existing horse:
+
+```tsx CaballoForm.tsx
+{caballo && (
+  <div className="flex items-center gap-3">
+    <Switch
+      id="disponible"
+      checked={disponible}
+      onCheckedChange={setDisponible}
+    />
+    <Label htmlFor="disponible">Está disponible</Label>
+  </div>
+)}
+```
+
+See: `~/workspace/source/src/components/forms/CaballoForm.tsx:90-99`
+
+<Note>
+  The availability toggle is **only visible when editing** an existing horse, not during creation.
+</Note>
+
+## Impact on Class Scheduling
+
+### Horse Selection in Classes
+
+When creating a class, only horses (available or not) are shown in the selection dropdown:
+
+```tsx ClaseForm.tsx
+<Select value={caballoId} onValueChange={setCaballoId}>
+  <SelectTrigger>
+    <SelectValue placeholder="Seleccionar caballo" />
+  </SelectTrigger>
+  <SelectContent>
+    {caballos.map((c: Caballo) => (
+      <SelectItem key={c.id} value={String(c.id)}>
+        {c.nombre}
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
+```
+
+See: `~/workspace/source/src/components/forms/ClaseForm.tsx:432-444`
+
+### Auto-Assignment Logic
+
+When a student has a default horse (either reserved school horse or private horse), it is automatically pre-selected:
+
+```tsx ClaseForm.tsx
+useEffect(() => {
+  if (!clase && alumnoId) {
+    const alumno = alumnosValidos.find((a) => a.id === Number(alumnoId));
+    if (alumno?.caballoPropio) {
+      const id =
+        typeof alumno.caballoPropio === "number"
+          ? alumno.caballoPropio
+          : alumno.caballoPropio.id;
+      setCaballoId(String(id));
+    }
+  }
+}, [alumnoId, clase, alumnosValidos]);
+```
+
+See: `~/workspace/source/src/components/forms/ClaseForm.tsx:140-152`
+
+## Display in System
+
+### Status Badges
+
+Horse availability is displayed with color-coded badges:
+
+```tsx Caballos.tsx
+<StatusBadge status={row.disponible ? "success" : "default"}>
+  {row.disponible ? "Disponible" : "No Disponible"}
+</StatusBadge>
+```
+
+See: `~/workspace/source/src/pages/Caballos.tsx:246-248`
+
+<CardGroup cols={2}>
+  <Card title="Available" icon="check-circle">
+    Green badge - Horse can be assigned to classes
+  </Card>
+  <Card title="Not Available" icon="circle-xmark">
+    Gray badge - Horse cannot be assigned to classes
+  </Card>
+</CardGroup>
+
+## Filtering by Availability
+
+The system provides filtering options to view horses by availability status:
+
+```tsx Caballos.tsx
+{
+  name: "disponible",
+  label: "Disponibilidad",
+  type: "select" as const,
+  options: [
+    { label: "Disponible", value: "true" },
+    { label: "No Disponible", value: "false" },
+  ],
+}
+```
+
+See: `~/workspace/source/src/pages/Caballos.tsx:162-170`
+
+### Filter Logic
+
+```tsx Caballos.tsx
+const filteredData = useMemo(() => {
+  return caballos.filter((caballo: Caballo) => {
+    if (filters.tipo !== "all" && caballo.tipo !== filters.tipo) {
+      return false;
+    }
+    if (
+      filters.disponible !== "all" &&
+      String(caballo.disponible) !== filters.disponible
+    ) {
+      return false;
+    }
+    return true;
+  });
+}, [caballos, filters]);
+```
+
+See: `~/workspace/source/src/pages/Caballos.tsx:127-140`
+
+## Use Cases
+
+<AccordionGroup>
+  <Accordion title="Marking Horse as Unavailable">
+    **When to mark unavailable:**
+    - Horse is injured or sick
+    - Horse is in rest period
+    - Horse is temporarily off-site
+    - Maintenance or veterinary care
+    
+    **Result:** Horse will not appear in available selections for new classes, but existing scheduled classes remain intact.
+  </Accordion>
+  
+  <Accordion title="Marking Horse as Available">
+    **When to mark available:**
+    - Horse has recovered from injury
+    - Rest period is complete
+    - Horse has returned to the facility
+    - Ready to resume normal class schedule
+    
+    **Result:** Horse becomes available for assignment to new classes.
+  </Accordion>
+  
+  <Accordion title="Viewing Horse Utilization">
+    Use the availability filter to:
+    - View all available horses for scheduling
+    - Check which horses are currently unavailable
+    - Monitor overall fleet availability
+    - Generate reports on horse usage
+  </Accordion>
+</AccordionGroup>
+
+## Business Rules
+
+<Warning>
+  **Important Considerations**
+  
+  1. Changing a horse's availability does **not** affect existing scheduled classes
+  2. Unavailable horses remain in the system and maintain their historical data
+  3. A horse can be marked unavailable even if it has future scheduled classes
+  4. Private horses follow the same availability rules as school horses
+</Warning>
+
+## Reporting
+
+Horse availability is included in the horse utilization reports:
+
+From the README:
+> **5. Reporte de Caballos**
+> Estadísticas:
+> - Uso de cada caballo
+> - Distribución por tipo (Escuela/Privado)
+> - Porcentaje de uso en el período
+> - Caballos disponibles vs. no disponibles
+> - Exportable a Excel
+
+See: `~/workspace/source/README.md:377-384`
+
+## Best Practices
+
+<Steps>
+  <Step title="Regular Review">
+    Review horse availability status weekly to ensure accurate scheduling
+  </Step>
+  
+  <Step title="Immediate Updates">
+    Update availability status immediately when a horse becomes unavailable (injury, illness, etc.)
+  </Step>
+  
+  <Step title="Documentation">
+    Use the observations field in related classes to document why a horse was marked unavailable
+  </Step>
+  
+  <Step title="Communication">
+    Notify instructors and affected students when a horse's availability changes
+  </Step>
+</Steps>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Horse Registration" icon="pen-to-square" href="/guides/horses/registration">
+    Learn how to register and edit horses
+  </Card>
+  <Card title="Creating Classes" icon="calendar-plus" href="/guides/classes/creating-classes">
+    Understand how horses are assigned to classes
+  </Card>
+</CardGroup>

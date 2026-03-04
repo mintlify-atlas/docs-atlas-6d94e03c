@@ -1,0 +1,407 @@
+---
+title: Responsive Design
+description: Mobile-friendly interface that adapts to all screen sizes
+---
+
+## Overview
+
+The application is built with responsive design principles, ensuring optimal user experience across desktop, tablet, and mobile devices.
+
+## Responsive Breakpoints
+
+### Tailwind Breakpoints
+
+The system uses Tailwind CSS responsive breakpoints:
+
+- **sm**: 640px - Small tablets and large phones
+- **md**: 768px - Tablets
+- **lg**: 1024px - Laptops and small desktops
+- **xl**: 1280px - Desktops
+- **2xl**: 1536px - Large desktops
+
+## Layout Adaptations
+
+### Grid Layouts
+
+Responsive grid columns:
+
+```tsx
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  {/* Content adapts: 1 column mobile, 2 tablet, 3 desktop */}
+</div>
+```
+
+Used throughout for:
+- Card displays
+- Summary statistics
+- Report sections
+
+### Form Layouts
+
+Responsive form grids:
+
+```tsx
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div className="space-y-2">
+    <Label htmlFor="username">Usuario</Label>
+    <Input id="username" name="username" />
+  </div>
+  {/* More fields */}
+</div>
+```
+
+From `~/workspace/source/src/pages/Register.tsx:160-171`
+
+Forms stack vertically on mobile, split into columns on larger screens.
+
+## Component Responsiveness
+
+### Dialog Sizing
+
+Dialogs adapt to screen size:
+
+```tsx
+<DialogContent className="sm:max-w-lg">
+  {/* Content is full-width on mobile, max-width on larger screens */}
+</DialogContent>
+```
+
+From `~/workspace/source/src/pages/Calendario.tsx:252`
+
+### Card Headers
+
+Flexible card layouts:
+
+```tsx
+<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+  <CardTitle className="text-sm font-medium">
+    Alumnos Activos
+  </CardTitle>
+  <User className="h-4 w-4 text-muted-foreground" />
+</CardHeader>
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:455-459`
+
+### Page Headers
+
+Responsive headers with actions:
+
+```tsx
+<PageHeader
+  title="Calendario de Clases"
+  description="Vista interactiva de las clases programadas"
+  action={
+    <CalendarControls
+      currentDate={currentDate}
+      viewMode={viewMode}
+      onNavigate={navigate}
+      onToday={goToToday}
+      onViewModeChange={setViewMode}
+    />
+  }
+/>
+```
+
+From `~/workspace/source/src/pages/Calendario.tsx:112-124`
+
+## Filter Bar Responsiveness
+
+### Flexible Filter Layout
+
+```tsx
+<div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 mb-6">
+  {/* Filters */}
+  <FilterBar
+    filters={filterConfig}
+    values={filters}
+    onChange={handleFilterChange}
+    onReset={handleResetFilters}
+    isLoading={isLoading}
+  />
+  {/* Toolbar */}
+  <CalendarToolbar />
+</div>
+```
+
+From `~/workspace/source/src/pages/Calendario.tsx:126-137`
+
+Filters:
+- Center-aligned on mobile
+- Right-aligned on larger screens
+- Wrap to multiple rows as needed
+
+## Table Responsiveness
+
+### Horizontal Scroll
+
+Tables scroll horizontally on small screens:
+
+```tsx
+<div className="overflow-x-auto">
+  <table className="w-full border-collapse">
+    {/* Table content */}
+  </table>
+</div>
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:811-812`
+
+Maintains table structure while allowing horizontal scrolling on mobile.
+
+## Button Adaptations
+
+### Icon-Only on Mobile
+
+Buttons can show icons only on small screens:
+
+```tsx
+<Button variant="outline" size="sm">
+  <Download className="mr-2 h-4 w-4" />
+  <span className="hidden sm:inline">Exportar</span>
+</Button>
+```
+
+Saves space on mobile while maintaining functionality.
+
+## Authentication Pages
+
+### Centered Mobile Layout
+
+```tsx
+<div className="min-h-screen flex items-center justify-center bg-background p-4">
+  <Card className="w-full max-w-md animate-in fade-in-50 duration-500">
+    {/* Login/Register form */}
+  </Card>
+</div>
+```
+
+From `~/workspace/source/src/pages/Login.tsx:72-73`
+
+Centered layout with padding ensures good presentation on all devices.
+
+## Chart Responsiveness
+
+### Responsive Containers
+
+Charts adapt to container width:
+
+```tsx
+<ResponsiveContainer width="100%" height={220}>
+  <BarChart
+    data={alumnosPorClases}
+    margin={{ top: 5, right: 10, left: -20, bottom: 5 }}
+  >
+    {/* Chart content */}
+  </BarChart>
+</ResponsiveContainer>
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:544-548`
+
+### Font Sizing
+
+Smaller fonts on charts for mobile:
+
+```tsx
+<XAxis dataKey="plan" tick={{ fontSize: 12 }} />
+<YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:553-554`
+
+## Calendar Responsiveness
+
+### View Recommendations
+
+From README:
+
+```markdown
+### Mobile Adaptations
+
+Views adapt to screen size:
+- Month view: Compressed on mobile
+- Week view: Horizontal scroll on mobile
+- Day view: Optimized grid spacing
+- Cards: Stack vertically on mobile
+- Tables: Horizontal scroll on mobile
+```
+
+Best practices:
+- Use Day view on desktop for detailed work
+- Use Month/Week view on mobile for overview
+- Cards view better than table on mobile
+
+## Text Responsiveness
+
+### Font Sizes
+
+Text adapts to screen size:
+
+```tsx
+<CardTitle className="text-2xl font-bold text-center">
+  Iniciar Sesión
+</CardTitle>
+<CardDescription className="text-center">
+  Ingresa tus credenciales para acceder
+</CardDescription>
+```
+
+From `~/workspace/source/src/pages/Login.tsx:75-79`
+
+### Truncation
+
+Long text truncates on small screens:
+
+```tsx
+<p className="text-sm font-medium truncate">
+  {a.nombre}
+</p>
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:763-765`
+
+## Spacing System
+
+### Consistent Spacing
+
+Tailwind spacing classes ensure consistency:
+
+- Padding: `p-4`, `px-6`, `py-3`
+- Margins: `mb-6`, `mt-4`, `gap-4`
+- Responsive: `sm:p-6`, `md:gap-8`
+
+### Space-Y for Vertical Stacking
+
+```tsx
+<div className="space-y-4">
+  {/* Vertically stacked elements with consistent gap */}
+</div>
+```
+
+## Flex Layouts
+
+### Flex Wrap
+
+Flex containers wrap on smaller screens:
+
+```tsx
+<div className="flex flex-wrap items-center gap-4">
+  {/* Items wrap to new line when needed */}
+</div>
+```
+
+### Flex Direction Changes
+
+```tsx
+<div className="flex flex-col sm:flex-row gap-4">
+  {/* Stack vertically on mobile, horizontally on desktop */}
+</div>
+```
+
+## Mobile Navigation
+
+### Compact Controls
+
+Calendar controls adapt for mobile:
+
+```tsx
+<CalendarControls
+  currentDate={currentDate}
+  viewMode={viewMode}
+  onNavigate={navigate}
+  onToday={goToToday}
+  onViewModeChange={setViewMode}
+/>
+```
+
+Controls stack or compress on smaller screens.
+
+## Touch Targets
+
+### Adequate Sizing
+
+Buttons and interactive elements sized for touch:
+
+```tsx
+<Button type="submit" className="w-full" disabled={isSubmitting}>
+  {/* Full-width button easy to tap on mobile */}
+</Button>
+```
+
+From `~/workspace/source/src/pages/Login.tsx:147`
+
+Minimum 44x44px touch targets for mobile accessibility.
+
+## Loading States
+
+### Responsive Spinners
+
+```tsx
+<div className="min-h-screen flex items-center justify-center bg-background">
+  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+</div>
+```
+
+From `~/workspace/source/src/components/auth/ProtectedRoute.tsx:16-18`
+
+Loading indicators work well on all screen sizes.
+
+## Best Practices
+
+1. **Mobile First** - Design for mobile, enhance for desktop
+2. **Test All Sizes** - Verify on phone, tablet, desktop
+3. **Touch Friendly** - Large enough tap targets (44x44px minimum)
+4. **Readable Text** - Minimum 16px body text on mobile
+5. **Scrollable Tables** - Allow horizontal scroll for data tables
+6. **Flexible Grids** - Use responsive grid columns
+7. **Stack on Mobile** - Vertical layouts for narrow screens
+8. **Wrap Content** - Allow content to wrap naturally
+9. **Responsive Images** - Images scale to container
+10. **Test Orientations** - Check portrait and landscape
+
+## Testing Responsive Design
+
+### Browser DevTools
+
+1. Open Chrome DevTools (F12)
+2. Click device toolbar icon (Ctrl+Shift+M)
+3. Test different device presets:
+   - iPhone SE (375px)
+   - iPhone 12 Pro (390px)
+   - iPad (768px)
+   - Desktop (1920px)
+
+### Real Device Testing
+
+Test on actual devices:
+- Small phone (iPhone SE)
+- Large phone (iPhone Pro Max)
+- Tablet (iPad)
+- Desktop (various sizes)
+
+## Common Responsive Patterns
+
+### Statistics Cards
+
+```tsx
+<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+  {/* 1 column mobile, 2 tablet, 4 desktop */}
+</div>
+```
+
+### Report Sections
+
+```tsx
+<div className="grid gap-4 md:grid-cols-2">
+  {/* 1 column mobile, 2 desktop */}
+</div>
+```
+
+### Action Buttons
+
+```tsx
+<div className="flex flex-col sm:flex-row gap-2">
+  {/* Stack on mobile, row on desktop */}
+</div>
+```

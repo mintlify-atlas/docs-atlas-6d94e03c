@@ -1,0 +1,307 @@
+---
+title: Search and Filters
+description: Powerful search and filtering capabilities across all entities
+---
+
+## Overview
+
+The system provides comprehensive search and filtering functionality for students, instructors, horses, and classes, with support for both simple filters and intelligent search.
+
+## Smart Search
+
+### Student Search
+
+Intelligent search across multiple fields:
+
+```tsx
+const handleSmartSearch = (filters: Record<string, unknown>) => {
+  const typedFilters: AlumnoSearchFilters = {};
+
+  if (filters.nombre) typedFilters.nombre = String(filters.nombre);
+  if (filters.apellido) typedFilters.apellido = String(filters.apellido);
+  if (filters.activo !== undefined)
+    typedFilters.activo = Boolean(filters.activo);
+  if (filters.propietario !== undefined)
+    typedFilters.propietario = Boolean(filters.propietario);
+  if (filters.fechaInscripcion)
+    typedFilters.fechaInscripcion = String(filters.fechaInscripcion);
+  if (filters.fechaNacimiento)
+    typedFilters.fechaNacimiento = String(filters.fechaNacimiento);
+
+  setSearchFilters(typedFilters);
+  setCurrentPage(1); // Reset to page 1 on search
+};
+```
+
+From `~/workspace/source/src/pages/Alumnos.tsx:159-175`
+
+### Unified Query Pattern
+
+Search and list using a single query:
+
+```tsx
+const { data: alumnos = [], isLoading } = useQuery({
+  queryKey: ["alumnos", searchFilters],
+  queryFn: () => {
+    // If search filters exist, use search endpoint
+    if (Object.keys(searchFilters).length > 0) {
+      return alumnosApi.buscar(searchFilters);
+    }
+    // Otherwise, list all
+    return alumnosApi.listar();
+  },
+  enabled: true,
+});
+```
+
+From `~/workspace/source/src/pages/Alumnos.tsx:90-101`
+
+## Filter System
+
+### Filter Configuration
+
+Define filters declaratively:
+
+```tsx
+const filterConfig = [
+  {
+    name: "cantidadClases",
+    label: "Clases/Mes",
+    type: "select" as const,
+    options: [
+      { label: "4 clases", value: "4" },
+      { label: "8 clases", value: "8" },
+      { label: "12 clases", value: "12" },
+      { label: "16 clases", value: "16" },
+    ],
+  },
+  {
+    name: "activo",
+    label: "Estado",
+    type: "select" as const,
+    options: [
+      { label: "Activo", value: "true" },
+      { label: "Inactivo", value: "false" },
+    ],
+  },
+  {
+    name: "propietario",
+    label: "Propietario",
+    type: "select" as const,
+    options: [
+      { label: "Sí", value: "true" },
+      { label: "No", value: "false" },
+    ],
+  },
+];
+```
+
+From `~/workspace/source/src/pages/Alumnos.tsx:222-252`
+
+### Filter Component
+
+Reusable filter bar component:
+
+```tsx
+<FilterBar
+  filters={filterConfig}
+  values={filters}
+  onChange={handleFilterChange}
+  onReset={handleResetFilters}
+  isLoading={isLoading}
+/>
+```
+
+### Filter Logic
+
+Client-side filtering implementation:
+
+```tsx
+const filteredData = useMemo(() => {
+  const validAlumnos = alumnos.filter((alumno: unknown): alumno is Alumno => {
+    return (
+      typeof alumno === "object" &&
+      alumno !== null &&
+      "id" in alumno &&
+      "nombre" in alumno
+    );
+  });
+
+  return validAlumnos.filter((alumno: Alumno) => {
+    if (
+      filters.cantidadClases !== "all" &&
+      String(alumno.cantidadClases) !== filters.cantidadClases
+    ) {
+      return false;
+    }
+    if (
+      filters.activo !== "all" &&
+      String(alumno.activo) !== filters.activo
+    ) {
+      return false;
+    }
+    if (
+      filters.propietario !== "all" &&
+      String(alumno.propietario) !== filters.propietario
+    ) {
+      return false;
+    }
+    return true;
+  });
+}, [alumnos, filters]);
+```
+
+From `~/workspace/source/src/pages/Alumnos.tsx:178-210`
+
+## Calendar Filters
+
+### Filter by Student and Instructor
+
+```tsx
+const filterConfig = [
+  {
+    name: "alumnoId",
+    label: "Alumno",
+    type: "select" as const,
+    options: alumnos.map((a: Alumno) => ({
+      label: `${a.nombre} ${a.apellido}`,
+      value: String(a.id),
+    })),
+    placeholder: "Todos los alumnos",
+  },
+  {
+    name: "instructorId",
+    label: "Instructor",
+    type: "select" as const,
+    options: instructores.map((i: Instructor) => ({
+      label: `${i.nombre} ${i.apellido}`,
+      value: String(i.id),
+    })),
+    placeholder: "Todos los instructores",
+  },
+];
+```
+
+From `~/workspace/source/src/pages/Calendario.tsx:87-108`
+
+## Search Features (from README)
+
+### Global Search
+
+```markdown
+**Available in all sections**:
+- Students
+- Instructors
+- Horses
+- Classes
+
+**Features**:
+- Real-time search
+- Filters by multiple fields simultaneously
+- Instant results
+- Maintains traditional filters available
+```
+
+From `~/workspace/source/README.md:405-417`
+
+## Pagination with Filters
+
+### Reset Page on Filter Change
+
+```tsx
+const handleFilterChange = (name: string, value: string) => {
+  setFilters((prev) => ({ ...prev, [name]: value }));
+  setCurrentPage(1); // Reset to page 1 when filtering
+};
+```
+
+From `~/workspace/source/src/pages/Alumnos.tsx:293-296`
+
+### Paginated Results
+
+```tsx
+const paginatedData = useMemo(() => {
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  return filteredData.slice(startIndex, endIndex);
+}, [filteredData, currentPage, pageSize]);
+
+const totalPages = Math.ceil(filteredData.length / pageSize);
+```
+
+From `~/workspace/source/src/pages/Alumnos.tsx:213-219`
+
+## Filter Persistence
+
+### Maintain Filter State
+
+```tsx
+const [filters, setFilters] = useState({
+  cantidadClases: "all",
+  activo: "all",
+  propietario: "all",
+});
+```
+
+From `~/workspace/source/src/pages/Alumnos.tsx:116-120`
+
+### Reset Filters
+
+```tsx
+const handleResetFilters = () => {
+  setFilters({
+    cantidadClases: "all",
+    activo: "all",
+    propietario: "all",
+  });
+  setSearchFilters({});
+  setCurrentPage(1);
+};
+```
+
+## Active Search Indicator
+
+```tsx
+const isSearchActive = Object.keys(searchFilters).length > 0;
+```
+
+From `~/workspace/source/src/pages/Alumnos.tsx:114`
+
+## Global Search Events
+
+Listen for global search events:
+
+```tsx
+useEffect(() => {
+  const handleGlobalSearchEvent = (e: CustomEvent) => {
+    const { filters, entityType } = e.detail;
+    if (entityType === "alumnos") {
+      handleSmartSearch(filters);
+    }
+  };
+
+  window.addEventListener(
+    "globalSearch",
+    handleGlobalSearchEvent as EventListener,
+  );
+  return () => {
+    window.removeEventListener(
+      "globalSearch",
+      handleGlobalSearchEvent as EventListener,
+    );
+  };
+}, []);
+```
+
+From `~/workspace/source/src/pages/Alumnos.tsx:126-144`
+
+## Best Practices
+
+1. **Reset Pagination** - Always reset to page 1 when applying filters or searching
+2. **Type Safety** - Validate filter types before applying
+3. **Loading States** - Show loading indicators during search/filter operations
+4. **Empty States** - Display helpful messages when no results found
+5. **Filter Combinations** - Allow multiple filters to work together
+6. **Clear Filters** - Provide easy way to reset all filters
+7. **Preserve State** - Maintain filter state during navigation when appropriate
+8. **Debouncing** - Consider debouncing real-time search for performance

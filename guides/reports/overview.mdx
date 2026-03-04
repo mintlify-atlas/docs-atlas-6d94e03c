@@ -1,0 +1,407 @@
+---
+title: Reports & Analytics Overview
+description: Comprehensive analytics and reporting system for data-driven decision making
+---
+
+The Reports & Analytics section provides detailed insights into your equestrian school's operations, helping you make data-driven decisions and track performance.
+
+## Overview
+
+Access comprehensive reports covering:
+
+<CardGroup cols={3}>
+  <Card title="General Statistics" icon="chart-line">
+    Overall school performance metrics
+  </Card>
+  <Card title="Student Reports" icon="users">
+    Student enrollment and attendance
+  </Card>
+  <Card title="Class Analytics" icon="book-open">
+    Class completion and distribution
+  </Card>
+  <Card title="Instructor Performance" icon="chalkboard-user">
+    Instructor workload and efficiency
+  </Card>
+  <Card title="Horse Utilization" icon="horse">
+    Horse usage and availability
+  </Card>
+  <Card title="Trial Classes" icon="graduation-cap">
+    Trial class conversion tracking
+  </Card>
+</CardGroup>
+
+## Report Sections
+
+The system is organized into six main reporting tabs:
+
+### 1. General
+
+High-level overview of school operations:
+- Student distribution by plan (4, 8, 12, 16 classes)
+- Class status breakdown (pie chart)
+- Most popular specialties (bar chart)
+- Classes by day of week
+
+### 2. Students (Alumnos)
+
+Detailed student analytics:
+- Active vs inactive counts
+- Top students by completed classes
+- Individual attendance records
+- Absence tracking (ACA/ASA)
+
+### 3. Classes (Clases)
+
+Class performance metrics:
+- Total, completed, cancelled counts
+- Status distribution
+- Weekly distribution patterns
+- Completion rates
+
+### 4. Instructors
+
+Instructor workload analysis:
+- Classes per instructor
+- Completion vs cancellation rates
+- Efficiency percentages
+- Comparative performance
+
+### 5. Horses (Caballos)
+
+Horse usage statistics:
+- Classes per horse
+- School vs private horse usage
+- Horses without classes
+- Availability status
+
+### 6. Trial Classes (Clases de Prueba)
+
+Trial class tracking:
+- Total trial classes
+- New people vs existing students
+- Conversion rate (trial → active student)
+- Trial classes by specialty
+
+## Date Range Filtering
+
+All reports support flexible date filtering:
+
+<Steps>
+  <Step title="Access Period Selector">
+    Find the "Período de Análisis" card at the top of the page
+  </Step>
+  <Step title="Set Start Date">
+    Select the beginning of your analysis period
+  </Step>
+  <Step title="Set End Date">
+    Select the end of your analysis period
+  </Step>
+  <Step title="View Updates">
+    All charts and tables update automatically
+  </Step>
+</Steps>
+
+### Default Period
+
+By default, reports show:
+- **Start**: First day of current month
+- **End**: Last day of current month
+
+### Common Periods
+
+<Tabs>
+  <Tab title="Current Month">
+    Start: March 1, 2026
+    
+    End: March 31, 2026
+    
+    Use for: Monthly reviews
+  </Tab>
+  <Tab title="Quarter">
+    Start: January 1, 2026
+    
+    End: March 31, 2026
+    
+    Use for: Quarterly performance
+  </Tab>
+  <Tab title="Year">
+    Start: January 1, 2026
+    
+    End: December 31, 2026
+    
+    Use for: Annual reports
+  </Tab>
+  <Tab title="Custom">
+    Start: Any date
+    
+    End: Any date
+    
+    Use for: Specific analysis periods
+  </Tab>
+</Tabs>
+
+## Summary Cards
+
+At the top of the page, four key metrics are always visible:
+
+### Active Students
+
+```
+┌──────────────────┐
+│ Alumnos Activos  │
+│                  │
+│      42          │  ← Large number
+│                  │
+│  8 inactivos     │  ← Context
+└──────────────────┘
+```
+
+Shows current active student count with inactive count for context.
+
+### Total Classes
+
+```
+┌──────────────────┐
+│  Total Clases    │
+│                  │
+│      256         │  ← Period total
+│                  │
+│  82.5% completed │  ← Success rate
+└──────────────────┘
+```
+
+Shows total classes in period with completion percentage.
+
+### Instructors
+
+```
+┌──────────────────┐
+│   Instructores   │
+│                  │
+│       5          │  ← Active count
+│                  │
+│    Activos       │
+└──────────────────┘
+```
+
+Shows number of active instructors.
+
+### Trial Classes
+
+```
+┌──────────────────┐
+│ Clases de Prueba│
+│                  │
+│      12          │  ← Trial count
+│                  │
+│  7 conversiones  │  ← Became students
+└──────────────────┘
+```
+
+Shows trial classes with conversion count.
+
+## Chart Types
+
+Reports use various visualization types:
+
+### Bar Charts
+
+Used for:
+- Comparing categories (plans, days, specialties)
+- Showing workload distribution
+- Displaying rankings
+
+**Example**: Classes by day of week
+
+### Pie Charts
+
+Used for:
+- Showing proportions (status distribution)
+- Part-to-whole relationships
+- Percentage breakdowns
+
+**Example**: Class status distribution
+
+### Horizontal Bar Charts
+
+Used for:
+- Long category names (horse names, instructor names)
+- Specialty comparisons
+- Easier label reading
+
+**Example**: Horse usage
+
+### Stacked Bar Charts
+
+Used for:
+- Multiple data series (completed vs cancelled)
+- Cumulative totals
+
+**Example**: Instructor performance
+
+### Tables
+
+Used for:
+- Detailed data with multiple metrics
+- Exportable information
+- Precise numbers
+
+**Example**: Student attendance table
+
+## Color Coding
+
+Consistent colors across all reports:
+
+### Status Colors
+
+- 🟠 **Orange** (#F59E0B): PROGRAMADA
+- 🔵 **Blue** (#3B82F6): INICIADA
+- 🟢 **Green** (#22C55E): COMPLETADA
+- 🔴 **Red** (#EF4444): CANCELADA
+- 🟣 **Purple** (#8B5CF6): ACA
+- 🌸 **Pink** (#EC4899): ASA
+
+### Specialty Colors
+
+- 🔵 **Blue** (#4472C4): Equitación
+- 🟠 **Orange** (#ED7D31): Adiestramiento
+- 🟢 **Green** (#A9D18E): Equinoterapia
+- 🔴 **Red** (#FF0000): Monta
+
+### Horse Type Colors
+
+- 🔵 **Blue** (#4472C4): School horses
+- 🟡 **Gold** (#D4A017): Private horses
+
+## Exporting Data
+
+Many reports include an **Export** button:
+
+<Steps>
+  <Step title="Navigate to Tab">
+    Go to the report tab you want to export (Students, Instructors, Horses)
+  </Step>
+  <Step title="Click Export Button">
+    Click the **"Exportar"** button with download icon
+  </Step>
+  <Step title="File Downloads">
+    Excel file (.xlsx) downloads automatically
+  </Step>
+  <Step title="Open in Spreadsheet">
+    Open in Excel, LibreOffice, or Google Sheets
+  </Step>
+</Steps>
+
+### What Gets Exported
+
+The Excel file includes:
+- All data from the current table
+- Professional formatting
+- Column headers
+- Calculated percentages and totals
+- Date range in filename
+
+### Export File Naming
+
+```
+Reporte_[Type]_YYYY-MM-DD.xlsx
+
+Examples:
+Reporte_Asistencia_2026-03-04.xlsx
+Reporte_Instructores_2026-03-04.xlsx
+Reporte_Caballos_2026-03-04.xlsx
+```
+
+## Interactive Elements
+
+### Tooltips
+
+Hover over chart elements to see:
+- Exact values
+- Percentages
+- Category names
+- Additional context
+
+### Clickable Legends
+
+In some charts:
+- Click legend items to toggle visibility
+- Focus on specific data series
+- Compare subsets
+
+### Responsive Tables
+
+Tables include:
+- Sortable columns (where applicable)
+- Horizontal scroll for many columns
+- Alternating row colors for readability
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Regular Monthly Reviews">
+    Schedule monthly report reviews:
+    
+    - First week of each month
+    - Review previous month's data
+    - Identify trends and patterns
+    - Adjust operations as needed
+  </Accordion>
+  
+  <Accordion title="Compare Periods">
+    Export reports for different periods:
+    
+    - Month-over-month comparison
+    - Year-over-year growth
+    - Seasonal pattern identification
+  </Accordion>
+  
+  <Accordion title="Focus on Actionable Metrics">
+    Key metrics to watch:
+    
+    - Student attendance percentages
+    - Instructor efficiency
+    - Horse utilization rates
+    - Trial class conversion
+  </Accordion>
+  
+  <Accordion title="Share with Stakeholders">
+    Export and distribute reports:
+    
+    - Monthly staff meetings
+    - Owner/manager updates
+    - Instructor performance reviews
+  </Accordion>
+</AccordionGroup>
+
+## Navigation
+
+Switch between report sections using the tab menu:
+
+```
+[ General ] [ Alumnos ] [ Clases ] [ Instructores ] [ Caballos ] [ Pruebas ]
+   ↑
+ Currently selected tab
+```
+
+Click any tab to switch views instantly.
+
+## Report Details
+
+<CardGroup cols={2}>
+  <Card title="Student Reports" icon="users" href="/guides/reports/student-reports">
+    Detailed student attendance and performance
+  </Card>
+  <Card title="Class Reports" icon="book-open" href="/guides/reports/class-reports">
+    Class completion and distribution analytics
+  </Card>
+  <Card title="Instructor Reports" icon="chalkboard-user" href="/guides/reports/instructor-reports">
+    Instructor workload and efficiency
+  </Card>
+  <Card title="Horse Reports" icon="horse" href="/guides/reports/horse-reports">
+    Horse usage and availability
+  </Card>
+  <Card title="Export Data" icon="download" href="/guides/reports/export-data">
+    Exporting reports to Excel
+  </Card>
+</CardGroup>

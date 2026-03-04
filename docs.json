@@ -1,122 +1,200 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "HRS Equestrian School Management System",
+  "theme": "maple",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#8B4513",
+    "light": "#D2691E",
+    "dark": "#654321"
   },
-  "favicon": "/favicon.svg",
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/luckidetrenque/Frontend-Proyecto-HRS"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/luckidetrenque/Frontend-Proyecto-HRS"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Overview",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Getting Started",
             "pages": [
-              "index",
+              "introduction",
               "quickstart",
-              "development"
+              "features"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Core Concepts",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
-            ]
-          },
-          {
-            "group": "Writing content",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "concepts/system-overview",
+              "concepts/user-roles",
+              "concepts/data-structure"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "User Guides",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Student Management",
             "pages": [
-              "api-reference/introduction"
+              "guides/students/registration",
+              "guides/students/class-plans",
+              "guides/students/horse-assignments",
+              "guides/students/trial-classes"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Instructor Management",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "guides/instructors/registration",
+              "guides/instructors/schedule-management",
+              "guides/instructors/color-coding"
+            ]
+          },
+          {
+            "group": "Horse Management",
+            "pages": [
+              "guides/horses/registration",
+              "guides/horses/school-vs-private",
+              "guides/horses/availability"
+            ]
+          },
+          {
+            "group": "Class Scheduling",
+            "pages": [
+              "guides/classes/creating-classes",
+              "guides/classes/class-types",
+              "guides/classes/class-states",
+              "guides/classes/trial-classes",
+              "guides/classes/validations"
+            ]
+          },
+          {
+            "group": "Calendar & Scheduling",
+            "pages": [
+              "guides/calendar/views",
+              "guides/calendar/day-view",
+              "guides/calendar/copy-classes",
+              "guides/calendar/bulk-operations",
+              "guides/calendar/export-excel"
+            ]
+          },
+          {
+            "group": "Reports & Analytics",
+            "pages": [
+              "guides/reports/overview",
+              "guides/reports/student-reports",
+              "guides/reports/class-reports",
+              "guides/reports/instructor-reports",
+              "guides/reports/horse-reports",
+              "guides/reports/export-data"
+            ]
+          },
+          {
+            "group": "Financial Management",
+            "pages": [
+              "guides/finances/income-tracking",
+              "guides/finances/expenses",
+              "guides/finances/board-fees"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Features",
+        "groups": [
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/authentication",
+              "features/search-and-filters",
+              "features/data-validation",
+              "features/notifications"
+            ]
+          },
+          {
+            "group": "Advanced Features",
+            "pages": [
+              "features/trial-class-system",
+              "features/automatic-scheduling",
+              "features/conflict-detection",
+              "features/attendance-tracking",
+              "features/whatsapp-integration"
+            ]
+          },
+          {
+            "group": "User Interface",
+            "pages": [
+              "features/ui/views",
+              "features/ui/color-coding",
+              "features/ui/responsive-design",
+              "features/ui/accessibility"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Reference",
+        "groups": [
+          {
+            "group": "Data Models",
+            "pages": [
+              "reference/models/student",
+              "reference/models/instructor",
+              "reference/models/horse",
+              "reference/models/class"
+            ]
+          },
+          {
+            "group": "Enumerations",
+            "pages": [
+              "reference/enums/class-states",
+              "reference/enums/specialties",
+              "reference/enums/board-types",
+              "reference/enums/horse-types"
+            ]
+          },
+          {
+            "group": "Business Rules",
+            "pages": [
+              "reference/rules/validation-rules",
+              "reference/rules/scheduling-rules",
+              "reference/rules/business-logic"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Administration",
+        "groups": [
+          {
+            "group": "Setup",
+            "pages": [
+              "admin/installation",
+              "admin/configuration",
+              "admin/environment-setup"
+            ]
+          },
+          {
+            "group": "Operations",
+            "pages": [
+              "admin/user-management",
+              "admin/data-backup",
+              "admin/troubleshooting"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    ]
   }
 }

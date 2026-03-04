@@ -1,0 +1,461 @@
+---
+title: 'Instructor Registration'
+description: 'Complete guide to registering and managing instructors in the HRS system'
+---
+
+## Overview
+
+Instructors are essential staff members who teach riding lessons. Each instructor has a unique profile with personal information, color coding for calendar visibility, and activity status tracking.
+
+## Accessing Instructor Registration
+
+<Steps>
+  <Step title="Navigate to Instructors">
+    Click **Instructors** in the main navigation menu.
+  </Step>
+  
+  <Step title="Open Registration Form">
+    Click the **New Instructor** button in the top-right corner to open the registration dialog.
+  </Step>
+</Steps>
+
+## Required Information
+
+### Personal Data (Mandatory)
+
+All personal information fields are required for instructor registration:
+
+<AccordionGroup>
+  <Accordion title="DNI (National ID)">
+    - **Format**: Numbers only, no periods or dashes
+    - **Example**: `12345678`
+    - **Validation**: Real-time duplicate checking
+    - **Trigger**: Validation activates when 9+ digits are entered
+    
+    ```tsx
+    // From InstructorForm.tsx:132-151
+    <Input
+      id="dni"
+      name="dni"
+      autoComplete="off"
+      type="text"
+      value={dni}
+      onChange={(e) => {
+        setDni(e.target.value);
+        onDniChange?.(e.target.value);
+      }}
+      placeholder="Solo números sin puntos"
+      className={validacionDni?.duplicado ? "border-red-500" : ""}
+      required
+    />
+    {validacionDni?.duplicado && (
+      <p className="text-sm text-red-500 mt-1">
+        {validacionDni.mensaje}
+      </p>
+    )}
+    ```
+    
+    <Warning>
+      If a duplicate DNI is detected, the form will show a red border and error message. The submit button will be disabled until the DNI is corrected.
+    </Warning>
+  </Accordion>
+  
+  <Accordion title="Name and Surname">
+    - **First Name**: Full first name(s) of the instructor
+    - **Last Name**: Full last name(s) of the instructor
+    - Both fields are required and trimmed of whitespace on submission
+    
+    ```tsx
+    // From InstructorForm.tsx:104-127
+    <Input
+      id="nombre"
+      type="text"
+      autoComplete="given-name"
+      placeholder="Nombre/s del instructor"
+      value={nombre}
+      onChange={(e) => setNombre(e.target.value)}
+      required
+    />
+    ```
+  </Accordion>
+  
+  <Accordion title="Date of Birth">
+    - Required for personnel records
+    - Standard date picker format
+    - Used for age verification and HR purposes
+  </Accordion>
+  
+  <Accordion title="Contact Information">
+    **Telephone**:
+    - Format: Without `0` or `15` prefix
+    - Example: `221234567`
+    - System automatically adds `+549` prefix for Argentina
+    
+    ```tsx
+    // From InstructorForm.tsx:83-86
+    let telefonoNormalizado = telefono;
+    if (telefonoNormalizado && !telefonoNormalizado.startsWith("+549")) {
+      telefonoNormalizado = `+549${telefonoNormalizado.replace(/^\+/, "")}`;
+    }
+    ```
+    
+    **Email** (Optional but recommended):
+    - Used for communications
+    - System notifications
+    - Schedule updates
+    
+    <Note>
+      Phone numbers are automatically normalized with the `+549` country code when saved.
+    </Note>
+  </Accordion>
+</AccordionGroup>
+
+## Color Assignment
+
+Each instructor is assigned a unique color for visual identification in the calendar.
+
+### Color Picker
+
+The system provides 7 preset colors:
+
+```tsx
+// From instructor.constants.ts:1-9
+export const PRESET_COLORS = [
+  "#E06666", // Red
+  "#CBBBF0", // Purple
+  "#FFBE66", // Orange
+  "#F5A6E8", // Pink
+  "#FFF76A", // Yellow
+  "#9FC5F8", // Blue
+  "#93C47D", // Green
+];
+```
+
+### Color Selection UI
+
+```tsx
+// From InstructorForm.tsx:190-217
+<div className="flex gap-2 flex-wrap">
+  {PRESET_COLORS.map((presetColor) => (
+    <button
+      type="button"
+      key={presetColor}
+      onClick={() => setColor(presetColor)}
+      className={`w-10 h-10 rounded-full border-2 transition-all ${
+        color === presetColor
+          ? "border-primary ring-2 ring-primary/20 scale-110"
+          : "border-gray-300 hover:scale-105"
+      }`}
+      style={{ backgroundColor: presetColor }}
+      title={presetColor}
+    />
+  ))}
+</div>
+```
+
+<CardGroup cols={4}>
+  <Card title="Red" icon="circle">
+    #E06666
+    
+    High visibility, ideal for senior instructors
+  </Card>
+  
+  <Card title="Purple" icon="circle">
+    #CBBBF0
+    
+    Soft and distinctive
+  </Card>
+  
+  <Card title="Orange" icon="circle">
+    #FFBE66
+    
+    Warm and welcoming
+  </Card>
+  
+  <Card title="Pink" icon="circle">
+    #F5A6E8
+    
+    Bright and cheerful
+  </Card>
+</CardGroup>
+
+<CardGroup cols={3}>
+  <Card title="Yellow" icon="circle">
+    #FFF76A
+    
+    High contrast for readability
+  </Card>
+  
+  <Card title="Blue" icon="circle">
+    #9FC5F8
+    
+    Professional and calm
+  </Card>
+  
+  <Card title="Green" icon="circle">
+    #93C47D
+    
+    Natural and approachable
+  </Card>
+</CardGroup>
+
+### How Colors Are Used
+
+- **Calendar cells**: Background color with lightened opacity
+- **Class cards**: Border or accent color
+- **Schedule view**: Quick instructor identification
+- **Reports**: Color-coded statistics
+
+<Note>
+  Choose colors that are visually distinct from each other to avoid confusion when viewing multiple instructors' schedules simultaneously.
+</Note>
+
+## Form Validation
+
+The registration form includes comprehensive validation:
+
+### DNI Duplicate Check
+
+```tsx
+// From InstructorForm.tsx:70-74
+if (validacionDni?.duplicado) {
+  toast.error("Ya existe un instructor con este DNI");
+  return;
+}
+```
+
+- Validates in real-time as user types
+- Activates after 9 digits entered
+- Checks against all existing instructors
+- Excludes current instructor when editing
+
+### Required Fields Validation
+
+```tsx
+// From InstructorForm.tsx:76-80
+if (!nombre.trim() || !apellido.trim() || !dni.trim()) {
+  toast.error("Nombre, apellido y DNI son obligatorios");
+  return;
+}
+```
+
+### Submit Button State
+
+```tsx
+// From InstructorForm.tsx:233
+<Button type="submit" disabled={isPending || validacionDni?.duplicado}>
+  {isPending
+    ? "Guardando..."
+    : instructor
+      ? "Guardar Cambios"
+      : "Crear Instructor"}
+</Button>
+```
+
+Button is disabled when:
+- Form is submitting (`isPending`)
+- DNI is duplicate (`validacionDni?.duplicado`)
+
+## Complete Registration Process
+
+<Steps>
+  <Step title="Enter Personal Information">
+    Fill in all required fields:
+    - DNI (system validates for duplicates)
+    - First and last name
+    - Date of birth
+    - Phone number (without 0 or 15)
+    - Email (optional but recommended)
+  </Step>
+  
+  <Step title="Select Instructor Color">
+    Choose a color from the 7 preset options:
+    - Click on the color circle
+    - Selected color shows larger with ring effect
+    - Color preview displays hex code
+    - This color will identify the instructor in calendars
+  </Step>
+  
+  <Step title="Submit Registration">
+    Click **Create Instructor** to save. The system will:
+    - Validate all required fields
+    - Check for duplicate DNI
+    - Normalize phone number with +549 prefix
+    - Create the instructor with active status
+    - Assign the selected color
+  </Step>
+  
+  <Step title="Verify Creation">
+    The new instructor:
+    - Appears in the instructors list
+    - Is available for class assignments
+    - Shows in calendar with assigned color
+    - Is set to active status by default
+  </Step>
+</Steps>
+
+## Automatic Configuration
+
+Several fields are set automatically:
+
+### Active Status
+
+```tsx
+// From InstructorForm.tsx:49
+const [activo, setActivo] = useState(true);
+```
+
+New instructors are automatically set as **active** (`activo: true`).
+
+### Default Color
+
+```tsx
+// From InstructorForm.tsx:50
+const [color, setColor] = useState(PRESET_COLORS[0]);
+```
+
+If no color is selected, the first preset color (Red #E06666) is assigned.
+
+## After Registration
+
+Once registered, the instructor:
+
+- ✅ Appears in active instructors list
+- ✅ Can be assigned to classes
+- ✅ Shows in calendar with their color
+- ✅ Is available in instructor filters and reports
+- ✅ Can receive class assignments immediately
+
+## Editing Instructor Details
+
+To modify an existing instructor:
+
+<Steps>
+  <Step title="Locate Instructor">
+    Navigate to **Instructors** and find the instructor in the list.
+  </Step>
+  
+  <Step title="Open Edit Form">
+    Click the **Edit** button (pencil icon) in the actions menu.
+  </Step>
+  
+  <Step title="Modify Fields">
+    Update any field:
+    - Personal information
+    - Contact details
+    - Color assignment
+    - Active/inactive status (toggle switch appears in edit mode)
+  </Step>
+  
+  <Step title="Save Changes">
+    Click **Save Changes**. Updates take effect immediately.
+  </Step>
+</Steps>
+
+### Status Toggle (Edit Mode Only)
+
+```tsx
+// From InstructorForm.tsx:219-224
+{instructor && (
+  <div className="flex items-center gap-3">
+    <Switch id="activo" checked={activo} onCheckedChange={setActivo} />
+    <Label htmlFor="activo">Está activo</Label>
+  </div>
+)}
+```
+
+<Note>
+  The active/inactive toggle only appears when editing an existing instructor, not during initial registration.
+</Note>
+
+## Technical Details
+
+### Data Structure
+
+```typescript
+// From InstructorForm.tsx:11-20
+export interface InstructorFormData {
+  nombre: string;
+  apellido: string;
+  telefono: string;
+  email: string;
+  fechaNacimiento: string;
+  activo: boolean;
+  color: string;
+  dni: string;
+}
+```
+
+### Submission Logic
+
+```tsx
+// From InstructorForm.tsx:88-97
+onSubmit({
+  nombre: nombre.trim(),
+  apellido: apellido.trim(),
+  telefono: telefonoNormalizado,
+  email: email.trim(),
+  fechaNacimiento,
+  activo,
+  color,
+  dni: dni.trim(),
+});
+```
+
+## Common Scenarios
+
+<AccordionGroup>
+  <Accordion title="Registering Multiple Instructors">
+    When adding several instructors:
+    
+    1. Assign distinct colors to each for easy calendar identification
+    2. Use consistent naming format (e.g., first name + last name)
+    3. Verify DNI for each to avoid duplicates
+    4. Add complete contact information for communications
+  </Accordion>
+  
+  <Accordion title="Temporary or Substitute Instructors">
+    For short-term instructors:
+    
+    1. Register normally with all required information
+    2. Assign a unique color
+    3. When their contract ends, mark as inactive instead of deleting
+    4. Preserves historical class records
+  </Accordion>
+  
+  <Accordion title="Deactivating an Instructor">
+    When an instructor leaves:
+    
+    1. Edit the instructor record
+    2. Toggle "Active" switch to OFF
+    3. They remain in the system but:
+       - Don't appear in new class assignments
+       - Historical data is preserved
+       - Can be reactivated if they return
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<Check>
+  **Do:**
+  - Assign distinct colors to avoid confusion
+  - Include complete contact information
+  - Use consistent naming conventions
+  - Deactivate instead of deleting when instructors leave
+  - Verify DNI carefully to avoid duplicates
+</Check>
+
+<Warning>
+  **Don't:**
+  - Assign same color to multiple active instructors
+  - Leave contact fields empty
+  - Delete instructors with historical classes
+  - Use inconsistent name formats
+</Warning>
+
+## Related Pages
+
+- [Schedule Management](/guides/instructors/schedule-management) - Managing instructor schedules
+- [Color Coding](/guides/instructors/color-coding) - Understanding the color system
+- [Class Assignment](/guides/classes/creating-classes) - Assigning instructors to classes

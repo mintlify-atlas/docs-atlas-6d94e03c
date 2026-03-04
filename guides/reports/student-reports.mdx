@@ -1,0 +1,400 @@
+---
+title: Student Reports
+description: Track student enrollment, attendance, and performance with detailed analytics
+---
+
+The Student Reports section provides comprehensive insights into your student base, including enrollment statistics, attendance tracking, and individual performance metrics.
+
+## Overview
+
+Access student analytics through the **Alumnos** tab in the Reports section.
+
+## Summary Statistics
+
+The top of the report shows key student metrics:
+
+### Active vs Inactive Students
+
+<CardGroup cols={2}>
+  <Card title="Active Students" icon="user-check">
+    Students currently enrolled and taking classes
+  </Card>
+  <Card title="Inactive Students" icon="user-xmark">
+    Former students or those on hold
+  </Card>
+</CardGroup>
+
+**Display Format**:
+```
+Active: 42 students
+Inactive: 8 students (16.0% of total)
+```
+
+## Student Distribution by Plan
+
+Shows how students are distributed across different class plans.
+
+### Plan Categories
+
+Students are grouped by monthly class count:
+- **4 clases**: Entry-level plan
+- **8 clases**: Standard plan
+- **12 clases**: Advanced plan
+- **16 clases**: Intensive plan
+
+### Chart Visualization
+
+Bar chart displaying:
+- X-axis: Plan type (4, 8, 12, 16 classes)
+- Y-axis: Number of students
+- Bars: Color-coded by plan
+
+**Example Data**:
+```
+4 clases:  12 students (28.6%)
+8 clases:  18 students (42.9%)
+12 clases: 8 students  (19.0%)
+16 clases: 4 students  (9.5%)
+```
+
+<Info>
+  This helps identify your most popular plans and potential upsell opportunities.
+</Info>
+
+## Top Students Ranking
+
+Ranks students by number of **completed classes** in the period.
+
+### Display Format
+
+Shows top 10 students with:
+- **Rank**: 1-10
+- **Name**: Full student name
+- **Progress Bar**: Visual representation relative to #1
+- **Count**: Exact number of completed classes
+
+**Example**:
+```
+1. Maria Garcia        ██████████  24
+2. Carlos Lopez        ████████░░  20
+3. Ana Rodriguez       ███████░░░  18
+4. Pedro Martinez      ██████░░░░  16
+5. Sofia Fernandez     █████░░░░░  14
+```
+
+### Use Cases
+
+- **Recognition**: Identify most dedicated students
+- **Engagement**: Reward top performers
+- **Retention**: Ensure active students stay engaged
+
+<Warning>
+  Only shows students with at least 1 completed class in the period.
+</Warning>
+
+## Attendance Detail Table
+
+Comprehensive attendance breakdown for each student.
+
+### Table Columns
+
+<Tabs>
+  <Tab title="Student Name">
+    Full name (First Last)
+    
+    Example: Maria Garcia
+  </Tab>
+  <Tab title="Total">
+    Total classes in the period
+    
+    All statuses combined
+  </Tab>
+  <Tab title="Completadas">
+    Successfully completed classes
+    
+    Green color for emphasis
+  </Tab>
+  <Tab title="Canceladas">
+    Cancelled classes
+    
+    Red color (not student's fault)
+  </Tab>
+  <Tab title="ACA">
+    Absence with Advance Notice
+    
+    Purple color
+  </Tab>
+  <Tab title="ASA">
+    Absence without Advance Notice
+    
+    Pink color (student no-show)
+  </Tab>
+  <Tab title="% Asistencia">
+    Attendance percentage
+    
+    Completed / Total × 100%
+    
+    Includes progress bar
+  </Tab>
+</Tabs>
+
+### Sample Data
+
+| Student         | Total | Completadas | Canceladas | ACA | ASA | % Asistencia |
+|----------------|-------|-------------|------------|-----|-----|-------------|
+| Maria Garcia   | 24    | 22          | 1          | 1   | 0   | 91.7% █████████░ |
+| Carlos Lopez   | 20    | 18          | 0          | 2   | 0   | 90.0% █████████░ |
+| Ana Rodriguez  | 18    | 15          | 2          | 0   | 1   | 83.3% ████████░░ |
+
+### Attendance Percentage Calculation
+
+```
+Attendance % = (Completadas / Total) × 100
+
+Example:
+Maria Garcia
+  Completadas: 22
+  Total: 24
+  Attendance: (22/24) × 100 = 91.7%
+```
+
+<Note>
+  **Cancelled** classes don't count against the student—they're facility cancellations, not student absences.
+</Note>
+
+### Absence Types Explained
+
+<AccordionGroup>
+  <Accordion title="ACA - Absence with Advance Notice">
+    Student notified in advance they couldn't attend:
+    
+    - Called ahead
+    - Sent message
+    - Gave reasonable notice
+    
+    **Impact**: Minor—shows responsible behavior
+  </Accordion>
+  
+  <Accordion title="ASA - Absence without Advance Notice">
+    Student didn't show up and didn't notify:
+    
+    - No-show
+    - No communication
+    - Unexplained absence
+    
+    **Impact**: Concerning—may indicate engagement issues
+  </Accordion>
+  
+  <Accordion title="Cancelled">
+    Facility cancelled the class:
+    
+    - Weather
+    - Holiday
+    - Maintenance
+    - Emergency
+    
+    **Impact**: None on student—not their fault
+  </Accordion>
+</AccordionGroup>
+
+## Interpreting Attendance Data
+
+### Healthy Attendance Patterns
+
+✅ **90-100% Attendance**: Excellent engagement
+✅ **80-89% Attendance**: Good—occasional absences acceptable
+⚠️ **70-79% Attendance**: Moderate concern—check in with student
+🔴 **Below 70%**: Action needed—potential retention risk
+
+### Red Flags
+
+Watch for these patterns:
+
+<Warning>
+  - Multiple ASA (no-show) incidents
+  - Declining attendance over time
+  - Long gaps between classes
+  - High ACA count (frequent cancellations)
+</Warning>
+
+### Action Triggers
+
+<Steps>
+  <Step title="Identify Low Attendance">
+    Student below 75% attendance
+  </Step>
+  <Step title="Review Pattern">
+    Check if recent or ongoing issue
+  </Step>
+  <Step title="Reach Out">
+    Contact student/parent to discuss
+  </Step>
+  <Step title="Offer Solutions">
+    - Schedule adjustments
+    - Plan changes
+    - Additional support
+  </Step>
+  <Step title="Monitor">
+    Track if attendance improves
+  </Step>
+</Steps>
+
+## Exporting Student Data
+
+Export the attendance table to Excel:
+
+<Steps>
+  <Step title="Review Data">
+    Check that date range and filters are correct
+  </Step>
+  <Step title="Click Export">
+    Click **"Exportar"** button above the table
+  </Step>
+  <Step title="Download File">
+    File downloads as `Reporte_Asistencia_YYYY-MM-DD.xlsx`
+  </Step>
+  <Step title="Open in Excel">
+    Open in your preferred spreadsheet application
+  </Step>
+</Steps>
+
+### Excel File Contents
+
+The exported file includes:
+- All columns from the table
+- Formatted headers
+- Color-coded cells (matches screen colors)
+- Percentage calculations
+- Professional layout for printing
+
+### Use Cases for Export
+
+<AccordionGroup>
+  <Accordion title="Monthly Reports">
+    Create monthly attendance reports for management:
+    
+    - Export at month end
+    - Add to monthly report package
+    - Track trends month-over-month
+  </Accordion>
+  
+  <Accordion title="Parent Communication">
+    Share individual student data with parents:
+    
+    - Export full report
+    - Filter/highlight specific student
+    - Email or print for parent meetings
+  </Accordion>
+  
+  <Accordion title="Billing Reconciliation">
+    Match attendance to billing:
+    
+    - Compare classes taken vs plan
+    - Identify credits owed (facility cancellations)
+    - Calculate makeup classes
+  </Accordion>
+  
+  <Accordion title="Performance Reviews">
+    Use in staff performance discussions:
+    
+    - Compare attendance by instructor
+    - Identify scheduling issues
+    - Optimize class times
+  </Accordion>
+</AccordionGroup>
+
+## Filtering Student Reports
+
+The date range filter affects all student data:
+
+### Short Period (1 week)
+```
+Start: March 1
+End: March 7
+
+Shows:
+- Students with classes that week
+- Attendance % for just that week
+- May exclude students with no classes
+```
+
+### Medium Period (1 month)
+```
+Start: March 1
+End: March 31
+
+Shows:
+- Monthly attendance patterns
+- Full monthly plan usage
+- Good for monthly reviews
+```
+
+### Long Period (3+ months)
+```
+Start: January 1
+End: March 31
+
+Shows:
+- Quarterly trends
+- Seasonal patterns
+- Long-term engagement
+```
+
+## Students Without Classes
+
+If a student has **no classes** in the selected period:
+- They won't appear in the attendance table
+- They still count in active/inactive totals
+- They won't appear in the ranking
+
+<Info>
+  To see all students regardless of classes, export from the Students section instead of Reports.
+</Info>
+
+## Related Metrics
+
+### Cross-Reference with Other Reports
+
+<CardGroup cols={2}>
+  <Card title="Class Reports" icon="book-open" href="/guides/reports/class-reports">
+    See overall class completion rates
+  </Card>
+  <Card title="Instructor Reports" icon="chalkboard-user" href="/guides/reports/instructor-reports">
+    Compare instructor performance
+  </Card>
+  <Card title="Trial Classes" icon="graduation-cap" href="/guides/students/trial-classes">
+    Track trial-to-student conversions
+  </Card>
+  <Card title="Student Management" icon="user-plus" href="/guides/students/registration">
+    Managing student profiles
+  </Card>
+</CardGroup>
+
+## Tips & Best Practices
+
+### Regular Monitoring
+
+<Check>
+  - Review attendance weekly or bi-weekly
+  - Track trends, not just snapshots
+  - Compare current vs previous periods
+  - Note seasonal variations
+</Check>
+
+### Engagement Strategies
+
+For students with declining attendance:
+
+1. **Personal Outreach**: Call or message to check in
+2. **Schedule Flexibility**: Offer alternative times
+3. **Plan Adjustment**: Suggest plan changes if needed
+4. **Incentives**: Consider loyalty rewards
+5. **Feedback**: Ask what would improve their experience
+
+### Data-Driven Decisions
+
+Use student reports to:
+- **Optimize Plans**: Adjust offerings based on popularity
+- **Capacity Planning**: Forecast growth needs
+- **Marketing**: Target specific student segments
+- **Retention**: Identify at-risk students early

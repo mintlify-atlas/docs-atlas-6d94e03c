@@ -1,0 +1,421 @@
+---
+title: 'Instructor Schedule Management'
+description: 'Manage instructor availability, assignments, and schedule optimization'
+---
+
+## Overview
+
+Instructor schedule management in the HRS system enables efficient assignment of instructors to classes, conflict detection, and workload balancing. The system provides visual tools and automated validations to optimize scheduling.
+
+## Viewing Instructor Schedules
+
+### Calendar Views
+
+The system offers three calendar views optimized for schedule management:
+
+<CardGroup cols={3}>
+  <Card title="Month View" icon="calendar">
+    Overview of all instructors' classes for the entire month. Shows up to 3 classes per day with indicator for more.
+  </Card>
+  
+  <Card title="Week View" icon="calendar-week">
+    Full week display showing up to 10 classes per day. Ideal for weekly planning and adjustments.
+  </Card>
+  
+  <Card title="Day View" icon="calendar-day">
+    Excel-style detailed view with time slots (9:00-18:30) and columns for each horse. Best for daily operations.
+  </Card>
+</CardGroup>
+
+### Filtering by Instructor
+
+Quickly view a specific instructor's schedule:
+
+<Steps>
+  <Step title="Access Calendar">
+    Navigate to the **Calendar** section from the main menu.
+  </Step>
+  
+  <Step title="Apply Instructor Filter">
+    Use the filter dropdown to select a specific instructor.
+  </Step>
+  
+  <Step title="View Filtered Schedule">
+    Only classes assigned to the selected instructor are displayed.
+  </Step>
+  
+  <Step title="Clear Filter">
+    Click **Reset Filters** to return to viewing all instructors.
+  </Step>
+</Steps>
+
+## Assigning Instructors to Classes
+
+### From Calendar (Recommended)
+
+The Day View provides the fastest class creation:
+
+<Steps>
+  <Step title="Open Day View">
+    Switch to **Day View** in the calendar.
+  </Step>
+  
+  <Step title="Click Empty Time Slot">
+    Click on an empty cell at the desired time and horse column.
+  </Step>
+  
+  <Step title="Select Instructor">
+    The class form opens with day, time, and horse pre-filled.
+    Choose an instructor from the dropdown.
+  </Step>
+  
+  <Step title="Complete Class Details">
+    Fill in:
+    - Student
+    - Specialty
+    - Duration (30 or 60 minutes)
+    - Any observations
+  </Step>
+  
+  <Step title="Save">
+    Click **Create Class**. The system validates for conflicts before saving.
+  </Step>
+</Steps>
+
+### From Classes Section
+
+Alternatively, create classes from the Classes page:
+
+<Steps>
+  <Step title="Navigate to Classes">
+    Go to **Classes** section.
+  </Step>
+  
+  <Step title="Create New Class">
+    Click **New Class** button.
+  </Step>
+  
+  <Step title="Fill All Details Manually">
+    Unlike calendar creation, you must manually select:
+    - Date
+    - Time
+    - Horse
+    - Instructor
+    - Student
+    - Specialty
+  </Step>
+  
+  <Step title="Submit">
+    Save the class after completing all fields.
+  </Step>
+</Steps>
+
+## Conflict Detection
+
+The system automatically prevents instructor scheduling conflicts.
+
+### How Conflict Detection Works
+
+<Warning>
+  **Validation Rule**: An instructor cannot teach two classes at the same time.
+</Warning>
+
+```markdown
+From README.md:215-219:
+- Sistema verifica que el instructor no tenga otra clase a la misma hora
+- Muestra indicadores visuales (⚠️) en celdas con conflicto
+```
+
+### Visual Conflict Indicators
+
+- **⚠️ Warning icon**: Displayed in calendar cells with conflicts
+- **Tooltip**: Hover to see conflict details
+- **Red highlight**: Time slot shows conflict state
+
+### Handling Conflicts
+
+If you attempt to assign an instructor who has a conflict:
+
+1. System displays error message
+2. Suggests alternative instructors
+3. Shows conflicting class details
+4. Prevents saving until conflict is resolved
+
+## Schedule Constraints
+
+### Operating Hours
+
+```markdown
+From README.md:193-204:
+**Regla**: Las clases no pueden terminar después de las **18:30**
+
+**Ejemplo**:
+- ❌ Clase de 60 minutos a las 18:00 (terminaría a las 19:00)
+- ✅ Clase de 60 minutos a las 17:30 (terminaría a las 18:30)
+- ✅ Clase de 30 minutos a las 18:00 (terminaría a las 18:30)
+```
+
+<Note>
+  **Operating Hours**: Classes run from 9:00 AM to 6:30 PM (18:30).
+  
+  Time slots are in 30-minute increments.
+</Note>
+
+### Class Durations
+
+Instructors can teach classes of two durations:
+
+- **30 minutes**: Occupies one time slot
+- **60 minutes**: Occupies two consecutive time slots
+
+### Maximum End Time Validation
+
+```markdown
+Error message when violating the 18:30 rule:
+"La clase no puede terminar después de las 18:30. Con duración de 60 minutos a las 18:00 terminaría a las 19:00."
+```
+
+## Workload Management
+
+### Viewing Instructor Workload
+
+Access instructor statistics through:
+
+<Tabs>
+  <Tab title="Instructor Profile">
+    Click on an instructor's name to view:
+    - Total classes taught
+    - Distribution by specialty
+    - Completion rate
+    - Performance metrics
+  </Tab>
+  
+  <Tab title="Instructor Report">
+    Navigate to **Reports** → **Instructors** to see:
+    - Workload comparison across all instructors
+    - Classes completed vs. cancelled
+    - Efficiency percentages
+    - Exportable Excel format
+  </Tab>
+</Tabs>
+
+### Balancing Workload
+
+Best practices for distributing classes:
+
+<AccordionGroup>
+  <Accordion title="Monitor Load Distribution">
+    - Review instructor reports weekly
+    - Identify instructors with significantly different class counts
+    - Adjust assignments to balance workload
+    - Consider instructor specialties and student preferences
+  </Accordion>
+  
+  <Accordion title="Specialty Matching">
+    Match instructors to appropriate specialties:
+    - **Equitación**: General riding instruction
+    - **Adiestramiento**: Horse training specialists
+    - **Equinoterapia**: Therapeutic riding certified instructors
+    - **Monta**: Free riding supervision
+  </Accordion>
+  
+  <Accordion title="Peak Time Coverage">
+    - Ensure adequate instructor coverage during peak hours
+    - Schedule senior instructors for complex classes
+    - Distribute beginner classes among all qualified instructors
+  </Accordion>
+</AccordionGroup>
+
+## Bulk Schedule Operations
+
+### Copying Weekly Schedules
+
+Replicate successful weekly schedules:
+
+<Steps>
+  <Step title="Access Copy Tool">
+    In the calendar, locate the **Copy Classes** tool.
+  </Step>
+  
+  <Step title="Select Source Week">
+    Choose any day from the week you want to copy.
+  </Step>
+  
+  <Step title="Select Destination Week">
+    Choose any day from the target week.
+  </Step>
+  
+  <Step title="Set Number of Weeks">
+    Specify how many consecutive weeks to copy.
+  </Step>
+  
+  <Step title="Execute">
+    The system copies all classes from the entire source week, including instructor assignments.
+  </Step>
+</Steps>
+
+<Warning>
+  Copying creates duplicate classes. Verify that:
+  - Students are available for the new dates
+  - Instructors don't have conflicts
+  - Horses are available
+</Warning>
+
+### Cancelling Full Days
+
+Cancel all classes for a day (affects all instructors):
+
+<Steps>
+  <Step title="Open Day View">
+    Navigate to the specific date in Day View.
+  </Step>
+  
+  <Step title="Click Cancel Day">
+    Click the **Cancel Day** button (X icon).
+  </Step>
+  
+  <Step title="Select Reason">
+    Choose cancellation reason:
+    - Rain
+    - Holiday
+    - Maintenance
+    - Special Event
+    - Emergency
+    - Other (custom message)
+  </Step>
+  
+  <Step title="Confirm">
+    System cancels only **PROGRAMADA** (scheduled) classes, preserving completed and already-cancelled classes.
+  </Step>
+</Steps>
+
+## Color-Coded Visualization
+
+Instructor colors provide quick visual identification:
+
+### How Colors Work in Calendar
+
+```markdown
+From README.md:276-285:
+Cada clase muestra:
+- **Fondo**: Color del instructor asignado (más claro para legibilidad)
+- **Borde izquierdo**: Color según estado de la clase
+```
+
+- **Background**: Instructor's assigned color (lightened for readability)
+- **Left Border**: Class status color (orange, blue, green, red, purple, pink)
+
+### Multi-Instructor View
+
+When viewing all instructors simultaneously:
+
+- Each instructor's classes show in their unique color
+- Quickly identify who's teaching at any time
+- Spot workload imbalances visually
+- See gaps in instructor availability
+
+<Note>
+  See [Color Coding](/guides/instructors/color-coding) for detailed information about the color system.
+</Note>
+
+## Instructor Availability
+
+### Active vs. Inactive Instructors
+
+Only **active** instructors appear in class assignment dropdowns:
+
+```tsx
+// Active instructors are available for new classes
+activo: true // Shown in dropdowns
+activo: false // Hidden from new assignments
+```
+
+### Deactivating Instructors
+
+When an instructor is unavailable:
+
+1. Edit the instructor record
+2. Toggle "Active" switch to OFF
+3. They no longer appear in assignment lists
+4. Existing classes remain unchanged
+5. Historical data is preserved
+
+### Reactivating Instructors
+
+To bring an instructor back:
+
+1. Find the instructor in the list (use "Inactive" filter)
+2. Edit their record
+3. Toggle "Active" switch to ON
+4. They immediately become available for assignments
+
+## Schedule Optimization Tips
+
+<AccordionGroup>
+  <Accordion title="Peak Hours Planning">
+    - Identify busiest times (typically afternoons/weekends)
+    - Schedule all available instructors during peak periods
+    - Use Day View to visualize capacity
+    - Ensure even distribution across time slots
+  </Accordion>
+  
+  <Accordion title="Specialty Coverage">
+    - Assign specialized instructors to their expertise areas
+    - Ensure at least one instructor per specialty is available daily
+    - Cross-train instructors to increase flexibility
+    - Track specialty demand in reports
+  </Accordion>
+  
+  <Accordion title="Student Preferences">
+    - Note student-instructor preferences in observations
+    - Build consistency by assigning same instructor when possible
+    - Balance preferences with workload distribution
+    - Monitor instructor performance through student feedback
+  </Accordion>
+  
+  <Accordion title="Buffer Time">
+    - Leave gaps between consecutive classes for the same instructor
+    - Allow transition time between different horses
+    - Plan breaks for instructors teaching multiple consecutive sessions
+    - Use 30-minute slots strategically for scheduling flexibility
+  </Accordion>
+</AccordionGroup>
+
+## Reporting on Schedules
+
+### Instructor Performance Report
+
+Access comprehensive instructor analytics:
+
+```markdown
+From README.md:371-376:
+#### **4. Reporte de Instructores**
+Análisis:
+- Carga de trabajo por instructor
+- Clases completadas vs. canceladas
+- Eficiencia (% de clases completadas)
+- Exportable a Excel
+```
+
+### Metrics Tracked
+
+- **Total Classes**: All assigned classes
+- **Completed**: Successfully finished classes
+- **Cancelled**: Classes that were cancelled
+- **Efficiency**: Percentage of completed vs. total
+- **Specialty Distribution**: Breakdown by class type
+
+### Export Options
+
+All instructor reports can be exported to Excel with:
+- Professional formatting
+- Color-coded headers
+- Calculated totals and percentages
+- Date range filtering
+
+## Related Pages
+
+- [Instructor Registration](/guides/instructors/registration) - Adding new instructors
+- [Color Coding](/guides/instructors/color-coding) - Understanding the color system
+- [Class Scheduling](/guides/classes/creating-classes) - Complete scheduling guide
+- [Calendar Features](/guides/calendar/views) - Using calendar tools effectively

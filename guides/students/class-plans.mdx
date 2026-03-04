@@ -1,0 +1,321 @@
+---
+title: 'Class Plans'
+description: 'Understanding monthly class plans and tracking student usage'
+---
+
+## Overview
+
+The HRS system offers flexible monthly class plans to accommodate different student needs and schedules. Each student selects a plan when registering, which determines how many classes they can attend per month.
+
+## Available Plans
+
+<CardGroup cols={2}>
+  <Card title="4 Classes/Month" icon="1">
+    **Basic Plan**
+    
+    Ideal for students who ride weekly. Perfect for beginners or those with limited time.
+    
+    - Approximately 1 class per week
+    - Most economical option
+  </Card>
+  
+  <Card title="8 Classes/Month" icon="2">
+    **Standard Plan**
+    
+    Recommended for regular students who want consistent practice.
+    
+    - 2 classes per week
+    - Balanced training frequency
+  </Card>
+  
+  <Card title="12 Classes/Month" icon="3">
+    **Intensive Plan**
+    
+    For dedicated students seeking faster progression.
+    
+    - 3 classes per week
+    - Accelerated learning
+  </Card>
+  
+  <Card title="16 Classes/Month" icon="4">
+    **Advanced Plan**
+    
+    Maximum training for competitive or highly committed riders.
+    
+    - 4 classes per week
+    - Professional-level frequency
+  </Card>
+</CardGroup>
+
+## Plan Selection
+
+### During Registration
+
+Class plans are selected during the student registration process:
+
+```tsx
+// From AlumnoForm.tsx:264-280
+<div className="space-y-2">
+  <Label htmlFor="cantidadClases">Clases por Mes</Label>
+  <Select
+    value={String(cantidadClases)}
+    onValueChange={(value) => setCantidadClases(Number(value))}
+  >
+    <SelectTrigger id="cantidadClases">
+      <SelectValue placeholder="Seleccionar cantidad" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="4">4 clases</SelectItem>
+      <SelectItem value="8">8 clases</SelectItem>
+      <SelectItem value="12">12 clases</SelectItem>
+      <SelectItem value="16">16 clases</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
+```
+
+### Changing Plans
+
+Students can change their plan at any time:
+
+<Steps>
+  <Step title="Open Student Record">
+    Navigate to **Students** and click on the student's name to view their details.
+  </Step>
+  
+  <Step title="Edit Student">
+    Click the **Edit** button (pencil icon) in the actions menu.
+  </Step>
+  
+  <Step title="Update Plan">
+    Select a new class plan from the "Classes per Month" dropdown.
+  </Step>
+  
+  <Step title="Save Changes">
+    Click **Save Changes** to update the student's plan.
+  </Step>
+</Steps>
+
+<Note>
+  Plan changes take effect immediately. The system will recalculate remaining classes based on the new plan.
+</Note>
+
+## Class Tracking
+
+The system automatically tracks class usage for each student.
+
+### Monthly Class Counter
+
+The student list displays remaining classes for the current month:
+
+```tsx
+// From Alumnos.tsx:403-427
+{
+  header: `Clases (${mesActualNombre.charAt(0).toUpperCase() + mesActualNombre.slice(1)})`,
+  cell: (row: Alumno) => {
+    const nombreCompleto = `${row.nombre} ${row.apellido}`;
+    const clasesAlumnoMes = clases.filter(
+      (c) =>
+        c.nombreParticipante === nombreCompleto &&
+        !c.esPrueba &&
+        ["COMPLETADA", "ASA"].includes(c.estado) &&
+        new Date(c.dia).getMonth() + 1 === mesActual &&
+        new Date(c.dia).getFullYear() === añoActual,
+    );
+    const restantes = row.cantidadClases - clasesAlumnoMes.length;
+    return (
+      <span>
+        {restantes} / {row.cantidadClases}
+      </span>
+    );
+  }
+}
+```
+
+### What Counts as a Class
+
+Classes are counted toward the monthly quota when:
+
+- Status is **COMPLETADA** (Completed)
+- Status is **ASA** (Absence without notice)
+- Class is **NOT** marked as trial class (`esPrueba: false`)
+- Class date is within the current month and year
+
+### What Doesn't Count
+
+<Warning>
+  The following classes do NOT count toward monthly quotas:
+  
+  - Trial classes (`esPrueba: true`)
+  - Cancelled classes (`CANCELADA`)
+  - Classes with prior notice absence (`ACA`)
+  - Scheduled but not completed classes (`PROGRAMADA`)
+  - Classes in progress (`INICIADA`)
+</Warning>
+
+## Viewing Class Usage
+
+### Student List View
+
+The main students page shows current month usage:
+
+- **Remaining / Total** format (e.g., "2 / 8")
+- Updates in real-time as classes are completed
+- Color-coded warnings when approaching limit (if implemented)
+
+### Student Detail View
+
+The individual student profile provides:
+
+- Complete class history
+- Monthly statistics
+- Attendance percentage
+- Visual graphs of class distribution
+
+## Quota Management
+
+### Exceeding the Quota
+
+The system allows scheduling classes even when a student has reached their monthly limit:
+
+<AccordionGroup>
+  <Accordion title="Scheduling Beyond Quota">
+    - System shows a warning but allows the booking
+    - Useful for makeup classes or special circumstances
+    - Administrator can approve extra classes
+  </Accordion>
+  
+  <Accordion title="Monitoring Overages">
+    - Student list highlights students exceeding quota
+    - Reports show quota utilization
+    - Easy to identify billing adjustments needed
+  </Accordion>
+</AccordionGroup>
+
+### Unused Classes
+
+<Note>
+  Classes do not automatically roll over to the next month. Each month starts fresh with the full quota available.
+</Note>
+
+Considerations for unused classes:
+
+- Monthly plans reset at the start of each month
+- Previous month's unused classes are not carried forward
+- Students are encouraged to use their full allocation
+- Reports can identify students with low utilization
+
+## Filtering by Plan
+
+The student list can be filtered by class plan:
+
+```tsx
+// From Alumnos.tsx:222-232
+const filterConfig = [
+  {
+    name: "cantidadClases",
+    label: "Clases/Mes",
+    type: "select" as const,
+    options: [
+      { label: "4 clases", value: "4" },
+      { label: "8 clases", value: "8" },
+      { label: "12 clases", value: "12" },
+      { label: "16 clases", value: "16" },
+    ],
+  },
+  // ... other filters
+];
+```
+
+<Steps>
+  <Step title="Access Filters">
+    On the Students page, locate the filter bar below the page header.
+  </Step>
+  
+  <Step title="Select Plan Filter">
+    Click the "Classes/Month" dropdown and select the desired plan (4, 8, 12, or 16).
+  </Step>
+  
+  <Step title="View Results">
+    The table automatically updates to show only students on the selected plan.
+  </Step>
+  
+  <Step title="Reset Filters">
+    Click **Reset Filters** to return to viewing all students.
+  </Step>
+</Steps>
+
+## Reports and Analytics
+
+Class plan data appears in system reports:
+
+### Student Report
+
+Includes:
+- Distribution of students by plan
+- Plan enrollment trends
+- Quota utilization rates
+- Revenue by plan type
+
+### General Report
+
+Shows:
+- Bar graphs of plan distribution
+- Comparison across different plans
+- Monthly enrollment changes
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Choosing the Right Plan">
+    **For New Students**:
+    - Start with 4 or 8 classes/month
+    - Increase as commitment grows
+    - Consider student's schedule and goals
+    
+    **For Experienced Riders**:
+    - 12 or 16 classes for competition prep
+    - 8 classes for maintenance riding
+  </Accordion>
+  
+  <Accordion title="Plan Changes">
+    - Review student usage monthly
+    - Proactively suggest plan adjustments
+    - Upgrade students approaching quota regularly
+    - Downgrade if consistently under-utilizing
+  </Accordion>
+  
+  <Accordion title="Quota Monitoring">
+    - Check monthly reports for quota trends
+    - Contact students nearing their limit
+    - Identify students who never reach quota
+    - Use data for business planning
+  </Accordion>
+</AccordionGroup>
+
+## Technical Implementation
+
+### Plan Storage
+
+```typescript
+// Plans are stored as integers in the student record
+cantidadClases: number; // 4, 8, 12, or 16
+```
+
+### Calculation Logic
+
+The system calculates remaining classes as:
+
+```typescript
+const restantes = row.cantidadClases - clasesAlumnoMes.length;
+```
+
+Where:
+- `row.cantidadClases` = Student's monthly plan
+- `clasesAlumnoMes.length` = Count of completed/ASA classes this month
+
+## Related Pages
+
+- [Student Registration](/guides/students/registration) - How to set up new students with plans
+- [Trial Classes](/guides/students/trial-classes) - Trial classes don't count toward quotas
+- [Reports](/guides/reports/overview) - Analyzing plan usage and trends

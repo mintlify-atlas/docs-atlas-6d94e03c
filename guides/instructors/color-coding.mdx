@@ -1,0 +1,436 @@
+---
+title: 'Instructor Color Coding'
+description: 'Understanding and using the instructor color system for visual schedule management'
+---
+
+## Overview
+
+The HRS system uses a color-coded system to visually identify instructors in calendars and schedules. Each instructor is assigned a unique color that appears throughout the system, making it easy to identify who is teaching at a glance.
+
+## Purpose of Color Coding
+
+Color coding provides several benefits:
+
+<CardGroup cols={2}>
+  <Card title="Quick Identification" icon="eye">
+    Instantly identify which instructor is teaching a class without reading names.
+  </Card>
+  
+  <Card title="Visual Schedule Balance" icon="chart-bar">
+    Easily spot workload distribution and gaps in instructor availability.
+  </Card>
+  
+  <Card title="Conflict Prevention" icon="shield-check">
+    Quickly see if an instructor is double-booked at a glance.
+  </Card>
+  
+  <Card title="Improved Planning" icon="calendar-check">
+    Make scheduling decisions faster with color-based visual cues.
+  </Card>
+</CardGroup>
+
+## Available Colors
+
+The system provides 7 preset colors designed for optimal visibility and distinction:
+
+```tsx
+// From instructor.constants.ts:1-9
+export const PRESET_COLORS = [
+  "#E06666", // Red
+  "#CBBBF0", // Purple  
+  "#FFBE66", // Orange
+  "#F5A6E8", // Pink
+  "#FFF76A", // Yellow
+  "#9FC5F8", // Blue
+  "#93C47D", // Green
+];
+```
+
+<CardGroup cols={4}>
+  <Card title="Red" icon="circle">
+    **#E06666**
+    
+    High visibility color. Excellent for senior or lead instructors.
+  </Card>
+  
+  <Card title="Purple" icon="circle">
+    **#CBBBF0**
+    
+    Soft yet distinctive. Works well in busy schedules.
+  </Card>
+  
+  <Card title="Orange" icon="circle">
+    **#FFBE66**
+    
+    Warm and inviting. Easy to spot in calendar views.
+  </Card>
+  
+  <Card title="Pink" icon="circle">
+    **#F5A6E8**
+    
+    Bright and cheerful. Stands out without being harsh.
+  </Card>
+</CardGroup>
+
+<CardGroup cols={3}>
+  <Card title="Yellow" icon="circle">
+    **#FFF76A**
+    
+    High contrast for excellent readability. Perfect for text overlay.
+  </Card>
+  
+  <Card title="Blue" icon="circle">
+    **#9FC5F8**
+    
+    Professional and calming. Traditional and reliable choice.
+  </Card>
+  
+  <Card title="Green" icon="circle">
+    **#93C47D**
+    
+    Natural and approachable. Easy on the eyes for long viewing.
+  </Card>
+</CardGroup>
+
+## Assigning Colors
+
+### During Registration
+
+Colors are assigned when creating a new instructor:
+
+<Steps>
+  <Step title="Open Instructor Form">
+    Click **New Instructor** in the Instructors section.
+  </Step>
+  
+  <Step title="View Color Options">
+    Scroll to the "Instructor Color" section showing 7 color circles.
+  </Step>
+  
+  <Step title="Select Color">
+    Click on your preferred color circle. The selected color will:
+    - Enlarge slightly
+    - Show a ring effect
+    - Display border highlight
+    - Show hex code in preview box
+  </Step>
+  
+  <Step title="Verify Selection">
+    Check the color preview box below the circles to confirm your selection.
+  </Step>
+</Steps>
+
+### Color Picker UI
+
+```tsx
+// From InstructorForm.tsx:190-217
+<div className="flex gap-2 flex-wrap">
+  {PRESET_COLORS.map((presetColor) => (
+    <button
+      type="button"
+      key={presetColor}
+      onClick={() => setColor(presetColor)}
+      className={`w-10 h-10 rounded-full border-2 transition-all ${
+        color === presetColor
+          ? "border-primary ring-2 ring-primary/20 scale-110"
+          : "border-gray-300 hover:scale-105"
+      }`}
+      style={{ backgroundColor: presetColor }}
+      title={presetColor}
+    />
+  ))}
+</div>
+<div className="flex items-center gap-2 mt-2 p-2 border rounded-md bg-muted/30">
+  <div
+    className="w-6 h-6 rounded border-2 border-gray-300"
+    style={{ backgroundColor: color }}
+  />
+  <span className="text-sm font-mono text-muted-foreground">
+    {color}
+  </span>
+</div>
+```
+
+### Changing Colors
+
+Update an instructor's color at any time:
+
+<Steps>
+  <Step title="Edit Instructor">
+    Find the instructor and click the Edit button.
+  </Step>
+  
+  <Step title="Select New Color">
+    Click a different color from the palette.
+  </Step>
+  
+  <Step title="Save Changes">
+    Click **Save Changes**. The new color applies immediately to:
+    - All calendar views
+    - Existing scheduled classes
+    - Future class assignments
+    - Reports and exports
+  </Step>
+</Steps>
+
+<Warning>
+  Changing an instructor's color updates the display for ALL their classes, including historical ones. This ensures consistency across the system.
+</Warning>
+
+## How Colors Appear in the System
+
+### Calendar Views
+
+Instructor colors are most prominent in calendar views:
+
+#### Background Color
+
+```markdown
+From README.md:277-279:
+- **Fondo**: Color del instructor asignado (más claro para legibilidad)
+```
+
+- Each class cell has a **background** in the instructor's color
+- Color is lightened/desaturated for text readability
+- Allows overlaying text and icons clearly
+
+#### Combined with Status Colors
+
+```markdown
+From README.md:280-285:
+- **Borde izquierdo**: Color según estado de la clase:
+  - 🟠 Naranja: PROGRAMADA
+  - 🔵 Azul: INICIADA  
+  - 🟢 Verde: COMPLETADA
+  - 🔴 Rojo: CANCELADA
+  - 🟣 Púrpura: ACA (Ausencia con Aviso)
+  - 🌸 Rosa: ASA (Ausencia sin Aviso)
+```
+
+Each class shows:
+- **Background**: Instructor color (identification)
+- **Left border**: Status color (class state)
+
+### Example Visual
+
+```
+┌─────────────────────────────┐
+│█ │ 10:00 - María            │  ← Orange border (PROGRAMADA)
+│  │ Student: Juan            │     Red background (instructor color)
+│  │ Horse: Luna              │
+└─────────────────────────────┘
+```
+
+### Day View (Excel-Style)
+
+In the detailed day view:
+
+- **Columns**: One per horse
+- **Rows**: 30-minute time slots (9:00-18:30)
+- **Cells**: Colored with instructor's color
+- **Hover**: Shows full class details
+
+### Month and Week Views
+
+- Smaller class cards still show instructor colors
+- Colors help identify instructors at a glance
+- Useful for spotting scheduling patterns
+
+## Excel Export Formatting
+
+When exporting schedules to Excel, instructor colors are preserved:
+
+```markdown
+From README.md:320-331:
+**Formato Excel Profesional**:
+- Celdas con color del instructor
+- Diferenciación de tipo de caballo  
+- Comentarios con detalles completos de cada clase
+- Leyendas explicativas
+```
+
+### Export Features
+
+- **Cell background**: Instructor color (same as calendar)
+- **Legend**: Color key showing instructor names and colors
+- **Print-optimized**: Colors work well in both screen and print
+- **Professional format**: Suitable for distribution to staff
+
+## Color Selection Best Practices
+
+<AccordionGroup>
+  <Accordion title="Ensure Distinction">
+    **Goal**: Make each instructor easily distinguishable
+    
+    ✅ **Do**:
+    - Assign different colors to each active instructor
+    - Choose colors with high contrast from each other
+    - Avoid assigning same color to multiple active instructors
+    
+    ❌ **Don't**:
+    - Use similar shades for different instructors
+    - Assign same color to instructors working same shifts
+  </Accordion>
+  
+  <Accordion title="Consider Visibility">
+    **Goal**: Ensure colors are visible in all lighting conditions
+    
+    ✅ **Do**:
+    - Test colors on actual devices (computer screens, tablets)
+    - Consider how colors appear in print if exporting schedules
+    - Choose colors that work for colorblind users when possible
+    
+    ❌ **Don't**:
+    - Select colors that are too light (hard to see)
+    - Choose colors too similar to status border colors
+  </Accordion>
+  
+  <Accordion title="Instructor Preferences">
+    **Goal**: Involve instructors in color selection
+    
+    ✅ **Do**:
+    - Ask instructors for color preferences
+    - Let senior instructors choose first
+    - Document color assignments for reference
+    
+    ❌ **Don't**:
+    - Change colors frequently without communication
+    - Assign colors that instructors dislike
+  </Accordion>
+  
+  <Accordion title="Consistency">
+    **Goal**: Maintain stable color assignments
+    
+    ✅ **Do**:
+    - Keep color assignments consistent over time
+    - Only change when necessary (e.g., instructor leaves)
+    - Update documentation when colors change
+    
+    ❌ **Don't**:
+    - Swap colors between instructors unnecessarily
+    - Change colors without notifying staff
+  </Accordion>
+</AccordionGroup>
+
+## Color Management Scenarios
+
+### New Instructor Joins
+
+<Steps>
+  <Step title="Check Available Colors">
+    Review which colors are currently assigned to active instructors.
+  </Step>
+  
+  <Step title="Choose Distinct Color">
+    Select a color not used by any active instructor.
+  </Step>
+  
+  <Step title="Assign to New Instructor">
+    Set the color during registration.
+  </Step>
+  
+  <Step title="Update Team Documentation">
+    Record the color assignment for reference.
+  </Step>
+</Steps>
+
+### Instructor Becomes Inactive
+
+<Steps>
+  <Step title="Deactivate Instructor">
+    Set instructor status to inactive.
+  </Step>
+  
+  <Step title="Keep Color Assignment">
+    Do NOT reassign the color immediately.
+  </Step>
+  
+  <Step title="Wait Period">
+    Maintain color assignment for historical clarity (recommended: 1-2 months).
+  </Step>
+  
+  <Step title="Release Color">
+    After wait period, the color becomes available for new instructors.
+  </Step>
+</Steps>
+
+### More Than 7 Instructors
+
+If you have more than 7 active instructors:
+
+<Warning>
+  With only 7 preset colors, having 8+ active instructors requires color reuse.
+</Warning>
+
+**Solutions**:
+
+1. **Strategic Reuse**:
+   - Assign same color to instructors working different shifts
+   - Use same color for instructors teaching different specialties
+   
+2. **Inactive Instructors**:
+   - Mark rarely-used instructors as inactive
+   - Reactivate only when needed
+
+3. **Primary Instructors**:
+   - Give unique colors to primary/full-time instructors
+   - Part-time instructors can share colors strategically
+
+## Visual Reference Legend
+
+The calendar includes a color legend (if implemented):
+
+```
+Instructors:
+🔴 María González
+🟣 Juan Pérez  
+🟠 Ana Silva
+🌸 Carlos Ruiz
+🟡 Laura Martínez
+🔵 Diego López
+🟢 Sofia Torres
+```
+
+## Technical Implementation
+
+### Color Storage
+
+```typescript
+// Stored as hex string in instructor record
+color: string; // e.g., "#E06666"
+```
+
+### Default Color
+
+```tsx
+// From InstructorForm.tsx:50
+const [color, setColor] = useState(PRESET_COLORS[0]);
+```
+
+If no color is selected, Red (#E06666) is assigned by default.
+
+### Color Application
+
+Colors are applied via inline styles:
+
+```tsx
+style={{ backgroundColor: presetColor }}
+```
+
+## Accessibility Considerations
+
+<Note>
+  While colors aid visual identification, the system also includes text labels to ensure accessibility for all users.
+</Note>
+
+**Accessibility features**:
+- Instructor name always displayed in class details
+- Hover tooltips show full information
+- High contrast text over colored backgrounds
+- Alternative text-based filtering available
+
+## Related Pages
+
+- [Instructor Registration](/guides/instructors/registration) - Setting up instructors with colors
+- [Schedule Management](/guides/instructors/schedule-management) - Using colors for scheduling
+- [Calendar Features](/guides/calendar/views) - Understanding calendar color system

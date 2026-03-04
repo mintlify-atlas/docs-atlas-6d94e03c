@@ -1,0 +1,450 @@
+---
+title: Scheduling Rules
+description: Rules and constraints for scheduling classes and managing the calendar
+---
+
+## Overview
+
+The scheduling system implements comprehensive rules to prevent conflicts, ensure resource availability, and maintain operational constraints.
+
+## Time Constraints
+
+### Operating Hours
+
+**Business Hours**: 09:00 - 18:30
+
+**Time Slot Grid**:
+- Increment: 30 minutes
+- First slot: 09:00
+- Last slot start: 18:00 (for 30-min classes) or 17:30 (for 60-min classes)
+- Hard deadline: Classes must end by 18:30
+
+**Time Slots**:
+```
+09:00, 09:30, 10:00, 10:30, 11:00, 11:30,
+12:00, 12:30, 13:00, 13:30, 14:00, 14:30,
+15:00, 15:30, 16:00, 16:30, 17:00, 17:30,
+18:00
+```
+
+### Class Duration Rules
+
+**Available Durations**:
+- 30 minutes (default)
+- 60 minutes
+
+**Slot Occupancy**:
+
+**30-Minute Class**:
+- Occupies 1 time slot
+- Example: Class at 10:00 occupies only 10:00 slot
+
+**60-Minute Class**:
+- Occupies 2 consecutive time slots
+- Example: Class at 10:00 occupies 10:00 and 10:30 slots
+- Both slots are clickable in calendar (open same details)
+- Visual border indicates continuation
+
+**End Time Validation**:
+```typescript
+function validateEndTime(startTime: string, duration: number): boolean {
+  const [hours, minutes] = startTime.split(':').map(Number);
+  const startMinutes = hours * 60 + minutes;
+  const endMinutes = startMinutes + duration;
+  const maxEndMinutes = 18 * 60 + 30; // 18:30
+  
+  return endMinutes <= maxEndMinutes;
+}
+```
+
+**Examples**:
+```typescript
+validateEndTime("18:00", 30)  // ✅ true (ends 18:30)
+validateEndTime("18:00", 60)  // ❌ false (ends 19:00)
+validateEndTime("17:30", 60)  // ✅ true (ends 18:30)
+validateEndTime("18:15", 30)  // ❌ false (ends 18:45)
+```
+
+---
+
+## Resource Conflict Detection
+
+### Horse Conflict
+
+**Rule**: A horse cannot have overlapping classes
+
+**Detection Logic**:
+```typescript
+function hasHorseConflict(
+  caballoId: number,
+  dia: string,
+  hora: string,
+  duracion: number,
+  excludeClaseId?: number
+): boolean {
+  const existingClasses = await clasesApi.buscar({
+    caballoId,
+    dia
+  });
+  
+  const newStart = parseTime(hora);
+  const newEnd = newStart + duracion;
+  
+  return existingClasses
+    .filter(c => c.id !== excludeClaseId) // Exclude current when editing
+    .some(c => {
+      const existingStart = parseTime(c.hora);
+      const existingEnd = existingStart + c.duracion;
+      
+      // Check for overlap
+      return (newStart < existingEnd && newEnd > existingStart);
+    });
+}
+```
+
+**Visual Indicators**:
+- ⚠️ Warning icon in conflicted cell
+- Highlighted border
+- Tooltip: "Conflicto: Este caballo ya tiene una clase a esta hora"
+
+---
+
+### Instructor Conflict
+
+**Rule**: An instructor cannot have overlapping classes
+
+**Detection Logic**:
+```typescript
+function hasInstructorConflict(
+  instructorId: number,
+  dia: string,
+  hora: string,
+  duracion: number,
+  excludeClaseId?: number
+): boolean {
+  const existingClasses = await clasesApi.buscar({
+    instructorId,
+    dia
+  });
+  
+  const newStart = parseTime(hora);
+  const newEnd = newStart + duracion;
+  
+  return existingClasses
+    .filter(c => c.id !== excludeClaseId)
+    .some(c => {
+      const existingStart = parseTime(c.hora);
+      const existingEnd = existingStart + c.duracion;
+      
+      return (newStart < existingEnd && newEnd > existingStart);
+    });
+}
+```
+
+**Behavior**:
+- Shows warning when conflict detected
+- Allows creation with confirmation (instructor can handle multiple)
+- Less strict than horse conflict
+
+---
+
+### Overlap Detection Algorithm
+
+**Two time ranges overlap if**:
+```typescript
+// Range A: [startA, endA)
+// Range B: [startB, endB)
+// Overlap if: startA < endB AND endA > startB
+
+function rangesOverlap(
+  startA: number, endA: number,
+  startB: number, endB: number
+): boolean {
+  return startA < endB && endA > startB;
+}
+```
+
+**Examples**:
+
+| Class A | Class B | Overlap? | Reason |
+|---------|---------|----------|--------|
+| 10:00-10:30 | 10:30-11:00 | ❌ No | Adjacent, not overlapping |
+| 10:00-10:30 | 10:15-10:45 | ✅ Yes | Partial overlap |
+| 10:00-11:00 | 10:30-11:00 | ✅ Yes | B contained in A |
+| 10:00-10:30 | 11:00-11:30 | ❌ No | Completely separate |
+| 10:00-11:00 | 09:30-10:30 | ✅ Yes | Partial overlap |
+
+---
+
+## Calendar Operations
+
+### Copy Classes
+
+**Feature**: Copy entire week's schedule to another week
+
+**Parameters**:
+- Source day (any day in source week)
+- Target day (any day in target week)
+- Number of weeks to copy
+
+**Logic**:
+```typescript
+function copyWeek(
+  sourceDayInWeek: Date,
+  targetDayInWeek: Date,
+  numberOfWeeks: number
+) {
+  // Get Monday of source week
+  const sourceMonday = getWeekStart(sourceDayInWeek);
+  
+  // Get all classes in source week
+  const sourceWeekEnd = addDays(sourceMonday, 7);
+  const sourceClasses = await clasesApi.buscar({
+    dia: { gte: sourceMonday, lt: sourceWeekEnd }
+  });
+  
+  // For each target week
+  for (let w = 0; w < numberOfWeeks; w++) {
+    const targetMonday = addDays(getWeekStart(targetDayInWeek), w * 7);
+    
+    // Copy each class with adjusted date
+    for (const clase of sourceClasses) {
+      const dayOffset = differenceInDays(clase.dia, sourceMonday);
+      const newDia = addDays(targetMonday, dayOffset);
+      
+      await clasesApi.crear({
+        ...clase,
+        id: undefined, // New class
+        dia: format(newDia, 'yyyy-MM-dd'),
+        estado: "PROGRAMADA" // Always create as scheduled
+      });
+    }
+  }
+}
+```
+
+**Validation**:
+- Checks for conflicts in target week
+- Confirms before overwriting
+- Shows summary of classes to be copied
+
+---
+
+### Delete Classes in Range
+
+**Feature**: Delete multiple classes between two dates
+
+**Parameters**:
+- Start date (inclusive)
+- End date (inclusive)
+
+**Logic**:
+```typescript
+function deleteClassesInRange(
+  startDate: string,
+  endDate: string
+) {
+  const classesToDelete = await clasesApi.buscar({
+    dia: { gte: startDate, lte: endDate }
+  });
+  
+  // Require confirmation
+  const confirmed = await confirm(
+    `¿Eliminar ${classesToDelete.length} clases entre ${startDate} y ${endDate}?`
+  );
+  
+  if (confirmed) {
+    for (const clase of classesToDelete) {
+      await clasesApi.eliminar(clase.id);
+    }
+  }
+}
+```
+
+**Safety**:
+- Requires user confirmation
+- Shows count of classes to be deleted
+- Cannot be undone (warn user)
+
+---
+
+### Cancel Full Day
+
+**Feature**: Cancel all classes on a specific day
+
+**Parameters**:
+- Day to cancel
+- Cancellation reason (optional)
+
+**Reasons**:
+- Lluvia (Rain)
+- Feriado (Holiday)
+- Mantenimiento (Maintenance)
+- Evento Especial (Special Event)
+- Emergencia (Emergency)
+- Otro (Other - with custom text)
+
+**Logic**:
+```typescript
+function cancelFullDay(
+  dia: string,
+  motivo: string,
+  observaciones?: string
+) {
+  const classesOnDay = await clasesApi.buscar({ dia });
+  
+  // Only cancel PROGRAMADA classes
+  const toCancelCount = classesOnDay
+    .filter(c => c.estado === "PROGRAMADA")
+    .length;
+  
+  const confirmed = await confirm(
+    `¿Cancelar ${toCancelCount} clases programadas el ${dia}?\nMotivo: ${motivo}`
+  );
+  
+  if (confirmed) {
+    for (const clase of classesOnDay) {
+      if (clase.estado === "PROGRAMADA") {
+        await clasesApi.cambiarEstado(
+          clase.id,
+          "CANCELADA",
+          `${motivo}${observaciones ? ': ' + observaciones : ''}`
+        );
+      }
+    }
+  }
+}
+```
+
+**Behavior**:
+- Only affects `PROGRAMADA` classes
+- Leaves `COMPLETADA`, `CANCELADA`, etc. unchanged
+- Records reason in observations
+- Requires confirmation
+
+---
+
+## Class Assignment Rules
+
+### Student Assignment
+
+**Regular Class**:
+- Student must be active (`activo: true`)
+- Student must exist in system
+- Student can be any active student
+
+**Trial Class**:
+- **Option 1**: New person (not in system)
+  - Provide first and last name
+  - Create `PersonaPrueba` record
+  - Set `esPrueba: true`
+  - Set `alumnoId: null`
+  
+- **Option 2**: Existing inactive student
+  - Student must be inactive (`activo: false`)
+  - Student must not have classes in that specialty
+  - Student must not have had trial class in that specialty
+  - Set `esPrueba: true`
+
+**MONTA Specialty**:
+- Automatically assigns `alumnoId: 1` (placeholder)
+- No student selection needed
+- Used for free riding sessions
+
+---
+
+### Horse Assignment
+
+**School Horse (`ESCUELA`)**:
+- ✅ Can be assigned to any student
+- ✅ Can be used for trial classes
+- ✅ Multiple students can use (at different times)
+
+**Private Horse (`PRIVADO`)**:
+- ⚠️ Can only be assigned to owner
+- ⚠️ System validates ownership
+- ❌ Cannot be used by other students
+- ❌ Validation error if mismatch
+
+**Validation**:
+```typescript
+function validateHorseAssignment(
+  alumnoId: number,
+  caballoId: number
+): boolean {
+  const caballo = await caballosApi.obtener(caballoId);
+  
+  if (caballo.tipo === "PRIVADO") {
+    const alumno = await alumnosApi.obtener(alumnoId);
+    
+    if (alumno.caballoPropio !== caballoId) {
+      throw new Error(
+        "Este caballo privado solo puede ser usado por su propietario"
+      );
+    }
+  }
+  
+  return true;
+}
+```
+
+---
+
+### Instructor Assignment
+
+**Requirements**:
+- Instructor must be active (`activo: true`)
+- Instructor should not have conflict (warning, not blocking)
+
+**Color Coding**:
+- Each instructor has assigned color
+- Class cells show instructor's color as background
+- Helps visual identification in calendar
+
+---
+
+## Availability Rules
+
+### Horse Availability
+
+**Rule**: Horse must be marked as available (`disponible: true`)
+
+**Behavior**:
+- Unavailable horses don't appear in selection dropdowns
+- Existing classes with unavailable horses remain valid
+- Useful for horses in maintenance, injured, etc.
+
+---
+
+### Student Quota
+
+**Monitoring**: Track classes used vs. contracted
+
+**Calculation** (`useClasesRestantes`):
+```typescript
+const clasesTomadas = clasesDelMes.filter(c =>
+  ["COMPLETADA", "PROGRAMADA", "INICIADA"].includes(c.estado)
+).length;
+
+const clasesRestantes = alumno.cantidadClases - clasesTomadas;
+```
+
+**States**:
+- Normal: `clasesRestantes > 2`
+- Warning: `clasesRestantes <= 2 && clasesRestantes > 0`
+- Over quota: `clasesRestantes <= 0`
+
+**Behavior**:
+- Shows warning when near limit
+- Allows over-quota with confirmation
+- Does not block scheduling
+- Trial classes don't count
+
+---
+
+## Related
+
+- [Validation Rules](/reference/rules/validation-rules)
+- [Business Logic](/reference/rules/business-logic)
+- [Class States](/reference/enums/class-states)
+- [Class Model](/reference/models/class)

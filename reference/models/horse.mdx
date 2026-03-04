@@ -1,0 +1,134 @@
+---
+title: Horse (Caballo)
+description: Horse data model representing school and private horses
+---
+
+## Overview
+
+The `Caballo` (Horse) model represents both school horses and privately-owned horses in the system. Horses can be assigned to classes and may have one or more owner associations.
+
+## Data Model
+
+<ParamField path="id" type="number" required>
+  Unique identifier for the horse
+</ParamField>
+
+<ParamField path="nombre" type="string" required>
+  Name of the horse
+  
+  Example: `"Thunder"`, `"Luna"`
+</ParamField>
+
+<ParamField path="tipo" type="TipoCaballo" required>
+  Type of horse ownership
+  
+  Possible values:
+  - `"ESCUELA"` - School horse, available for all students
+  - `"PRIVADO"` - Private horse, belongs to a specific student
+  
+  See [Horse Types](/reference/enums/horse-types) for more details.
+</ParamField>
+
+<ParamField path="disponible" type="boolean" required>
+  Indicates if the horse is available for classes
+  
+  Default: `true`
+  
+  Horses marked as not available cannot be assigned to new classes.
+</ParamField>
+
+<ParamField path="propietarios" type="Alumno[]">
+  Array of students associated with this horse
+  
+  Can include:
+  - **Owners**: Students who own private horses (`tipoPension: "CABALLO_PROPIO"`)
+  - **Reservations**: Students who reserve school horses (`tipoPension: "RESERVA_ESCUELA"`)
+  
+  This is an optional expanded field that may be populated when fetching detailed horse information.
+</ParamField>
+
+## Example
+
+### School Horse
+
+```json
+{
+  "id": 12,
+  "nombre": "Luna",
+  "tipo": "ESCUELA",
+  "disponible": true,
+  "propietarios": [
+    {
+      "id": 45,
+      "nombre": "María",
+      "apellido": "González",
+      "tipoPension": "RESERVA_ESCUELA"
+    }
+  ]
+}
+```
+
+### Private Horse
+
+```json
+{
+  "id": 23,
+  "nombre": "Thunder",
+  "tipo": "PRIVADO",
+  "disponible": true,
+  "propietarios": [
+    {
+      "id": 67,
+      "nombre": "Juan",
+      "apellido": "Pérez",
+      "tipoPension": "CABALLO_PROPIO"
+    }
+  ]
+}
+```
+
+## Horse Types
+
+### School Horses (`ESCUELA`)
+
+- Owned by the equestrian school
+- Available for all students
+- Can be reserved by students with `tipoPension: "RESERVA_ESCUELA"`
+- Can be assigned to students without a specific horse (`tipoPension: "SIN_CABALLO"`) on a per-class basis
+
+### Private Horses (`PRIVADO`)
+
+- Owned by individual students
+- Can **only** be used by their owners
+- Associated with students who have `tipoPension: "CABALLO_PROPIO"`
+- System enforces ownership validation when assigning to classes
+
+## Related Models
+
+- [Student (Alumno)](/reference/models/student) - Students who own or reserve horses
+- [Class (Clase)](/reference/models/class) - Classes where horses are used
+- [Horse Types](/reference/enums/horse-types) - Enumeration of horse types
+- [Board Types](/reference/enums/board-types) - Student board arrangements
+
+## Business Rules
+
+- Private horses can **only** be assigned to classes with their owner
+- School horses can be assigned to any student
+- Horses cannot have overlapping class schedules (schedule conflict validation)
+- Students with `tipoPension: "RESERVA_ESCUELA"` can reserve a specific school horse
+- Students with `tipoPension: "CABALLO_PROPIO"` must have a private horse assigned
+- Students with `tipoPension: "SIN_CABALLO"` are assigned an available school horse per class
+- Horses marked as not available cannot be assigned to new classes
+
+## Calendar Visualization
+
+In the calendar day view:
+
+- Each horse has its own column
+- Horse columns are color-coded by type:
+  - **Blue header**: School horses (`ESCUELA`)
+  - **Gold header**: Private horses (`PRIVADO`)
+- Columns show all classes scheduled for each horse
+- Visual indicators (⚠️) appear when there are schedule conflicts
+
+See [Scheduling Rules](/reference/rules/scheduling-rules) for more details on conflict validation.

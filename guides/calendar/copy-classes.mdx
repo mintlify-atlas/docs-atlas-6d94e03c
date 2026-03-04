@@ -1,0 +1,331 @@
+---
+title: Copy Classes
+description: Efficiently duplicate weekly schedules to save time on repetitive planning
+---
+
+The Copy Classes feature allows you to duplicate an entire week's schedule to future weeks, saving significant time when your classes follow a regular pattern.
+
+## Overview
+
+Instead of manually creating the same classes week after week, use the copy feature to:
+- Replicate a complete weekly schedule
+- Copy to multiple consecutive weeks at once
+- Maintain all class details (students, instructors, horses, times)
+
+<Info>
+  This feature is ideal for schools with recurring weekly schedules.
+</Info>
+
+## How It Works
+
+The copy operation duplicates **all classes** from a source week to one or more destination weeks.
+
+### What Gets Copied
+
+For each class in the source week, the system creates a new class with:
+- ✅ Same day of the week
+- ✅ Same time
+- ✅ Same duration (30 or 60 minutes)
+- ✅ Same student
+- ✅ Same instructor
+- ✅ Same horse
+- ✅ Same specialty
+- ✅ Same observations
+
+### What Changes
+
+- 📅 **Date**: Adjusted to the target week(s)
+- 🆕 **Status**: All copied classes start as PROGRAMADA
+- 🆔 **ID**: Each copy gets a new unique identifier
+
+<Warning>
+  Trial classes (clases de prueba) are also copied. Review copied classes if the trial nature shouldn't be repeated.
+</Warning>
+
+## Using Copy Classes
+
+### Opening the Dialog
+
+Access the Copy Classes feature from the calendar toolbar:
+
+<Steps>
+  <Step title="Navigate to Calendar">
+    Go to the Calendar section (any view mode)
+  </Step>
+  <Step title="Click Copy Button">
+    Click the **"Copiar Clases"** button in the toolbar
+  </Step>
+  <Step title="Dialog Opens">
+    The Copy Classes dialog appears
+  </Step>
+</Steps>
+
+### Configuring the Copy
+
+<Tabs>
+  <Tab title="Source Week">
+    **Select Origin Day** (Día de Inicio Origen)
+    
+    Choose **any day** from the week you want to copy:
+    - You don't need to select Monday specifically
+    - The system copies the entire week containing this date
+    
+    Example: Select March 5 (Wednesday) → Copies March 3-9 (entire week)
+  </Tab>
+  
+  <Tab title="Destination Week">
+    **Select Destination Day** (Día de Inicio Destino)
+    
+    Choose **any day** from the first target week:
+    - Again, any day of the week works
+    - The system copies to the entire week containing this date
+    
+    Example: Select March 12 (Wednesday) → Pastes to March 10-16 (entire week)
+  </Tab>
+  
+  <Tab title="Number of Weeks">
+    **Weeks to Copy** (Cantidad de Semanas)
+    
+    Specify how many consecutive weeks to copy:
+    - Minimum: 1 week
+    - Maximum: As many as needed
+    
+    Example: Select 3 → Copies to 3 consecutive weeks starting from destination
+  </Tab>
+</Tabs>
+
+### Example Configuration
+
+<CodeGroup>
+```text Single Week Copy
+Origin: Monday, March 3, 2026
+Destination: Monday, March 10, 2026
+Weeks: 1
+
+Result:
+→ Copies March 3-9 schedule to March 10-16
+```
+
+```text Multi-Week Copy
+Origin: Wednesday, March 5, 2026
+Destination: Wednesday, March 12, 2026
+Weeks: 3
+
+Result:
+→ Copies March 3-9 schedule to:
+  - March 10-16
+  - March 17-23
+  - March 24-30
+```
+</CodeGroup>
+
+### Executing the Copy
+
+<Steps>
+  <Step title="Fill Form Fields">
+    Enter the origin date, destination date, and number of weeks
+  </Step>
+  <Step title="Review Selection">
+    Double-check the dates and week count
+  </Step>
+  <Step title="Click Confirm">
+    Click "Copiar" to execute
+  </Step>
+  <Step title="Wait for Confirmation">
+    The system processes the copy and shows a success message
+  </Step>
+</Steps>
+
+## Validation Rules
+
+### Required Fields
+
+- 📅 Origin date must be selected
+- 📅 Destination date must be selected
+- 🔢 Number of weeks must be at least 1
+
+### Date Logic
+
+- Destination date must be **different** from origin date
+- System automatically determines week boundaries (Monday-Sunday)
+- Weeks are calculated based on ISO week standards
+
+## What Happens After Copy
+
+Once the copy completes:
+
+1. **New Classes Created**: All classes from the source week are duplicated
+2. **Calendar Refreshes**: The view updates to show new classes
+3. **Success Notification**: Toast message confirms completion
+4. **Status Check**: All new classes have status PROGRAMADA
+
+### Reviewing Copied Classes
+
+After copying:
+
+<Tabs>
+  <Tab title="Navigate to Destination">
+    Switch the calendar to the destination week to review copied classes
+  </Tab>
+  <Tab title="Verify Details">
+    Check that all classes copied correctly:
+    - Times match
+    - Students, instructors, horses match
+    - No conflicts created
+  </Tab>
+  <Tab title="Make Adjustments">
+    Edit individual classes if needed:
+    - Change times
+    - Swap horses
+    - Update instructors
+    - Modify observations
+  </Tab>
+</Tabs>
+
+## Conflict Handling
+
+### Duplicate Detection
+
+If classes already exist in the destination week:
+- The system **adds** the copied classes anyway
+- You may end up with duplicate classes
+- Review and delete duplicates manually
+
+<Warning>
+  **Best Practice**: Copy to empty weeks to avoid duplicates. Delete existing classes first if needed.
+</Warning>
+
+### Scheduling Conflicts
+
+The copy operation may create:
+- Double-booked horses (same horse, same time)
+- Double-booked instructors (same instructor, same time)
+
+The system allows these but marks them with ⚠️ warnings.
+
+## Use Cases
+
+<AccordionGroup>
+  <Accordion title="Regular Weekly Schedule">
+    Your school has a standard weekly schedule that repeats:
+    
+    1. Set up the first week perfectly
+    2. Copy to the next 4-8 weeks
+    3. Make minor adjustments as needed
+  </Accordion>
+  
+  <Accordion title="After Holiday Break">
+    Resume normal operations after a break:
+    
+    1. Find the last "normal" week before the break
+    2. Copy it to the first week back
+    3. Copy multiple weeks at once to catch up
+  </Accordion>
+  
+  <Accordion title="New Month Planning">
+    Plan an entire month in minutes:
+    
+    1. Create the first week's schedule
+    2. Copy it to weeks 2, 3, 4 (3 weeks)
+    3. Review and adjust for special events
+  </Accordion>
+  
+  <Accordion title="Seasonal Schedule">
+    Switch to a new seasonal schedule:
+    
+    1. Design the new weekly pattern
+    2. Copy to all weeks in the season
+    3. Season-specific adjustments applied once
+  </Accordion>
+</AccordionGroup>
+
+## Tips & Best Practices
+
+### Before Copying
+
+<Check>
+  - ✅ Verify the source week is complete and correct
+  - ✅ Check for any trial classes that shouldn't be copied
+  - ✅ Ensure destination weeks are empty or can be overwritten
+  - ✅ Consider instructor availability in target weeks
+</Check>
+
+### During Copy
+
+- Use **Week View** to verify the source week before copying
+- Select dates carefully—any day works, but be consistent
+- Copy multiple weeks at once to save time
+
+### After Copying
+
+- Switch to **Day View** to check each day's details
+- Look for conflict warnings (⚠️)
+- Verify trial classes were handled appropriately
+- Make individual edits as needed
+
+## Limitations
+
+<Warning>
+  - Cannot undo a copy operation (delete manually if needed)
+  - Cannot selectively copy certain classes (all or nothing)
+  - Cannot copy to the same week (destination must differ)
+  - Trial class flags are copied (may not be desired)
+</Warning>
+
+## Alternatives
+
+### When NOT to Use Copy
+
+Consider manual creation instead if:
+- Schedule changes significantly week-to-week
+- Only a few classes repeat
+- Trial classes need different handling
+- Many exceptions and variations exist
+
+### Partial Schedule Copying
+
+If you need to copy only certain classes:
+1. Copy the full week
+2. Manually delete unwanted classes from destination
+3. Edit remaining classes as needed
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Classes Not Appearing">
+    If copied classes don't show up:
+    - Check that you're viewing the correct week
+    - Verify filters aren't hiding the classes
+    - Refresh the calendar view
+    - Check the success notification confirmed the copy
+  </Accordion>
+  
+  <Accordion title="Too Many Duplicates">
+    If you accidentally copied to a populated week:
+    - Use the Delete Range feature to remove duplicates
+    - Or manually delete duplicate classes one by one
+  </Accordion>
+  
+  <Accordion title="Wrong Week Copied">
+    If you selected the wrong source/destination:
+    - Delete the incorrectly copied classes
+    - Repeat the copy operation with correct dates
+  </Accordion>
+</AccordionGroup>
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Delete Class Range" icon="trash" href="/guides/calendar/bulk-operations">
+    Remove multiple classes between two dates
+  </Card>
+  <Card title="Cancel Entire Day" icon="calendar-xmark" href="/guides/calendar/bulk-operations">
+    Cancel all classes on a specific day
+  </Card>
+  <Card title="Calendar Views" icon="calendar" href="/guides/calendar/views">
+    Understanding calendar view modes
+  </Card>
+  <Card title="Creating Classes" icon="plus" href="/guides/classes/creating-classes">
+    Manually create individual classes
+  </Card>
+</CardGroup>

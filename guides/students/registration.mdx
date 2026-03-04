@@ -1,0 +1,281 @@
+---
+title: 'Student Registration'
+description: 'Complete guide to registering new students in the HRS system'
+---
+
+## Overview
+
+The student registration process allows you to add new students to the riding school system. Each student record includes personal information, class plan selection, and horse assignment configuration.
+
+## Accessing Student Registration
+
+<Steps>
+  <Step title="Navigate to Students Section">
+    Click on **Students** in the main navigation menu to access the student management page.
+  </Step>
+  
+  <Step title="Open Registration Form">
+    Click the **New Student** button in the top-right corner to open the registration dialog.
+  </Step>
+</Steps>
+
+## Required Information
+
+### Personal Data (Required)
+
+All personal fields are mandatory for student registration:
+
+<AccordionGroup>
+  <Accordion title="DNI (National ID)">
+    - **Format**: Numbers only, no periods or dashes
+    - **Example**: `12345678`
+    - **Validation**: The system automatically validates for duplicate DNI entries
+    - **Error handling**: If the DNI already exists, an error message will display
+    
+    ```tsx
+    // From AlumnoForm.tsx:186-209
+    <Input
+      id="dni"
+      name="dni"
+      autoComplete="off"
+      type="text"
+      value={dni}
+      onChange={(e) => {
+        setDni(e.target.value);
+        onDniChange?.(e.target.value);
+      }}
+      placeholder="Solo números sin puntos"
+      className={validacionDni?.duplicado ? "border-red-500" : ""}
+      required
+    />
+    ```
+    
+    <Note>
+      Duplicate DNI validation activates automatically when you enter 9 or more digits.
+    </Note>
+  </Accordion>
+  
+  <Accordion title="Name and Surname">
+    - **Name**: Full first name(s) of the student
+    - **Surname**: Full last name(s) of the student
+    - Both fields are required and will be trimmed of whitespace on submission
+  </Accordion>
+  
+  <Accordion title="Date of Birth">
+    - Required for age calculation and insurance purposes
+    - Used for record keeping and student tracking
+  </Accordion>
+  
+  <Accordion title="Contact Information">
+    **Telephone**:
+    - Format: Without the `0` or `15` prefix
+    - Example: `221234567`
+    - The system automatically adds the `+549` prefix for Argentine numbers
+    
+    **Email** (Optional but recommended):
+    - Used for communications and notifications
+    
+    <Warning>
+      Phone numbers are automatically normalized with the `+549` prefix when saved.
+    </Warning>
+  </Accordion>
+</AccordionGroup>
+
+### Automatic Configuration
+
+The following fields are set automatically:
+
+- **Registration Date**: Automatically set to the current date (can be modified)
+- **Status**: Automatically set as active student
+
+## Class Plan Selection
+
+Select the number of classes the student will take per month:
+
+```tsx
+// From AlumnoForm.tsx:264-280
+<Select
+  value={String(cantidadClases)}
+  onValueChange={(value) => setCantidadClases(Number(value))}
+>
+  <SelectContent>
+    <SelectItem value="4">4 clases</SelectItem>
+    <SelectItem value="8">8 clases</SelectItem>
+    <SelectItem value="12">12 clases</SelectItem>
+    <SelectItem value="16">16 clases</SelectItem>
+  </SelectContent>
+</Select>
+```
+
+### Available Plans
+
+- **4 classes/month**: Basic plan
+- **8 classes/month**: Standard plan
+- **12 classes/month**: Intensive plan
+- **16 classes/month**: Advanced plan
+
+## Horse Assignment
+
+Students must indicate their horse modality. See the [Horse Assignments](/guides/students/horse-assignments) guide for detailed information.
+
+### Quick Overview
+
+<CardGroup cols={3}>
+  <Card title="No Assigned Horse" icon="horse">
+    Student does not reserve a specific horse. A school horse will be assigned for each class.
+  </Card>
+  
+  <Card title="School Horse Reservation" icon="bookmark">
+    Student reserves a specific school horse. Requires selecting pension quota and horse.
+  </Card>
+  
+  <Card title="Private Horse" icon="home">
+    Student owns their horse. Requires selecting pension quota and horse from private horses.
+  </Card>
+</CardGroup>
+
+## Form Validation
+
+The registration form includes several validation rules:
+
+### Real-time DNI Validation
+
+```tsx
+// From AlumnoForm.tsx:113-117
+if (validacionDni?.duplicado) {
+  toast.error("Ya existe un alumno con este DNI");
+  return;
+}
+```
+
+### Required Fields Validation
+
+```tsx
+// From AlumnoForm.tsx:120-123
+if (!nombre.trim() || !apellido.trim() || !dni.trim()) {
+  toast.error("Nombre, apellido y DNI son obligatorios");
+  return;
+}
+```
+
+### Phone Normalization
+
+```tsx
+// From AlumnoForm.tsx:126-129
+let codigoAreaNormalizado = codigoArea;
+if (codigoAreaNormalizado && !codigoAreaNormalizado.startsWith("+549")) {
+  codigoAreaNormalizado = `+549${codigoAreaNormalizado.replace(/^\+/, "")}`;
+}
+```
+
+## Complete Registration Process
+
+<Steps>
+  <Step title="Enter Personal Information">
+    Fill in all required fields:
+    - DNI (system validates for duplicates)
+    - First and last name
+    - Date of birth
+    - Phone number (without 0 or 15 prefix)
+    - Email (optional)
+  </Step>
+  
+  <Step title="Configure Registration Details">
+    - Verify or adjust the registration date
+    - Select the monthly class plan (4, 8, 12, or 16 classes)
+  </Step>
+  
+  <Step title="Set Up Horse Assignment">
+    Choose one of three options:
+    - No assigned horse (default)
+    - Reserve school horse (select horse and pension quota)
+    - Private horse (select horse and pension quota)
+  </Step>
+  
+  <Step title="Submit Registration">
+    Click **Create Student** to save the registration. The system will:
+    - Validate all fields
+    - Check for duplicate DNI
+    - Normalize phone number with +549 prefix
+    - Create the active student record
+  </Step>
+</Steps>
+
+## After Registration
+
+Once registered, the student:
+
+- Appears in the active students list
+- Can be assigned to classes
+- Is available in student search and filters
+- Has their assigned horse pre-selected when creating classes (if applicable)
+
+## Common Scenarios
+
+<AccordionGroup>
+  <Accordion title="Student with Private Horse Not Yet Registered">
+    If the student's horse is not in the system:
+    
+    1. First register the horse in the **Horses** section
+    2. Set the horse type as **PRIVATE**
+    3. Return to student registration
+    4. Select "Private horse" and choose the newly registered horse
+  </Accordion>
+  
+  <Accordion title="Student Wants to Reserve School Horse">
+    1. Select "Reserve school horse" option
+    2. Choose pension quota (Full, Half, or Third)
+    3. Select from available school horses (type: ESCUELA)
+    4. The horse will be pre-assigned for all student's classes
+  </Accordion>
+  
+  <Accordion title="Student Doesn't Need Specific Horse">
+    1. Leave the default "No assigned horse" option
+    2. No pension quota is required
+    3. Instructors will assign available horses per class
+  </Accordion>
+</AccordionGroup>
+
+## Technical Details
+
+### Data Structure
+
+```typescript
+// From AlumnoForm.tsx:20-35
+export interface AlumnoFormData {
+  nombre: string;
+  apellido: string;
+  dni: string;
+  fechaNacimiento: string;
+  codigoArea: string;
+  telefono: string;
+  email: string;
+  fechaInscripcion: string;
+  cantidadClases: number;
+  tipoPension: TipoPension;
+  cuotaPension: CuotaPension | null;
+  propietario: boolean;
+  activo: boolean;
+  caballoPropio?: number | null;
+}
+```
+
+### Pension Types
+
+```typescript
+// From enums.ts:1
+export type TipoPension = "SIN_CABALLO" | "RESERVA_ESCUELA" | "CABALLO_PROPIO";
+```
+
+### Pension Quotas
+
+```typescript
+// From enums.ts:2
+export type CuotaPension = "ENTERA" | "MEDIA" | "TERCIO";
+```
+
+## Related Pages
+
+- [Class Plans](/guides/students/class-plans) - Detailed information about monthly class plans
+- [Horse Assignments](/guides/students/horse-assignments) - Complete guide to horse assignment options
+- [Trial Classes](/guides/students/trial-classes) - How to set up trial classes for prospective students

@@ -1,0 +1,390 @@
+---
+title: Attendance Tracking
+description: Comprehensive attendance monitoring and reporting system
+---
+
+## Overview
+
+The system provides detailed attendance tracking with multiple status types, percentages, and comprehensive reporting capabilities.
+
+## Attendance States
+
+### Class Status Types
+
+From the README documentation:
+
+```markdown
+**Available states**:
+1. **PROGRAMADA** 🟠: Class scheduled, pending
+2. **INICIADA** 🔵: Class in progress
+3. **COMPLETADA** 🟢: Class successfully completed
+4. **CANCELADA** 🔴: Class canceled
+5. **ACA** 🟣: Absence With Notice (student notified they won't attend)
+6. **ASA** 🌸: Absence Without Notice (student didn't attend without notifying)
+```
+
+From `~/workspace/source/README.md:497-504`
+
+### Visual Indicators
+
+```markdown
+### Color Identification:
+
+Each class shows:
+- **Background**: Assigned instructor color (lighter for readability)
+- **Left Border**: Color by class status:
+  - 🟠 Orange: PROGRAMADA
+  - 🔵 Blue: INICIADA
+  - 🟢 Green: COMPLETADA
+  - 🔴 Red: CANCELADA
+  - 🟣 Purple: ACA (Absence with Notice)
+  - 🌸 Pink: ASA (Absence without Notice)
+```
+
+From `~/workspace/source/README.md:277-286`
+
+## Attendance Tracking by Student
+
+### Detailed Attendance Records
+
+Track attendance with separation of absence types:
+
+```tsx
+const asistenciaPorAlumno = useMemo(() => {
+  const mapa: Record<
+    string,
+    {
+      total: number;
+      completadas: number;
+      canceladas: number;
+      aca: number;
+      asa: number;
+    }
+  > = {};
+
+  clasesFiltradas.forEach((c: Clase) => {
+    const alumno = alumnos.find((a: Alumno) => a.id === c.alumnoId);
+    if (!alumno) return;
+    const nombre = `${alumno.nombre} ${alumno.apellido}`;
+    if (!mapa[nombre])
+      mapa[nombre] = {
+        total: 0,
+        completadas: 0,
+        canceladas: 0,
+        aca: 0,
+        asa: 0,
+      };
+    mapa[nombre].total++;
+    if (c.estado === "COMPLETADA") mapa[nombre].completadas++;
+    if (c.estado === "CANCELADA") mapa[nombre].canceladas++;
+    if (c.estado === "ACA") mapa[nombre].aca++;
+    if (c.estado === "ASA") mapa[nombre].asa++;
+  });
+
+  return Object.entries(mapa)
+    .map(([nombre, d]) => ({
+      nombre,
+      ...d,
+      porcentajeAsistencia:
+        d.total > 0
+          ? parseFloat(((d.completadas / d.total) * 100).toFixed(1))
+          : 0,
+    }))
+    .sort((a, b) => b.total - a.total);
+}, [clasesFiltradas, alumnos]);
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:236-277`
+
+### Attendance Percentage
+
+Calculate attendance rate based on completed classes:
+
+```tsx
+porcentajeAsistencia:
+  d.total > 0
+    ? parseFloat(((d.completadas / d.total) * 100).toFixed(1))
+    : 0,
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:271-274`
+
+## Attendance Reports
+
+### Attendance Table
+
+Detailed table with all attendance metrics:
+
+```tsx
+<table className="w-full border-collapse">
+  <thead>
+    <tr className="border-b bg-muted/50">
+      <th className="text-left p-3 font-semibold text-sm">
+        Alumno
+      </th>
+      <th className="text-center p-3 font-semibold text-sm">
+        Total
+      </th>
+      <th className="text-center p-3 font-semibold text-sm text-success">
+        Completadas
+      </th>
+      <th className="text-center p-3 font-semibold text-sm text-destructive">
+        Canceladas
+      </th>
+      <th
+        className="text-center p-3 font-semibold text-sm"
+        style={{ color: CHART_COLORS.aca }}
+      >
+        ACA
+      </th>
+      <th
+        className="text-center p-3 font-semibold text-sm"
+        style={{ color: CHART_COLORS.asa }}
+      >
+        ASA
+      </th>
+      <th className="text-center p-3 font-semibold text-sm">
+        % Asistencia
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    {asistenciaPorAlumno.map((item) => (
+      <tr
+        key={item.nombre}
+        className="border-b hover:bg-muted/30 transition-colors"
+      >
+        <td className="p-3 text-sm font-medium">
+          {item.nombre}
+        </td>
+        <td className="p-3 text-sm text-center">
+          {item.total}
+        </td>
+        <td className="p-3 text-sm text-center text-success font-medium">
+          {item.completadas}
+        </td>
+        <td className="p-3 text-sm text-center text-destructive">
+          {item.canceladas}
+        </td>
+        <td
+          className="p-3 text-sm text-center font-medium"
+          style={{ color: CHART_COLORS.aca }}
+        >
+          {item.aca}
+        </td>
+        <td
+          className="p-3 text-sm text-center font-medium"
+          style={{ color: CHART_COLORS.asa }}
+        >
+          {item.asa}
+        </td>
+        <td className="p-3">
+          <div className="flex items-center gap-2 justify-center">
+            <div className="h-2 w-20 overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-success transition-all"
+                style={{
+                  width: `${item.porcentajeAsistencia}%`,
+                }}
+              />
+            </div>
+            <span className="text-sm text-muted-foreground tabular-nums">
+              {item.porcentajeAsistencia}%
+            </span>
+          </div>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:812-892`
+
+### Export Attendance Data
+
+```tsx
+<Button
+  variant="outline"
+  size="sm"
+  onClick={() =>
+    exportarExcel(asistenciaPorAlumno, "Asistencia")
+  }
+>
+  <Download className="mr-2 h-4 w-4" />
+  Exportar
+</Button>
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:799-808`
+
+## Top Performers
+
+### Student Ranking by Attendance
+
+Identify most active students:
+
+```tsx
+const rankingAlumnos = useMemo(() => {
+  return asistenciaPorAlumno
+    .filter((a) => a.completadas > 0)
+    .sort((a, b) => b.completadas - a.completadas)
+    .slice(0, 10);
+}, [asistenciaPorAlumno]);
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:280-285`
+
+### Top 10 Display
+
+```tsx
+<Card>
+  <CardHeader>
+    <CardTitle>Top Alumnos — Clases Completadas</CardTitle>
+    <CardDescription>
+      Los más activos en el período
+    </CardDescription>
+  </CardHeader>
+  <CardContent>
+    {rankingAlumnos.length > 0 ? (
+      <div className="space-y-2">
+        {rankingAlumnos.map((a, i) => (
+          <div key={a.nombre} className="flex items-center gap-3">
+            <span className="w-5 text-xs font-bold text-muted-foreground text-right">
+              {i + 1}
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">
+                {a.nombre}
+              </p>
+              <div className="h-1.5 mt-1 overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full bg-primary transition-all"
+                  style={{
+                    width: `${rankingAlumnos[0].completadas > 0 ? (a.completadas / rankingAlumnos[0].completadas) * 100 : 0}%`,
+                  }}
+                />
+              </div>
+            </div>
+            <span className="text-sm font-bold tabular-nums w-6 text-right">
+              {a.completadas}
+            </span>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <p className="text-center text-sm text-muted-foreground py-8">
+        Sin clases completadas en el período
+      </p>
+    )}
+  </CardContent>
+</Card>
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:747-787`
+
+## Class Completion Rate
+
+### Overall Statistics
+
+```tsx
+const estadisticasGenerales = useMemo(() => {
+  const totalClases = clasesFiltradas.length;
+  const clasesCompletadas = clasesFiltradas.filter(
+    (c: Clase) => c.estado === "COMPLETADA",
+  ).length;
+  const clasesCanceladas = clasesFiltradas.filter(
+    (c: Clase) => c.estado === "CANCELADA",
+  ).length;
+  const tasaCompletado =
+    totalClases > 0
+      ? ((clasesCompletadas / totalClases) * 100).toFixed(1)
+      : "0";
+
+  return {
+    totalClases,
+    clasesCompletadas,
+    clasesCanceladas,
+    tasaCompletado,
+  };
+}, [clasesFiltradas]);
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:126-145`
+
+## Absence Analysis
+
+### ACA vs ASA Tracking
+
+Differentiate between excused and unexcused absences:
+
+```markdown
+5. **ACA** 🟣: Absence With Notice (student notified they won't attend)
+6. **ASA** 🌸: Absence Without Notice (student didn't attend without notifying)
+```
+
+From `~/workspace/source/README.md:502-503`
+
+This distinction helps:
+- Identify students who communicate well (ACA)
+- Flag problematic no-shows (ASA)
+- Improve communication policies
+
+## Status Changes
+
+### Quick Status Updates
+
+```markdown
+**State Transitions**:
+- Quick change from any view
+- Previous state validation
+- History logging
+```
+
+From `~/workspace/source/README.md:506-509`
+
+## Period Filtering
+
+### Date Range Analysis
+
+Filter attendance by specific periods:
+
+```tsx
+const [dateRange, setDateRange] = useState({
+  inicio: format(startOfMonth(new Date()), "yyyy-MM-dd"),
+  fin: format(endOfMonth(new Date()), "yyyy-MM-dd"),
+});
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:86-89`
+
+## Best Practices
+
+1. **Timely Updates** - Update class status promptly after each class
+2. **Distinguish Absences** - Use ACA for excused, ASA for unexcused absences
+3. **Regular Review** - Check attendance reports weekly
+4. **Follow Up** - Contact students with high ASA rates
+5. **Recognition** - Acknowledge students with high attendance
+6. **Trend Analysis** - Monitor attendance trends over time
+7. **Export Data** - Regular Excel exports for record keeping
+8. **Communication** - Encourage students to notify absences (reduce ASA)
+
+## Reporting Features
+
+### Available Reports
+
+1. **Student Attendance Table** - Complete breakdown by student
+2. **Top 10 Students** - Most active students ranking
+3. **Completion Rate** - Overall percentage of completed classes
+4. **Absence Analysis** - ACA vs ASA statistics
+5. **Period Comparison** - Compare different time periods
+6. **Excel Export** - Detailed data export for analysis
+
+### Report Customization
+
+- Filter by date range
+- Filter by student
+- Filter by instructor
+- Sort by various metrics
+- Visual progress bars
+- Color-coded status

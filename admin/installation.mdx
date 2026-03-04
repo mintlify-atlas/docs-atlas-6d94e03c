@@ -1,0 +1,260 @@
+---
+title: 'Installation'
+description: 'Step-by-step guide to installing the Equestrian School Management System'
+icon: 'download'
+---
+
+## Prerequisites
+
+Before installing the system, ensure you have the following installed on your machine:
+
+- **Node.js** (v18 or higher)
+- **npm**, **yarn**, or **pnpm** package manager
+- **Git** for version control
+- A modern web browser (Chrome, Firefox, Safari, or Edge)
+
+## Installation Steps
+
+### 1. Clone the Repository
+
+First, clone the project repository to your local machine:
+
+```bash
+git clone <repository-url>
+cd vite_react_shadcn_ts
+```
+
+### 2. Install Dependencies
+
+Install all required dependencies using your preferred package manager:
+
+<CodeGroup>
+
+```bash npm
+npm install
+```
+
+```bash yarn
+yarn install
+```
+
+```bash pnpm
+pnpm install
+```
+
+</CodeGroup>
+
+The system uses a comprehensive set of dependencies including:
+
+- **React 18.3.1** - UI framework
+- **Vite 6.4.1** - Build tool and dev server
+- **TypeScript 5.8.3** - Type safety
+- **Radix UI** - Accessible component primitives
+- **TanStack Query** - Data fetching and state management
+- **React Router DOM** - Client-side routing
+- **Tailwind CSS** - Utility-first styling
+- **Zod** - Schema validation
+- **ExcelJS** - Report generation
+
+### 3. Configure Environment Variables
+
+Create a `.env` file in the root directory and configure the required environment variables:
+
+```bash
+cp .env.example .env
+```
+
+Edit the `.env` file with your settings:
+
+```bash
+# API Configuration
+VITE_API_BASE_URL=https://your-api.com/api/v1
+```
+
+See [Environment Setup](/admin/environment-setup) for detailed configuration options.
+
+### 4. Start the Development Server
+
+Run the development server:
+
+<CodeGroup>
+
+```bash npm
+npm run dev
+```
+
+```bash yarn
+yarn dev
+```
+
+```bash pnpm
+pnpm dev
+```
+
+</CodeGroup>
+
+The application will start on `http://localhost:5173` by default.
+
+## Build for Production
+
+To create an optimized production build:
+
+<CodeGroup>
+
+```bash npm
+npm run build
+```
+
+```bash yarn
+yarn build
+```
+
+```bash pnpm
+pnpm build
+```
+
+</CodeGroup>
+
+### Build Modes
+
+The system supports different build modes:
+
+**Production Build** (default)
+```bash
+npm run build
+```
+- Optimized for performance
+- Source maps disabled
+- Console logs removed
+- Debug statements stripped
+
+**Development Build**
+```bash
+npm run build:dev
+```
+- Includes debugging information
+- Source maps enabled
+- Suitable for testing
+
+## Preview Production Build
+
+To preview the production build locally:
+
+<CodeGroup>
+
+```bash npm
+npm run preview
+```
+
+```bash yarn
+yarn preview
+```
+
+```bash pnpm
+pnpm preview
+```
+
+</CodeGroup>
+
+## Code Quality
+
+### Linting
+
+Run ESLint to check code quality:
+
+<CodeGroup>
+
+```bash npm
+npm run lint
+```
+
+```bash yarn
+yarn lint
+```
+
+```bash pnpm
+pnpm lint
+```
+
+</CodeGroup>
+
+### TypeScript Configuration
+
+The project uses TypeScript with the following configuration (see `tsconfig.json:4-15`):
+
+- Path aliases: `@/*` maps to `./src/*`
+- Relaxed type checking for rapid development
+- Skip library checks for faster compilation
+- Null checks disabled
+
+## Deployment
+
+The built application can be deployed to any static hosting service:
+
+1. Build the application: `npm run build`
+2. Deploy the `dist` folder to your hosting provider
+3. Configure environment variables on your hosting platform
+
+### Recommended Hosting Platforms
+
+- **Vercel** - Zero-config deployment
+- **Netlify** - Continuous deployment
+- **AWS S3 + CloudFront** - Scalable hosting
+- **GitHub Pages** - Free static hosting
+
+## Troubleshooting Installation
+
+<AccordionGroup>
+  <Accordion title="Port 5173 already in use">
+    The Vite dev server uses port 5173 by default. If it's occupied:
+    
+    1. Stop the process using the port
+    2. Or modify `vite.config.ts:10` to use a different port:
+    ```typescript
+    server: {
+      host: "::",
+      port: 3000, // Change to your preferred port
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Module not found errors">
+    If you encounter module resolution errors:
+    
+    1. Delete `node_modules` and lock files:
+       ```bash
+       rm -rf node_modules package-lock.json
+       ```
+    2. Reinstall dependencies:
+       ```bash
+       npm install
+       ```
+    3. Clear Vite cache:
+       ```bash
+       rm -rf .vite
+       ```
+  </Accordion>
+
+  <Accordion title="TypeScript errors">
+    If you see TypeScript compilation errors:
+    
+    1. Ensure you're using TypeScript 5.8.3 or higher
+    2. Check that `tsconfig.json` includes the correct paths
+    3. Restart your IDE/editor
+    4. Run `npx tsc --noEmit` to check for type errors
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="gear" href="/admin/configuration">
+    Configure the application settings
+  </Card>
+  <Card title="Environment Setup" icon="code" href="/admin/environment-setup">
+    Set up development and production environments
+  </Card>
+  <Card title="User Management" icon="users" href="/admin/user-management">
+    Manage users and authentication
+  </Card>
+</CardGroup>

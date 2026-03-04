@@ -1,0 +1,184 @@
+---
+title: School vs Private Horses
+description: Understanding the difference between school-owned and privately-owned horses
+---
+
+## Horse Types
+
+The system supports two types of horses, each with different ownership and usage rules:
+
+<CodeGroup>
+```typescript Type Definition
+export type TipoCaballo = "ESCUELA" | "PRIVADO";
+```
+
+```tsx Form Selection
+<SelectContent>
+  <SelectItem value="ESCUELA">Escuela</SelectItem>
+  <SelectItem value="PRIVADO">Privado</SelectItem>
+</SelectContent>
+```
+</CodeGroup>
+
+See: `~/workspace/source/src/types/enums.ts:15`
+
+## School Horses (ESCUELA)
+
+<Card title="School Horses" icon="building">
+  Horses owned by the equestrian school, available for all students
+</Card>
+
+### Characteristics
+
+- **Ownership**: Owned by the school
+- **Availability**: Available for any student
+- **Reservation**: Students can reserve specific school horses
+- **Assignment**: Can be assigned to any class
+
+### Use Cases
+
+<AccordionGroup>
+  <Accordion title="General Student Use">
+    Students without their own horses use school horses for their classes. The system assigns an available school horse for each class.
+  </Accordion>
+  
+  <Accordion title="Reserved School Horse">
+    A student can reserve a specific school horse and configure a pension quota (Entera, Media, or Tercio). The horse remains school property but is prioritized for that student.
+  </Accordion>
+  
+  <Accordion title="Trial Classes">
+    School horses are typically used for trial classes (clases de prueba) for new students trying out the school.
+  </Accordion>
+</AccordionGroup>
+
+### Display in System
+
+School horses are displayed with a blue badge:
+
+```tsx Caballos.tsx
+<StatusBadge status={row.tipo === "ESCUELA" ? "info" : "warning"}>
+  {row.tipo === "ESCUELA" ? "Escuela" : "Privado"}
+</StatusBadge>
+```
+
+See: `~/workspace/source/src/pages/Caballos.tsx:238-241`
+
+## Private Horses (PRIVADO)
+
+<Card title="Private Horses" icon="user">
+  Horses owned by individual students, restricted to owner use only
+</Card>
+
+### Characteristics
+
+- **Ownership**: Owned by a specific student
+- **Availability**: Only available for the owner
+- **Restriction**: Cannot be used by other students
+- **Pension**: Requires pension quota configuration
+
+### Use Cases
+
+<AccordionGroup>
+  <Accordion title="Student-Owned Horse">
+    When a student brings their own horse to the school, it's registered as PRIVADO and linked to that student as the owner.
+  </Accordion>
+  
+  <Accordion title="Private Lessons">
+    Students with private horses take lessons on their own horses, often for specialized training or competition preparation.
+  </Accordion>
+</AccordionGroup>
+
+### Validation Rules
+
+<Warning>
+  **Important**: Private horses can only be used by their owners. The system enforces this restriction when creating classes.
+</Warning>
+
+From the README:
+> Los caballos privados solo pueden ser usados por sus propietarios
+
+See: `~/workspace/source/README.md:129`
+
+## Pension Configuration
+
+Both reserved school horses and private horses require pension quota configuration:
+
+<CodeGroup>
+```typescript Pension Types
+export type TipoPension = "SIN_CABALLO" | "RESERVA_ESCUELA" | "CABALLO_PROPIO";
+export type CuotaPension = "ENTERA" | "MEDIA" | "TERCIO";
+```
+</CodeGroup>
+
+See: `~/workspace/source/src/types/enums.ts:1-2`
+
+### Pension Options
+
+<ParamField path="SIN_CABALLO" type="option">
+  No specific horse assigned. School assigns an available horse per class.
+</ParamField>
+
+<ParamField path="RESERVA_ESCUELA" type="option">
+  Reserves a specific school horse. Requires:
+  - Pension quota: Entera / Media / Tercio
+  - Horse selection: From ESCUELA type horses
+</ParamField>
+
+<ParamField path="CABALLO_PROPIO" type="option">
+  Student's own horse. Requires:
+  - Pension quota: Entera / Media / Tercio
+  - Horse selection: From PRIVADO type horses
+</ParamField>
+
+### Pension Quotas
+
+<CardGroup cols={3}>
+  <Card title="Entera" icon="circle">
+    Full pension - complete care and board
+  </Card>
+  <Card title="Media" icon="circle-half-stroke">
+    Half pension - partial care and board
+  </Card>
+  <Card title="Tercio" icon="circle-quarter">
+    Third pension - limited care and board
+  </Card>
+</CardGroup>
+
+## Visual Indicators
+
+The system uses color-coded badges to distinguish horse types:
+
+### In Calendar Export
+
+When exporting the daily schedule to Excel:
+- **Blue header**: School horses (ESCUELA)
+- **Gold header**: Private horses (PRIVADO)
+
+From the README:
+> Cabecera con colores según tipo de caballo:
+>   - 🔵 Azul: Caballos de Escuela
+>   - 🟡 Dorado: Caballos Privados
+
+See: `~/workspace/source/README.md:324-326`
+
+## Comparison Table
+
+| Feature | School Horse (ESCUELA) | Private Horse (PRIVADO) |
+|---------|----------------------|------------------------|
+| **Ownership** | School | Individual student |
+| **Availability** | All students | Owner only |
+| **Reservation** | Optional | Not applicable |
+| **Pension Required** | Only if reserved | Always |
+| **Color Code** | Blue | Gold |
+| **Trial Classes** | Yes | No |
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Horse Registration" icon="pen-to-square" href="/guides/horses/registration">
+    Learn how to register horses in the system
+  </Card>
+  <Card title="Horse Availability" icon="calendar-check" href="/guides/horses/availability">
+    Manage horse availability for class scheduling
+  </Card>
+</CardGroup>

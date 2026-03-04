@@ -1,0 +1,485 @@
+---
+title: Exporting Report Data
+description: Export reports to Excel for analysis, sharing, and record-keeping
+---
+
+The system provides Excel export capabilities across multiple report sections, allowing you to save data for offline analysis, sharing with stakeholders, and long-term record-keeping.
+
+## Available Exports
+
+Three report sections offer Excel export:
+
+<CardGroup cols={3}>
+  <Card title="Student Attendance" icon="users">
+    Detailed attendance by student
+  </Card>
+  <Card title="Instructor Performance" icon="chalkboard-user">
+    Workload and efficiency metrics
+  </Card>
+  <Card title="Horse Usage" icon="horse">
+    Classes per horse with types
+  </Card>
+</CardGroup>
+
+## Export Process
+
+The export process is consistent across all report types:
+
+<Steps>
+  <Step title="Navigate to Report Tab">
+    Go to Reports section and select:
+    - **Alumnos** for student data
+    - **Instructores** for instructor data
+    - **Caballos** for horse data
+  </Step>
+  <Step title="Set Date Range">
+    Configure the analysis period at the top:
+    - Start date (Fecha Inicio)
+    - End date (Fecha Fin)
+  </Step>
+  <Step title="Click Export Button">
+    Click the **"Exportar"** button with download icon (📅↓)
+  </Step>
+  <Step title="File Downloads">
+    Excel file (.xlsx) downloads automatically to your browser's download folder
+  </Step>
+  <Step title="Open File">
+    Open in Microsoft Excel, LibreOffice Calc, Google Sheets, or compatible application
+  </Step>
+</Steps>
+
+<Info>
+  The export button only appears on tabs that support exporting (Students, Instructors, Horses).
+</Info>
+
+## File Naming Convention
+
+All exported files follow a consistent naming pattern:
+
+```
+Reporte_[Type]_YYYY-MM-DD.xlsx
+
+Examples:
+Reporte_Asistencia_2026-03-04.xlsx    ← Student attendance
+Reporte_Instructores_2026-03-04.xlsx  ← Instructor performance
+Reporte_Caballos_2026-03-04.xlsx      ← Horse usage
+```
+
+**Components**:
+- **Reporte**: Fixed prefix
+- **Type**: Report category (Asistencia, Instructores, Caballos)
+- **Date**: Export date (YYYY-MM-DD format)
+- **Extension**: .xlsx (Excel 2007+ format)
+
+<Note>
+  The date in the filename is the **export date**, not the reporting period. The period is shown inside the file.
+</Note>
+
+## Student Attendance Export
+
+Exported from the **Alumnos** tab.
+
+### File Contents
+
+<Tabs>
+  <Tab title="Headers">
+    **Column Headers**:
+    - Alumno (Student name)
+    - Total (Total classes)
+    - Completadas (Completed)
+    - Canceladas (Cancelled)
+    - ACA (Absence with notice)
+    - ASA (Absence without notice)
+    - % Asistencia (Attendance %)
+  </Tab>
+  
+  <Tab title="Data Rows">
+    **One row per student** with:
+    - Full name (First Last)
+    - Numeric values for each metric
+    - Calculated percentage (formula)
+    - Sorted by total classes (descending)
+  </Tab>
+  
+  <Tab title="Formatting">
+    **Professional layout**:
+    - Bold headers with background color
+    - Alternating row colors for readability
+    - Number formatting (no decimals for counts)
+    - Percentage formatting (one decimal)
+    - Auto-sized columns
+  </Tab>
+</Tabs>
+
+### Sample Excel Output
+
+```
+┌───────────────┬───────┬─────────────┬────────────┬─────┬─────┬──────────────┐
+│ Alumno        │ Total │ Completadas │ Canceladas │ ACA │ ASA │ % Asistencia │
+├───────────────┼───────┼─────────────┼────────────┼─────┼─────┼──────────────┤
+│ Maria Garcia  │  24   │     22      │     1      │  1  │  0  │    91.7%    │
+│ Carlos Lopez  │  20   │     18      │     0      │  2  │  0  │    90.0%    │
+│ Ana Rodriguez │  18   │     15      │     2      │  0  │  1  │    83.3%    │
+└───────────────┴───────┴─────────────┴────────────┴─────┴─────┴──────────────┘
+```
+
+### Use Cases
+
+<AccordionGroup>
+  <Accordion title="Parent-Teacher Conferences">
+    Print individual student records:
+    - Filter/highlight specific student in Excel
+    - Print or email to parent
+    - Discuss attendance patterns
+  </Accordion>
+  
+  <Accordion title="Billing & Credits">
+    Reconcile attendance with billing:
+    - Compare classes taken vs plan
+    - Calculate credits for facility cancellations
+    - Determine makeup classes owed
+  </Accordion>
+  
+  <Accordion title="Monthly Reports">
+    Include in monthly management reports:
+    - Attach to email
+    - Print for board meetings
+    - Archive for historical records
+  </Accordion>
+</AccordionGroup>
+
+## Instructor Performance Export
+
+Exported from the **Instructores** tab.
+
+### File Contents
+
+<Tabs>
+  <Tab title="Headers">
+    **Column Headers**:
+    - Instructor (Full name)
+    - Total (Total classes)
+    - Completadas (Completed)
+    - Canceladas (Cancelled)
+    - Eficiencia (Efficiency %)
+  </Tab>
+  
+  <Tab title="Data Rows">
+    **One row per instructor** with:
+    - Full name (First Last)
+    - Numeric counts
+    - Calculated efficiency percentage
+    - Sorted by total classes or alphabetically
+  </Tab>
+  
+  <Tab title="Formatting">
+    **Professional layout**:
+    - Color-coded headers
+    - Green for Completadas column
+    - Red for Canceladas column
+    - Percentage format for Eficiencia
+  </Tab>
+</Tabs>
+
+### Sample Excel Output
+
+```
+┌───────────────┬───────┬─────────────┬────────────┬────────────┐
+│ Instructor    │ Total │ Completadas │ Canceladas │ Eficiencia │
+├───────────────┼───────┼─────────────┼────────────┼────────────┤
+│ Carlos Ruiz   │  73   │     65      │     8      │   89.0%   │
+│ Ana Martinez  │  64   │     58      │     6      │   90.6%   │
+│ Pedro Lopez   │  62   │     52      │    10      │   83.9%   │
+└───────────────┴───────┴─────────────┴────────────┴────────────┘
+```
+
+### Use Cases
+
+<AccordionGroup>
+  <Accordion title="Performance Reviews">
+    Use in one-on-one meetings:
+    - Print individual instructor data
+    - Compare to team average
+    - Set performance goals
+  </Accordion>
+  
+  <Accordion title="Payroll Calculations">
+    Performance-based compensation:
+    - Classes completed basis
+    - Efficiency bonuses
+    - Fair distribution
+  </Accordion>
+  
+  <Accordion title="Workload Planning">
+    Balance assignments:
+    - Identify overloaded instructors
+    - Find capacity for new classes
+    - Plan hiring needs
+  </Accordion>
+</AccordionGroup>
+
+## Horse Usage Export
+
+Exported from the **Caballos** tab.
+
+### File Contents
+
+<Tabs>
+  <Tab title="Headers">
+    **Column Headers**:
+    - Caballo (Horse name)
+    - Tipo (Type: Escuela/Privado)
+    - Cantidad (Class count)
+    - Porcentaje (Usage %)
+  </Tab>
+  
+  <Tab title="Data Rows">
+    **One row per horse** with:
+    - Horse name
+    - Type classification
+    - Number of classes
+    - Percentage of total
+    - Sorted by usage (descending)
+  </Tab>
+  
+  <Tab title="Formatting">
+    **Professional layout**:
+    - Color-coded type column
+    - Blue for Escuela
+    - Gold for Privado
+    - Percentage format
+  </Tab>
+</Tabs>
+
+### Sample Excel Output
+
+```
+┌──────────┬─────────┬──────────┬────────────┐
+│ Caballo  │  Tipo    │ Cantidad │ Porcentaje │
+├──────────┼─────────┼──────────┼────────────┤
+│ Luna     │ Privado │    45    │   18.2%   │
+│ Tornado  │ Escuela │    38    │   15.4%   │
+│ Flash    │ Escuela │    35    │   14.2%   │
+│ Sombra   │ Privado │    28    │   11.3%   │
+└──────────┴─────────┴──────────┴────────────┘
+```
+
+### Use Cases
+
+<AccordionGroup>
+  <Accordion title="Horse Welfare Tracking">
+    Monitor workload:
+    - Identify overworked horses
+    - Ensure adequate rest
+    - Plan veterinary schedules
+  </Accordion>
+  
+  <Accordion title="Owner Reports">
+    Share with private horse owners:
+    - Document usage
+    - Justify boarding fees
+    - Transparent communication
+  </Accordion>
+  
+  <Accordion title="Capacity Planning">
+    Determine horse acquisition needs:
+    - Current utilization
+    - Growth projections
+    - Budget planning
+  </Accordion>
+</AccordionGroup>
+
+## Excel File Features
+
+All exported files include:
+
+### Professional Formatting
+
+✅ **Headers**:
+- Bold text
+- Background color (light grey or theme color)
+- Centered alignment
+- Borders
+
+✅ **Data Cells**:
+- Alternating row colors for readability
+- Proper number formatting
+- Percentage formatting where applicable
+- Auto-sized columns
+
+✅ **Layout**:
+- Print-optimized
+- Frozen header row (where applicable)
+- Landscape orientation for wide tables
+
+### Compatibility
+
+Exported files work with:
+
+✅ **Microsoft Excel** (2010 and later)
+✅ **LibreOffice Calc**
+✅ **Google Sheets** (upload the file)
+✅ **Apple Numbers**
+✅ **OpenOffice Calc**
+
+<Note>
+  Colors and formatting are best preserved in Microsoft Excel.
+</Note>
+
+## Working with Exported Data
+
+### In Excel/LibreOffice
+
+<Steps>
+  <Step title="Open File">
+    Double-click the downloaded .xlsx file
+  </Step>
+  <Step title="Review Data">
+    Check that all expected data is present
+  </Step>
+  <Step title="Analyze">
+    Use Excel features:
+    - Sort columns
+    - Add filters
+    - Create pivot tables
+    - Add formulas/calculations
+  </Step>
+  <Step title="Customize">
+    Add your own columns or charts
+  </Step>
+  <Step title="Save/Share">
+    Save changes or share the file
+  </Step>
+</Steps>
+
+### In Google Sheets
+
+<Steps>
+  <Step title="Go to Google Sheets">
+    Visit sheets.google.com
+  </Step>
+  <Step title="Upload File">
+    File > Open > Upload > Select file
+  </Step>
+  <Step title="Convert (Optional)">
+    Google Sheets will import the Excel file
+  </Step>
+  <Step title="Edit & Share">
+    Edit online and share with collaborators
+  </Step>
+</Steps>
+
+## Advanced Uses
+
+### Creating Pivot Tables
+
+Use exported data to create pivot tables:
+
+1. **Student data**: Analyze attendance by plan, month, or instructor
+2. **Instructor data**: Compare performance across time periods
+3. **Horse data**: Track usage trends by type or season
+
+### Building Dashboards
+
+Combine multiple exports:
+
+1. Export all three reports (Students, Instructors, Horses)
+2. Create a master Excel workbook
+3. Build charts and dashboards
+4. Update monthly with new exports
+
+### Historical Analysis
+
+Build a historical database:
+
+<Steps>
+  <Step title="Monthly Export">
+    Export reports at the end of each month
+  </Step>
+  <Step title="Organize Files">
+    Store in dated folders (e.g., "2026-03")
+  </Step>
+  <Step title="Consolidate">
+    Combine into a master spreadsheet
+  </Step>
+  <Step title="Analyze Trends">
+    Create charts showing trends over time
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Download Not Starting">
+    If file doesn't download:
+    - Check browser popup blocker
+    - Ensure sufficient disk space
+    - Try different browser
+    - Check download folder settings
+  </Accordion>
+  
+  <Accordion title="File Won't Open">
+    If Excel file won't open:
+    - Verify file extension (.xlsx)
+    - Try opening in different app
+    - Re-download the file
+    - Check if file is corrupted
+  </Accordion>
+  
+  <Accordion title="Formatting Lost">
+    If colors/formatting missing:
+    - Open in Microsoft Excel (best support)
+    - Update your spreadsheet software
+    - Check file downloaded completely
+  </Accordion>
+  
+  <Accordion title="Wrong Data in Export">
+    If data doesn't match screen:
+    - Verify date range before exporting
+    - Check that filters weren't applied
+    - Refresh page and try again
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<Check>
+  - **Export regularly**: Monthly or weekly for historical records
+  - **Organize files**: Use dated folders for easy retrieval
+  - **Backup exports**: Store in cloud or external drive
+  - **Document context**: Add notes about special circumstances
+  - **Version control**: Don't overwrite previous exports
+  - **Share selectively**: Be mindful of privacy when sharing
+</Check>
+
+## Privacy Considerations
+
+<Warning>
+  Exported files contain personal information:
+  - Student names and attendance
+  - Instructor performance data
+  - Sensitive metrics
+  
+  **Best practices**:
+  - Store securely
+  - Password-protect sensitive files
+  - Share only with authorized personnel
+  - Delete old exports when no longer needed
+</Warning>
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Calendar Export" icon="calendar" href="/guides/calendar/export-excel">
+    Export daily schedules to Excel
+  </Card>
+  <Card title="Student Reports" icon="users" href="/guides/reports/student-reports">
+    View student attendance data
+  </Card>
+  <Card title="Instructor Reports" icon="chalkboard-user" href="/guides/reports/instructor-reports">
+    View instructor performance
+  </Card>
+  <Card title="Horse Reports" icon="horse" href="/guides/reports/horse-reports">
+    View horse usage data
+  </Card>
+</CardGroup>

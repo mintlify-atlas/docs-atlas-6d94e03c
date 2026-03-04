@@ -1,0 +1,260 @@
+---
+title: Class Types (Specialties)
+description: Understanding the different class specialties available in the equestrian school
+---
+
+## Overview
+
+The system supports four class specialties (especialidades), each with specific characteristics and use cases.
+
+## Specialty Enum
+
+<CodeGroup>
+```typescript enums.ts
+export type EspecialidadClase =
+  | "ADIESTRAMIENTO"
+  | "EQUINOTERAPIA"
+  | "EQUITACION"
+  | "MONTA";
+```
+
+```tsx Form Options
+const ESPECIALIDADES_OPTIONS = [
+  { value: "EQUITACION", label: "Equitación" },
+  { value: "ADIESTRAMIENTO", label: "Adiestramiento" },
+  { value: "EQUINOTERAPIA", label: "Equinoterapia" },
+  { value: "MONTA", label: "Monta" },
+];
+```
+</CodeGroup>
+
+See: `~/workspace/source/src/types/enums.ts:3-7`
+
+## 1. EQUITACION (Riding)
+
+<Card title="Equitación" icon="horse">
+  Regular riding lessons for students learning or practicing equestrian skills
+</Card>
+
+### Characteristics
+
+- **Purpose**: Standard riding instruction
+- **Student Required**: Yes
+- **Target Audience**: All skill levels from beginners to advanced riders
+- **Common Duration**: 30 or 60 minutes
+
+### Use Cases
+
+- Regular weekly lessons for enrolled students
+- Group or individual riding instruction
+- Skill development and practice
+- Recreational riding with supervision
+
+<Info>
+  EQUITACION is the most common class type in the system and represents standard riding lessons.
+</Info>
+
+## 2. ADIESTRAMIENTO (Training)
+
+<Card title="Adiestramiento" icon="dumbbell">
+  Horse training and conditioning sessions
+</Card>
+
+### Characteristics
+
+- **Purpose**: Training and conditioning horses
+- **Student Required**: Yes (typically advanced riders or instructors)
+- **Focus**: Horse development rather than rider instruction
+- **Common Duration**: 60 minutes
+
+### Use Cases
+
+- Training young or inexperienced horses
+- Conditioning horses for competition
+- Behavioral correction and refinement
+- Advanced horsemanship techniques
+
+<Note>
+  ADIESTRAMIENTO classes focus on the horse's development and typically require experienced riders.
+</Note>
+
+## 3. EQUINOTERAPIA (Equine-Assisted Therapy)
+
+<Card title="Equinoterapia" icon="heart-pulse">
+  Therapeutic sessions using horses for physical, emotional, or cognitive benefits
+</Card>
+
+### Characteristics
+
+- **Purpose**: Therapeutic intervention using horses
+- **Student Required**: Yes (therapy clients)
+- **Special Requirements**: May require specialized instructors or therapists
+- **Common Duration**: 30 or 60 minutes
+
+### Use Cases
+
+- Physical therapy and rehabilitation
+- Emotional and psychological support
+- Cognitive development for children
+- Special needs accommodation
+- Therapeutic recreation
+
+<Warning>
+  EQUINOTERAPIA classes may have special documentation or safety requirements depending on the therapeutic goals.
+</Warning>
+
+## 4. MONTA (Free Riding)
+
+<Card title="Monta" icon="route">
+  Instructor-only riding sessions without student instruction
+</Card>
+
+### Characteristics
+
+- **Purpose**: Instructor riding time, horse exercise, or maintenance riding
+- **Student Required**: No - automatically uses placeholder student
+- **Auto-Assignment**: System assigns special student ID (1)
+- **Common Duration**: 30 or 60 minutes
+
+### Special Behavior
+
+MONTA classes have unique system behavior:
+
+```tsx ClaseForm.tsx
+const alumnosValidos = alumnos.filter((a: Alumno) => {
+  // Si es MONTA, no mostrar alumnos (retorna array vacío)
+  if (especialidad === "MONTA") return false;
+  // Para otras especialidades, mostrar todos
+  return true;
+});
+```
+
+See: `~/workspace/source/src/components/forms/ClaseForm.tsx:98-103`
+
+### Auto-Assignment Logic
+
+```tsx ClaseForm.tsx
+if (especialidad === "MONTA") {
+  alumnoIdFinal = null; // Clase de MONTA no tiene alumno
+}
+```
+
+See: `~/workspace/source/src/components/forms/ClaseForm.tsx:166-168`
+
+<Info>
+  When creating a MONTA class, the student selection field is hidden and automatically handled by the system.
+</Info>
+
+From the README:
+> **Especialidad**: Seleccionar entre:
+> - Equitación
+> - Adiestramiento  
+> - Equinoterapia
+> - Monta (automáticamente asigna alumno comodín)
+
+See: `~/workspace/source/README.md:132-136`
+
+## Specialty Selection in Form
+
+The form dynamically adjusts based on specialty selection:
+
+```tsx ClaseForm.tsx
+{especialidad !== "MONTA" ? (
+  <div className="space-y-2">
+    <Label htmlFor="alumno">Alumno</Label>
+    <Select
+      value={alumnoId}
+      onValueChange={setAlumnoId}
+      disabled={isReadonly}
+    >
+      <SelectTrigger>
+        <SelectValue placeholder="Seleccionar alumno" />
+      </SelectTrigger>
+      <SelectContent>
+        {alumnos.map((a: Alumno) => (
+          <SelectItem key={a.id} value={String(a.id)}>
+            {a.nombre} {a.apellido}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  </div>
+) : (
+  <p className="text-xs text-muted-foreground">
+    Las clases de MONTA son exclusivamente para instructores
+  </p>
+)}
+```
+
+See: `~/workspace/source/src/components/forms/ClaseForm.tsx:288-312`
+
+## Changing Specialty
+
+When the specialty is changed, the system handles student selection:
+
+```tsx ClaseForm.tsx
+const handleEspecialidadChange = (value: string) => {
+  handleEspecialidadChangeEffect(value, setEspecialidad, setAlumnoId);
+};
+```
+
+See: `~/workspace/source/src/components/forms/ClaseForm.tsx:155-157`
+
+## Comparison Table
+
+| Specialty | Student Required | Primary Focus | Typical Users | Duration |
+|-----------|-----------------|---------------|---------------|----------|
+| **EQUITACION** | Yes | Rider instruction | All students | 30-60 min |
+| **ADIESTRAMIENTO** | Yes | Horse training | Advanced riders | 60 min |
+| **EQUINOTERAPIA** | Yes | Therapeutic goals | Therapy clients | 30-60 min |
+| **MONTA** | No (auto) | Instructor riding | Instructors only | 30-60 min |
+
+## Trial Classes by Specialty
+
+Trial classes (clases de prueba) can be offered for all specialties except MONTA:
+
+<AccordionGroup>
+  <Accordion title="EQUITACION Trial">
+    Most common trial class type. Allows prospective students to experience a regular riding lesson before enrolling.
+  </Accordion>
+  
+  <Accordion title="ADIESTRAMIENTO Trial">
+    Less common. May be offered to experienced riders considering advanced training programs.
+  </Accordion>
+  
+  <Accordion title="EQUINOTERAPIA Trial">
+    Important for therapy clients to experience equine-assisted therapy before committing to a program.
+  </Accordion>
+  
+  <Accordion title="MONTA Trial">
+    Not applicable - MONTA classes are for instructors only and don't involve student instruction.
+  </Accordion>
+</AccordionGroup>
+
+See the [Trial Classes](/guides/classes/trial-classes) guide for more information.
+
+## Technical Notes
+
+From the README technical notes:
+> ### Especialidades:
+>
+> 1. **Equitación**: Clase regular de equitación
+> 2. **Adiestramiento**: Entrenamiento del caballo
+> 3. **Equinoterapia**: Terapia asistida con caballos
+> 4. **Monta**: Monta libre (asigna automáticamente alumno comodín ID 1)
+
+See: `~/workspace/source/README.md:573-579`
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Creating Classes" icon="calendar-plus" href="/guides/classes/creating-classes">
+    Learn how to create classes with different specialties
+  </Card>
+  <Card title="Trial Classes" icon="graduation-cap" href="/guides/classes/trial-classes">
+    Set up trial classes for prospective students
+  </Card>
+  <Card title="Class States" icon="traffic-light" href="/guides/classes/class-states">
+    Understand class lifecycle and states
+  </Card>
+</CardGroup>

@@ -1,0 +1,236 @@
+---
+title: Trial Class System
+description: Manage trial classes for new prospects and inactive students
+---
+
+## Overview
+
+The trial class system allows prospective students to try classes before enrolling, supporting both completely new people and existing inactive students trying new specialties.
+
+## Trial Class Types
+
+### Type 1: New Person
+
+For someone who has never been a student:
+
+```markdown
+#### **Type 1: New Person**
+For someone who has never been a student:
+- Complete **Name** and **Last Name** of the person
+- Does not require creating a student account
+- Registered as "Trial Person" in the system
+- Identified with 🎓 emoji in calendar
+```
+
+From `~/workspace/source/README.md:158-163`
+
+### Type 2: Existing Inactive Student
+
+For registered students trying a new specialty:
+
+```markdown
+#### **Type 2: Existing Inactive Student**
+For an already registered student wanting to try a new specialty:
+- Select student from the list
+- **Requirement**: Student must be **INACTIVE**
+- **Requirement**: Must not have classes (scheduled/completed) of that specialty
+```
+
+From `~/workspace/source/README.md:165-170`
+
+## Validation Rules
+
+### Automatic Validation
+
+The system enforces these business rules:
+
+```markdown
+### Automatic Validations:
+
+The system validates automatically:
+
+✅ **Rule 1**: A student CANNOT have a trial class if they already have classes (scheduled or completed) of that specialty
+
+✅ **Rule 2**: A student CANNOT repeat trial class of the same specialty
+
+✅ **Rule 3**: Trial classes DO NOT count towards the student's monthly quota
+```
+
+From `~/workspace/source/README.md:172-180`
+
+## Visual Indicators
+
+### Calendar Display
+
+```markdown
+### Visual Indicators:
+
+Trial classes are identified with:
+- 🎓 Emoji in the calendar
+- Orange border in the cell
+- "Prueba" badge in details
+- Informational alert when editing
+```
+
+From `~/workspace/source/README.md:182-188`
+
+## Trial Class Statistics
+
+### Tracking Trial Classes
+
+Monitor trial class performance:
+
+```tsx
+const estadisticasPrueba = useMemo(() => {
+  const pruebas = clasesFiltradas.filter((c: Clase) => c.esPrueba);
+  const porEspecialidad: Record<string, number> = {};
+  pruebas.forEach((c: Clase) => {
+    porEspecialidad[c.especialidad] =
+      (porEspecialidad[c.especialidad] || 0) + 1;
+  });
+
+  // Conversion: active students who had trial class at ANY time
+  const alumnosIds = new Set(
+    clases
+      .filter((c: Clase) => c.esPrueba && c.alumnoId)
+      .map((c: Clase) => c.alumnoId),
+  );
+  const convertidos = alumnos.filter(
+    (a: Alumno) => a.activo && alumnosIds.has(a.id),
+  ).length;
+
+  return {
+    total: pruebas.length,
+    porEspecialidad: Object.entries(porEspecialidad).map(
+      ([especialidad, cantidad]) => ({ especialidad, cantidad }),
+    ),
+    personasNuevas: pruebas.filter((c: Clase) => !c.alumnoId).length,
+    alumnosExistentes: pruebas.filter((c: Clase) => !!c.alumnoId).length,
+    convertidos,
+  };
+}, [clasesFiltradas, clases, alumnos]);
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:347-374`
+
+### Trial Class Summary Card
+
+```tsx
+<Card>
+  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <CardTitle className="text-sm font-medium">
+      Clases de Prueba
+    </CardTitle>
+    <TrendingUp className="h-4 w-4 text-muted-foreground" />
+  </CardHeader>
+  <CardContent>
+    <div className="text-2xl font-bold">
+      {estadisticasPrueba.total}
+    </div>
+    <p className="text-xs text-muted-foreground">
+      {estadisticasPrueba.convertidos} conversiones
+    </p>
+  </CardContent>
+</Card>
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:503-518`
+
+## Creating Trial Classes
+
+### From Class Form
+
+```markdown
+### For Managing Trial Classes:
+
+#### New Person:
+1. Create class normally
+2. Check "Trial Class" checkbox
+3. Select "New person"
+4. Enter name and last name
+5. Save
+
+#### Existing Student:
+1. Create class normally
+2. Check "Trial Class" checkbox
+3. Select "Existing student"
+4. Choose INACTIVE student from selector
+5. System validates automatically
+6. Save
+```
+
+From `~/workspace/source/README.md:618-633`
+
+## Conversion Tracking
+
+### Measuring Success
+
+Track how many trial students convert to active enrollment:
+
+```tsx
+// Conversion: active students who had trial class at ANY time
+const alumnosIds = new Set(
+  clases
+    .filter((c: Clase) => c.esPrueba && c.alumnoId)
+    .map((c: Clase) => c.alumnoId),
+);
+const convertidos = alumnos.filter(
+  (a: Alumno) => a.activo && alumnosIds.has(a.id),
+).length;
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:357-365`
+
+## Trial People Management
+
+New people who take trial classes are tracked separately from enrolled students, allowing the school to follow up with prospects.
+
+### New vs Existing
+
+```tsx
+personasNuevas: pruebas.filter((c: Clase) => !c.alumnoId).length,
+alumnosExistentes: pruebas.filter((c: Clase) => !!c.alumnoId).length,
+```
+
+From `~/workspace/source/src/pages/Finanzas.tsx:370-371`
+
+## Quota Exemption
+
+Trial classes don't count toward monthly quotas:
+
+```markdown
+✅ **Rule 3**: Trial classes DO NOT count towards the student's monthly quota
+```
+
+From `~/workspace/source/README.md:179`
+
+This allows inactive students to try new specialties without affecting their enrollment status.
+
+## Report Tab
+
+Dedicated reporting for trial class analysis:
+
+```markdown
+<TabsTrigger value="pruebas">Clases de Prueba</TabsTrigger>
+```
+
+From the Finanzas.tsx page, there's a dedicated tab for trial class statistics.
+
+## Best Practices
+
+1. **Clear Identification** - Always mark trial classes clearly in the calendar
+2. **Follow Up** - Track conversion rates and follow up with prospects
+3. **Specialty Tracking** - Monitor which specialties attract most trial students
+4. **Validation Enforcement** - Ensure business rules are followed automatically
+5. **Separate Tracking** - Keep trial people separate from enrolled students
+6. **Conversion Analysis** - Regularly review conversion rates to improve enrollment
+7. **Student Reactivation** - Use trial classes to reactivate inactive students
+8. **Marketing Data** - Use trial class data to inform marketing decisions
+
+## Key Features
+
+- 🎓 **Visual Markers** - Trial classes clearly marked in calendar
+- ✅ **Automatic Validation** - Business rules enforced by system
+- 📈 **Conversion Tracking** - Monitor trial-to-enrollment success
+- 🔄 **Reactivation Tool** - Help inactive students try new specialties
+- 📊 **Detailed Reports** - Analyze trial class performance by specialty
